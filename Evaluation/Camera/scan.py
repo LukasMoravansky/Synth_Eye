@@ -48,7 +48,7 @@ def main():
     del Basler_Cam_Id_1
 
     # Define output image path.
-    output_path = os.path.join(f'{project_folder}/Data/Camera/Basler/Raw/', f'Image_{(CONST_INIT_INDEX):03}.png')
+    output_path = os.path.join(f'{project_folder}/Data/Camera/Basler/', f'Image_{(CONST_INIT_INDEX):03}.png')
 
     # Save the image with bounding boxes.
     cv2.imwrite(output_path, img_raw)

@@ -17,7 +17,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 ## =========================================================================== ## 
-# Author   : Roman Parak
+# Author   : Roman Parak, Lukas Moravansky
 # Email    : Roman.Parak@outlook.com
 # Github   : https://github.com/rparak
 # File Name: Core.py
@@ -191,15 +191,23 @@ class Camera_Cls(object):
         bpy.context.scene.render.image_settings.file_format = self.__image_format
         
         # Set the rendering device to GPU for faster rendering.
-        bpy.context.scene.cycles.device = 'GPU'
+        bpy.context.scene.cycles.device = 'CPU'
         
-        # Configure rendering parameters, including adaptive sampling for better performance.
-        if bpy.context.scene.cycles.use_adaptive_sampling == False:
-            bpy.context.scene.cycles.use_adaptive_sampling = True
-        
+        # Set Cycles as the render engine.
+        bpy.context.scene.render.engine = 'CYCLES'
+
+        # Enable Adaptive Sampling.
+        bpy.context.scene.cycles.use_adaptive_sampling = True
+
         # Set the adaptive sampling threshold and the number of samples for noise reduction.
-        bpy.context.scene.cycles.adaptive_threshold = 0.001
-        bpy.context.scene.cycles.samples = 128
+        #   Lower values = cleaner image.
+        bpy.context.scene.cycles.adaptive_threshold = 0.9
+        #   Minimum sample count.
+        bpy.context.scene.cycles.samples = 32
+        bpy.context.scene.cycles.adaptive_min_samples = 1
+
+        # Disable Denoising.
+        bpy.context.scene.cycles.use_denoising = False
         
         # Set the frame rate for the rendered animation (frames per second).
         bpy.context.scene.render.fps = self.__Cam_Param_Str.FPS
@@ -336,9 +344,18 @@ class Camera_Cls(object):
                 The function can be easily modified/extended with additional functions.
         """
 
-        # Apply the additional noise to the image captured by the camera.
-        #   adaptive_threshold = 0.001 .. 0.025
-        bpy.context.scene.cycles.adaptive_threshold = np.float64(np.random.uniform(0.001, 0.025))
+        # Enable Adaptive Sampling.
+        bpy.context.scene.cycles.use_adaptive_sampling = True
+
+        # Set the adaptive sampling threshold and the number of samples for noise reduction.
+        #   Apply the additional noise to the image captured by the camera.
+        bpy.context.scene.cycles.adaptive_threshold = np.float64(np.random.uniform(0.85, 0.95))
+        #   Minimum sample count.
+        bpy.context.scene.cycles.samples = 32
+        bpy.context.scene.cycles.adaptive_min_samples = 1
+
+        # Disable Denoising.
+        bpy.context.scene.cycles.use_denoising = False
 
         #  Update the scene.
         self.__Update()
@@ -558,5 +575,206 @@ class Object_Cls(object):
         Blender.Utilities.Set_Object_Transformation(self.__Obj_Param_Str.Name, self.__T)
         self.__Update()
 
+class Material_Cls:
+    """
+    Description:
+        A class for randomizing material properties and handling baking operations in Blender.
+    
+    Initialization of the Class:
+        Args:
+            (1) bake_image_name [string]: The name of the image used for baking operations.
+                Default: 'BakeTemp128'
 
+        Example:
+            Initialization:
+                # Assign a custom bake image name.
+                bake_image_name = 'CustomBakeImage'
+
+                # Initialize the class.
+                Cls = Material_Cls(bake_image_name)
+    """
+    
+    def __init__(self, bake_image_name='BakeTemp128'):
+        # Initializes the material class with the specified bake image name.
+        self.bake_image_name = bake_image_name
+        self.fingerprint_enabled = False
+    
+    def __Gen_Random_Materials(self, material_name: str) -> None:
+        """
+        Description:
+            Function to randomize values in the given material.
+        
+        Args:
+            (1) material_name [string]: The name of the material to randomize.
+        """
+
+        # Retrieve the material by name.
+        material = bpy.data.materials.get(material_name)
+        if material is None:
+            print(f'[WARNING] Material <{material_name}> not found.')
+            return
+        
+        # Randomize values for nodes in the material if the material uses nodes.
+        if material.use_nodes:
+            for node in material.node_tree.nodes:
+                if node.type == 'VALUE':
+                    self.__Randomize_Node_Values(node)
+    
+    def __Randomize_Node_Values(self, node) -> None:
+        """
+        Description:
+            Function to assign randomized values to nodes based on their label.
+        
+        Args:
+            (1) node [bpy.types.Node]: The node to be modified.
+        """
+
+        # Mapping of node labels to randomized value ranges.
+        #   Note:
+        #       Each label corresponds to a specific range of values to randomize.
+        value_mapping = {
+            'location_z': (-100.0, 100.0),
+            'seed': (-510.1, 5548.1),
+            'scale_dots_x': (1.0, 3.3),
+            'scale_dots_y': (0.2, 2.9),
+            'roughness_1': (0.662, 1.0),
+            'circle_top_x': (-0.4, 2.0),
+            'circle_bot_x': (-0.4, 2.0),
+            'scale_dirty_color': (1, 15),
+            'roughness_dirty_color': (0.642, 1),
+            'scale_dirty_roughness': (1, 15),
+            'detail_dirty_roughness_terrain': (7.7, 15),
+            'worn_strip_width': (-0.05, -0.09),
+            'worn_strip_left_x': (0.4, 0.35),
+            'worn_strip_right_x': (-0.2, -0.35)
+        }
+
+        # Check if the node's label is present in the value mapping for randomization.
+        if node.label in value_mapping:
+            node.outputs[0].default_value = np.random.uniform(*value_mapping[node.label])
+        elif node.label == "enable":
+            # Randomly enable or disable the fingerprint on the material and print the result.
+            self.fingerprint_enabled = np.random.normal(0.5, 0.2) > 0.5
+            print(f'[INFO] Fingerprint allowed on the material: {self.fingerprint_enabled}')
+            node.outputs[0].default_value = self.fingerprint_enabled
+    
+    def __Modify_Shader(self, material_name: str) -> None:
+        """
+        Description:
+            Function to modify shader nodes for baking and restore the original node links afterward.
+        
+        Args:
+            material_name [string]: The name of the material to modify and bake.
+        """
+
+        # Get the material by its name from the Blender data.
+        material = bpy.data.materials.get(material_name)
+        
+        # Check if material exists and uses nodes.
+        if material is None or not material.use_nodes:
+            print(f'[WARNING] Material <{material_name}> not found or does not use nodes.')
+            return
+
+        # Access the material's node tree and links.
+        nodes = material.node_tree.nodes
+        links = material.node_tree.links
+        
+        # Find required nodes in the node tree.
+        mix_shader = next((n for n in nodes if n.type == 'MIX_SHADER' and n.label == 'last_shader_mix'), None)
+        material_output = next((n for n in nodes if n.type == 'OUTPUT_MATERIAL'), None)
+        principled_bsdf = next((n for n in nodes if n.type == 'BSDF_PRINCIPLED' and n.label == 'bake_output'), None)
+        bake_image = next((n for n in nodes if n.type == 'TEX_IMAGE' and n.label == 'bake_image'), None)
+
+        # Check if all required nodes are found.
+        if not all([mix_shader, material_output, principled_bsdf, bake_image]):
+            print('[WARNING] Some required nodes were not found. Check labels.')
+            return
+
+        # Save the original links to restore them after baking.
+        original_links = [link for link in links if link.to_node == material_output]
+        
+        # Remove the original links to prepare for baking.
+        for link in original_links:
+            links.remove(link)
+
+        # Connect the Principled BSDF output to the Material Output surface input for baking.
+        links.new(principled_bsdf.outputs[0], material_output.inputs['Surface'])
+
+        # Set the current object as active and select the baking image.
+        bpy.context.view_layer.objects.active = bpy.context.object
+        # Ensure the object is selected
+        bpy.context.object.select_set(True)
+        bake_image.select = True
+        bpy.context.object.active_material = material
+        bpy.context.object.active_material.node_tree.nodes.active = bake_image
+
+        # Perform the baking operation (Diffuse color pass).
+        bpy.ops.object.bake(type='DIFFUSE', pass_filter={'COLOR'}, use_selected_to_active=False)
+
+        # Restore the original links after baking.
+        for link in original_links:
+            links.new(mix_shader.outputs[0], material_output.inputs['Surface'])
+        
+        print("Baking completed and original shader links restored.")
+    
+    def __Get_Bounding_Box(self, image_name: str) -> tp.Optional[tp.Tuple[int, int, int, int]]:
+        """
+        Description:
+            Function to detect the bounding box of the white area in the given image.
+        
+        Args:
+            (1) image_name [string]: The name of the image to analyze.
+        
+        Returns:
+            (1) parameter [Tuple<int, int, int, int> | None]: The bounding box coordinates (min_x, max_x, min_y, max_y) or None if not found.
+        """
+
+        image = bpy.data.images.get(image_name)
+        if image is None:
+            print(f'[WARNING] Image <{image_name}> not found.')
+            return None
+    
+        width, height = image.size
+        pixels = np.array(image.pixels).reshape((height, width, 4))
+    
+        white_threshold = 0.5
+        mask = (pixels[..., :3] > white_threshold).all(axis=-1)
+        coords = np.argwhere(mask)
+    
+        if coords.size == 0:
+            print('[INFO] No white area detected.')
+            return None
+    
+        min_y, min_x = coords.min(axis=0)
+        max_y, max_x = coords.max(axis=0)
+    
+        return min_x, max_x, min_y, max_y  
+    
+    def Random(self, material_name: str) -> tp.Optional[tp.Tuple[int, int, int, int]]:
+        """
+        Description:
+            Function to randomize material properties and process bounding box detection.
+        
+        Args:
+            (1) material_name [string]: The name of the material to process.
+        
+        Returns:
+            (1) parameter [Tuple<int, int, int, int> | None]: The bounding box if fingerprint is enabled, otherwise None.
+        """
+
+        bounding_box = None
+    
+        # Randomize material properties for the given material.
+        self.__Gen_Random_Materials(material_name)
+        
+        # If fingerprinting is enabled, modify the shader and get the bounding box.
+        if self.fingerprint_enabled:
+            self.__Modify_Shader(material_name)
+            bounding_box = self.__Get_Bounding_Box(self.bake_image_name)
+    
+        # Randomize materials for other predefined materials.
+        for mat_name in ['Dirty_Mat', 'Hole_Mill_Mat']:
+            self.__Gen_Random_Materials(mat_name)
+    
+        return bounding_box
 

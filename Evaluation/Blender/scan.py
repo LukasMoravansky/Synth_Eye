@@ -44,7 +44,7 @@ def main():
     
     # Deselect all objects in the current scene.
     Blender.Utilities.Deselect_All()
-
+    
     # Initialize the camera with lighting to capture an object in the scene.
     #   The main parameters of the camera and light can be found at: ../Parameters/Scene.py
     Camera_Cls = Blender.Core.Camera_Cls(Parameters.Scene.Basler_Cam_Str, Parameters.Scene.Effilux_Light_Str, 'PNG')
@@ -53,15 +53,22 @@ def main():
     #   The main parameters of the object can be found at: ../Parameters/Object.py
     Object_Cls = Blender.Core.Object_Cls(Parameters.Object.Object_001_Str, 'ZYX')
 
+    # Initialize the material class for randomizing material properties and handling 
+    # baking operations.
+    Material_Cls = Blender.Core.Material_Cls('BakeTemp128')
+
+    # Generate random material properties and process bounding box detection.
+    #   Note:
+    #       If the returned information is None, it indicates that the bounding box 
+    #       has not been generated for the material.
+    #info = Material_Cls.Random('Area_Testing_Mat')
+
     # Generate random camera and lighting properties.
     #Object_Cls.Random()
 
     # Turn on/off visibility of the object.
     #Object_Cls.Visibility(True)
-
-    # Ensure the compositing nodes are enabled in the scene.
-    bpy.context.scene.use_nodes = True
-
+    
     # Set the render file path.
     bpy.context.scene.render.filepath = f'{project_folder}/Data/Camera/Virtual/Image_{(CONST_INIT_INDEX):03}.png'
 
@@ -74,7 +81,7 @@ def main():
         print(f'[INFO] Render completed and saved to: {bpy.context.scene.render.filepath}')
 
     # Release the classes.
-    del Camera_Cls, Object_Cls
+    del Camera_Cls, Object_Cls, Material_Cls
 
 if __name__ == '__main__':
     main()

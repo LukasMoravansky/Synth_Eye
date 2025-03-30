@@ -157,7 +157,7 @@ Basler_Cam_Str.Spectrum = 'Color'
 Basler_Cam_Str.Sensor = {'Width': 6.6, 'Height': 4.1, 'Fit': 'HORIZONTAL'}
 Basler_Cam_Str.Gain = 10
 Basler_Cam_Str.Exposure_Time = 1000
-Basler_Cam_Str.Balance_Ratios = (1.0, 1.0, 1.0)
+Basler_Cam_Str.Balance_Ratios = (0.85, 0.95, 0.9)
 Basler_Cam_Str.Aperture_F_Stop = 2.8  
 Basler_Cam_Str.Focus_Distance = Basler_Cam_Str.T.p.z
 Basler_Cam_Str.Use_DoF = True
@@ -182,7 +182,7 @@ Effilux_Light_Str.T = Transformation.Homogeneous_Transformation_Matrix_Cls(None,
                                                                                             'XYZ').Translation([0.0, 0.0, 0.287215])
 
 # Light properties.
-Effilux_Light_Str.Energy = 1.2
+Effilux_Light_Str.Energy = 1.2/2.0
 Effilux_Light_Str.Color = (1.0, 1.0, 1.0)
 Effilux_Light_Str.Size = 0.2
 Effilux_Light_Str.Shape = 'SQUARE'
