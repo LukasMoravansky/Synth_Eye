@@ -26,7 +26,7 @@ def main():
     """
 
     # Locate the path to the project folder.
-    project_folder = os.getcwd().split('INTEMAC_Synth_Eye')[0] + 'INTEMAC_Synth_Eye'
+    project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
     # Custom camera configuration.
     custom_cfg = {

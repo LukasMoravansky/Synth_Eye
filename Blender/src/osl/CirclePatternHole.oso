@@ -1,0 +1,123 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.13.7.0
+# options: -o C:\Users\MORAVA~1\AppData\Local\Temp\tmp2_fkop9f.oso -IC:\Program Files\Blender Foundation\Blender 4.2\4.2\scripts\addons_core\cycles\shader
+shader draw_circles_hole
+param	vector	mapping	0.5 0.5 0		%read{0,1} %write{2147483647,-1}
+param	float	radius	0.300000012		%read{11,13} %write{2147483647,-1}
+param	float	circle_radius	0.0500000007		%read{26,29} %write{2147483647,-1}
+param	float	min_thickness	0.00100000005		%read{19,19} %write{2147483647,-1}
+param	float	max_thickness	0.00200000009		%read{19,19} %write{2147483647,-1}
+param	color	circle_color	1 1 1		%read{34,34} %write{2147483647,-1}
+param	color	background_color	0 0 0		%read{2,2} %write{2147483647,-1}
+param	float	Circles_count	20		%read{5,9} %write{2147483647,-1}
+param	float	input_seed	43758.5469		%read{2147483647,-1} %write{2147483647,-1}
+oparam	color	result	0 0 0		%read{2147483647,-1} %write{2,37}
+local	float	coord_x	%read{5,37} %write{0,0}
+local	float	coord_y	%read{5,37} %write{1,1}
+local	int	___363_i	%read{5,37} %write{4,37}
+local	float	___364_angle	%read{5,37} %write{5,37}
+local	float	___364_center_x	%read{5,37} %write{5,37}
+local	float	___364_center_y	%read{5,37} %write{5,37}
+local	float	___364_rand_thickness	%read{5,37} %write{5,37}
+local	float	___364_dx	%read{5,37} %write{5,37}
+local	float	___364_dy	%read{5,37} %write{5,37}
+local	float	___364_dist_to_center	%read{5,37} %write{5,37}
+const	int	$const1	0		%read{0,31} %write{2147483647,-1}
+const	int	$const2	1		%read{1,37} %write{2147483647,-1}
+temp	int	$tmp1	%read{5,37} %write{5,37}
+temp	int	$tmp2	%read{3,37} %write{4,37}
+const	float	$const3	6.28318548		%read{8,8} %write{2147483647,-1}
+temp	float	$tmp3	%read{5,37} %write{5,37}
+temp	float	$tmp4	%read{5,37} %write{5,37}
+temp	float	$tmp5	%read{5,37} %write{5,37}
+temp	float	$tmp6	%read{5,37} %write{5,37}
+temp	float	$tmp7	%read{5,37} %write{5,37}
+temp	float	$tmp8	%read{5,37} %write{5,37}
+const	string	$const4	"random"		%read{15,15} %write{2147483647,-1}
+temp	float	$tmp9	%read{5,37} %write{5,37}
+const	float	$const5	43758.5469		%read{17,17} %write{2147483647,-1}
+temp	float	$tmp10	%read{5,37} %write{5,37}
+const	float	$const6	1		%read{18,18} %write{2147483647,-1}
+temp	float	$tmp11	%read{5,37} %write{5,37}
+temp	float	$tmp12	%read{5,37} %write{5,37}
+temp	float	$tmp13	%read{5,37} %write{5,37}
+temp	int	$tmp14	%read{5,37} %write{5,37}
+temp	int	$tmp15	%read{5,37} %write{5,37}
+temp	float	$tmp16	%read{5,37} %write{5,37}
+temp	int	$tmp17	%read{5,37} %write{5,37}
+temp	int	$tmp18	%read{5,37} %write{5,37}
+temp	int	$tmp19	%read{2147483647,-1} %write{5,37}
+code ___main___
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:14
+#     float coord_y = mapping[1];
+	compref		coord_x mapping $const1 	%filename{"D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl"} %line{14} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:15
+#     result = background_color;
+	compref		coord_y mapping $const2 	%line{15} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:16
+# 
+	assign		result background_color 	%line{16} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:22
+#         float angle = (2.0 * M_PI * i) / Circles_count; // Úhel pro rozmístění na kruhu
+	for		$tmp2 5 7 36 38 	%line{22} %argrw{"r"}
+	assign		___363_i $const1 	%argrw{"wr"}
+	lt		$tmp1 ___363_i Circles_count 	%argrw{"wrr"}
+	neq		$tmp2 $tmp1 $const1 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:23
+#         float center_x = radius * cos(angle);
+	assign		$tmp4 ___363_i 	%line{23} %argrw{"wr"}
+	mul		$tmp3 $const3 $tmp4 	%argrw{"wrr"}
+	div		___364_angle $tmp3 Circles_count 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:24
+#         float center_y = radius * sin(angle);
+	cos		$tmp5 ___364_angle 	%line{24} %argrw{"wr"}
+	mul		___364_center_x radius $tmp5 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:25
+# 
+	sin		$tmp6 ___364_angle 	%line{25} %argrw{"wr"}
+	mul		___364_center_y radius $tmp6 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:27
+# 
+	assign		$tmp8 ___363_i 	%line{27} %argrw{"wr"}
+	functioncall	$const4 19 	%argrw{"r"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:19
+#     }
+	sin		$tmp9 $tmp8 	%line{19} %argrw{"wr"}
+	mul		$tmp10 $tmp9 $const5 	%argrw{"wrr"}
+	fmod		$tmp7 $tmp10 $const6 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:27
+# 
+	mix		___364_rand_thickness min_thickness max_thickness $tmp7 	%line{27} %argrw{"wrrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:29
+#         float dy = coord_y - center_y;
+	sub		___364_dx coord_x ___364_center_x 	%line{29} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:30
+#         float dist_to_center = sqrt(dx * dx + dy * dy);
+	sub		___364_dy coord_y ___364_center_y 	%line{30} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:31
+# 
+	mul		$tmp11 ___364_dx ___364_dx 	%line{31} %argrw{"wrr"}
+	mul		$tmp12 ___364_dy ___364_dy 	%argrw{"wrr"}
+	add		$tmp13 $tmp11 $tmp12 	%argrw{"wrr"}
+	sqrt		___364_dist_to_center $tmp13 	%argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:33
+#             result = circle_color;
+	le		$tmp14 ___364_dist_to_center circle_radius 	%line{33} %argrw{"wrr"}
+	neq		$tmp15 $tmp14 $const1 	%argrw{"wrr"}
+	if		$tmp15 33 33 	%argrw{"r"}
+	sub		$tmp16 circle_radius ___364_rand_thickness 	%argrw{"wrr"}
+	ge		$tmp17 ___364_dist_to_center $tmp16 	%argrw{"wrr"}
+	neq		$tmp18 $tmp17 $const1 	%argrw{"wrr"}
+	assign		$tmp15 $tmp18 	%argrw{"wr"}
+	if		$tmp15 36 36 	%argrw{"r"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:34
+#             break;
+	assign		result circle_color 	%line{34} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:35
+#         }
+	break	%line{35}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\CirclePatternHole.osl:22
+#         float angle = (2.0 * M_PI * i) / Circles_count; // Úhel pro rozmístění na kruhu
+	assign		$tmp19 ___363_i 	%line{22} %argrw{"wr"}
+	add		___363_i ___363_i $const2 	%argrw{"wrr"}
+	end

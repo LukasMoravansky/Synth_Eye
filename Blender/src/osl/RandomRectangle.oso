@@ -1,0 +1,336 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.13.7.0
+# options: -o D:\Blender_projects\Synth.Eye\Synth_EYE_texture_develop\Blender\src\osl\RandomRectangle.oso -IC:\Program Files\Blender Foundation\Blender 4.2\4.2\scripts\addons_core\cycles\shader
+shader random_oval_fingerprint
+param	point	Pos	0 0 0		%read{6,10} %write{2147483647,-1}
+param	float	seed	0		%read{14,96} %write{2147483647,-1} %derivs
+param	float	width_min	0.200000003		%read{32,34} %write{2147483647,-1}
+param	float	width_max	0.5		%read{32,32} %write{2147483647,-1}
+param	float	height_min	0.200000003		%read{37,39} %write{2147483647,-1}
+param	float	height_max	0.5		%read{37,37} %write{2147483647,-1}
+param	float	blur_intensity	0.200000003		%read{72,72} %write{2147483647,-1}
+param	float	wave_scale	30		%read{107,107} %write{2147483647,-1}
+param	int	enable_mask	1		%read{0,0} %write{2147483647,-1}
+param	float	center_x_min	0		%read{22,24} %write{2147483647,-1}
+param	float	center_x_max	0.649999976		%read{22,22} %write{2147483647,-1}
+param	float	center_y_min	0		%read{27,29} %write{2147483647,-1}
+param	float	center_y_max	1		%read{27,27} %write{2147483647,-1}
+oparam	float	mask	0		%read{2147483647,-1} %write{2,79}
+oparam	float	mask_rectangle	0		%read{111,111} %write{3,90}
+oparam	float	mask_fingerprint	0		%read{111,111} %write{4,111}
+oparam	float	center_x	0		%read{47,95} %write{24,24}
+oparam	float	center_y	0		%read{48,100} %write{29,29}
+oparam	float	x_rot	0		%read{59,80} %write{53,53}
+oparam	float	y_rot	0		%read{62,84} %write{56,56}
+oparam	float	rotation_z	0		%read{2147483647,-1} %write{45,46}
+local	float	uv_x	%read{47,101} %write{9,9}
+local	float	uv_y	%read{48,102} %write{13,13}
+local	float	seed_offset	%read{20,43} %write{19,19} %derivs
+local	float	width	%read{57,94} %write{34,34}
+local	float	height	%read{58,99} %write{39,39}
+local	float	angle	%read{46,50} %write{42,42}
+local	float	x	%read{51,54} %write{47,47}
+local	float	y	%read{52,55} %write{48,48}
+local	float	cos_a	%read{51,55} %write{49,49}
+local	float	sin_a	%read{52,54} %write{50,50}
+local	float	a	%read{60,81} %write{57,57}
+local	float	b	%read{63,85} %write{58,58}
+local	float	ellipse	%read{74,77} %write{65,65}
+local	float	noise_factor	%read{73,76} %write{72,72}
+local	float	fp_center_x	%read{101,101} %write{95,95}
+local	float	fp_center_y	%read{102,102} %write{100,100}
+local	float	dx	%read{103,103} %write{101,101}
+local	float	dy	%read{104,104} %write{102,102}
+local	float	dist	%read{107,107} %write{106,106}
+const	int	$const1	0		%read{0,86} %write{2147483647,-1}
+temp	int	$tmp1	%read{1,1} %write{0,0}
+temp	float	$tmp2	%read{8,8} %write{6,6}
+const	float	$const2	0		%read{9,90} %write{2147483647,-1}
+const	int	$const3	1		%read{10,10} %write{2147483647,-1}
+const	float	$const4	1		%read{8,89} %write{2147483647,-1}
+const	string	$const5	"clamp"		%read{7,11} %write{2147483647,-1}
+temp	float	$tmp3	%read{9,9} %write{8,8}
+temp	float	$tmp4	%read{12,12} %write{10,10}
+temp	float	$tmp5	%read{13,13} %write{12,12}
+temp	float	$tmp6	%read{19,19} %write{18,18} %derivs
+const	float	$const6	1345.33997		%read{14,14} %write{2147483647,-1}
+temp	float	$tmp7	%read{15,15} %write{14,14} %derivs
+const	float	$const7	787.890015		%read{15,15} %write{2147483647,-1}
+temp	float	$tmp8	%read{17,18} %write{15,15} %derivs
+const	string	$const8	"fract"		%read{16,16} %write{2147483647,-1}
+temp	float	$tmp9	%read{18,18} %write{17,17} %derivs
+const	float	$const10	1000		%read{19,19} %write{2147483647,-1}
+temp	float	$tmp10	%read{23,23} %write{21,21}
+const	string	$const11	"cell"		%read{21,26} %write{2147483647,-1}
+const	float	$const12	0.100000001		%read{20,20} %write{2147483647,-1}
+temp	float	$tmp11	%read{21,21} %write{20,20}
+temp	float	$tmp12	%read{23,23} %write{22,22}
+temp	float	$tmp13	%read{24,24} %write{23,23}
+temp	float	$tmp14	%read{28,28} %write{26,26}
+const	float	$const13	1.10000002		%read{25,25} %write{2147483647,-1}
+temp	float	$tmp15	%read{26,26} %write{25,25}
+temp	float	$tmp16	%read{28,28} %write{27,27}
+temp	float	$tmp17	%read{29,29} %write{28,28}
+temp	float	$tmp18	%read{33,33} %write{31,31}
+const	string	$const14	"simplex"		%read{31,36} %write{2147483647,-1}
+const	float	$const15	2.20000005		%read{30,30} %write{2147483647,-1}
+temp	float	$tmp19	%read{31,31} %write{30,30}
+temp	float	$tmp20	%read{33,33} %write{32,32}
+temp	float	$tmp21	%read{34,34} %write{33,33}
+temp	float	$tmp22	%read{38,38} %write{36,36}
+const	float	$const16	3.29999995		%read{35,35} %write{2147483647,-1}
+temp	float	$tmp23	%read{36,36} %write{35,35}
+temp	float	$tmp24	%read{38,38} %write{37,37}
+temp	float	$tmp25	%read{39,39} %write{38,38}
+temp	float	$tmp26	%read{42,42} %write{41,41}
+const	string	$const17	"perlin"		%read{41,97} %write{2147483647,-1}
+const	float	$const18	4		%read{40,40} %write{2147483647,-1}
+temp	float	$tmp27	%read{41,41} %write{40,40}
+const	float	$const19	6.28318977		%read{42,45} %write{2147483647,-1}
+temp	float	$tmp28	%read{45,45} %write{44,44}
+const	string	$const20	"gabor"		%read{44,44} %write{2147483647,-1}
+const	float	$const21	4.4000001		%read{43,43} %write{2147483647,-1}
+temp	float	$tmp29	%read{44,44} %write{43,43} %derivs
+temp	float	$tmp30	%read{53,53} %write{51,51}
+temp	float	$tmp31	%read{53,53} %write{52,52}
+temp	float	$tmp32	%read{56,56} %write{54,54}
+temp	float	$tmp33	%read{56,56} %write{55,55}
+const	float	$const22	0.5		%read{57,110} %write{2147483647,-1}
+temp	float	$tmp34	%read{61,61} %write{59,59}
+temp	float	$tmp35	%read{61,61} %write{60,60}
+temp	float	$tmp36	%read{65,65} %write{61,61}
+temp	float	$tmp37	%read{64,64} %write{62,62}
+temp	float	$tmp38	%read{64,64} %write{63,63}
+temp	float	$tmp39	%read{65,65} %write{64,64}
+temp	float	$tmp40	%read{72,72} %write{71,71}
+temp	float	$tmp41	%read{67,67} %write{66,66}
+const	float	$const24	10		%read{66,91} %write{2147483647,-1}
+temp	float	$tmp42	%read{71,71} %write{67,67}
+temp	float	$tmp43	%read{69,69} %write{68,68}
+temp	float	$tmp44	%read{70,70} %write{69,69}
+temp	float	$tmp45	%read{71,71} %write{70,70}
+const	float	$const26	5		%read{70,70} %write{2147483647,-1}
+temp	float	$tmp46	%read{74,74} %write{73,73}
+temp	int	$tmp47	%read{75,75} %write{74,74}
+temp	float	$tmp48	%read{78,78} %write{77,77}
+const	float	$const27	0.800000012		%read{77,77} %write{2147483647,-1}
+temp	float	$tmp49	%read{77,77} %write{76,76}
+temp	float	$tmp50	%read{81,81} %write{80,80}
+temp	int	$tmp51	%read{82,82} %write{81,81}
+temp	int	$tmp52	%read{83,88} %write{82,87}
+temp	float	$tmp53	%read{85,85} %write{84,84}
+temp	int	$tmp54	%read{86,86} %write{85,85}
+temp	int	$tmp55	%read{87,87} %write{86,86}
+temp	float	$tmp56	%read{93,93} %write{92,92}
+temp	float	$tmp57	%read{92,92} %write{91,91}
+temp	float	$tmp58	%read{94,94} %write{93,93}
+temp	float	$tmp59	%read{95,95} %write{94,94}
+temp	float	$tmp60	%read{98,98} %write{97,97}
+temp	float	$tmp61	%read{97,97} %write{96,96}
+const	float	$const29	11		%read{96,96} %write{2147483647,-1}
+temp	float	$tmp62	%read{99,99} %write{98,98}
+temp	float	$tmp63	%read{100,100} %write{99,99}
+temp	float	$tmp64	%read{105,105} %write{103,103}
+temp	float	$tmp65	%read{105,105} %write{104,104}
+temp	float	$tmp66	%read{106,106} %write{105,105}
+temp	float	$tmp67	%read{109,109} %write{108,108}
+temp	float	$tmp68	%read{108,108} %write{107,107}
+temp	float	$tmp69	%read{110,110} %write{109,109}
+code ___main___
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:27
+#     {
+	eq		$tmp1 enable_mask $const1 	%filename{"D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl"} %line{27} %argrw{"wrr"}
+	if		$tmp1 6 6 	%argrw{"r"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:29
+#     mask_rectangle = 0;
+	assign		mask $const1 	%line{29} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:30
+#     mask_fingerprint = 0;
+	assign		mask_rectangle $const1 	%line{30} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:31
+#     return;
+	assign		mask_fingerprint $const1 	%line{31} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:32
+#     }
+	exit	%line{32}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:35
+#     float uv_y = clamp(Pos[1], 0, 1);
+	compref		$tmp2 Pos $const1 	%line{35} %argrw{"wrr"}
+	functioncall	$const5 10 	%argrw{"r"}
+# C:\\\\Program Files\\\\Blender Foundation\\\\Blender 4.2\\\\4.2\\\\scripts\\\\addons_core\\\\cycles\\\\shader/stdosl.h:141
+# float  clamp (float x, float minval, float maxval) { return max(min(x,maxval),minval); }
+	min		$tmp3 $tmp2 $const4 	%filename{"C:\\\\Program Files\\\\Blender Foundation\\\\Blender 4.2\\\\4.2\\\\scripts\\\\addons_core\\\\cycles\\\\shader/stdosl.h"} %line{141} %argrw{"wrr"}
+	max		uv_x $tmp3 $const2 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:36
+#     
+	compref		$tmp4 Pos $const3 	%filename{"D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl"} %line{36} %argrw{"wrr"}
+	functioncall	$const5 14 	%argrw{"r"}
+# C:\\\\Program Files\\\\Blender Foundation\\\\Blender 4.2\\\\4.2\\\\scripts\\\\addons_core\\\\cycles\\\\shader/stdosl.h:141
+# float  clamp (float x, float minval, float maxval) { return max(min(x,maxval),minval); }
+	min		$tmp5 $tmp4 $const4 	%filename{"C:\\\\Program Files\\\\Blender Foundation\\\\Blender 4.2\\\\4.2\\\\scripts\\\\addons_core\\\\cycles\\\\shader/stdosl.h"} %line{141} %argrw{"wrr"}
+	max		uv_y $tmp5 $const2 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:43
+#     
+	mul		$tmp7 seed $const6 	%filename{"D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl"} %line{43} %argrw{"wrr"}
+	add		$tmp8 $tmp7 $const7 	%argrw{"wrr"}
+	functioncall	$const8 19 	%argrw{"r"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:40
+#     }
+	floor		$tmp9 $tmp8 	%line{40} %argrw{"wr"}
+	sub		$tmp6 $tmp8 $tmp9 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:43
+#     
+	mul		seed_offset $tmp6 $const10 	%line{43} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:47
+#     center_y = center_y_min  + noise("cell", seed_offset + 1.1) * (center_y_max - center_y_min);  
+	add		$tmp11 seed_offset $const12 	%line{47} %argrw{"wrr"}
+	noise		$tmp10 $const11 $tmp11 	%argrw{"wrr"}
+	sub		$tmp12 center_x_max center_x_min 	%argrw{"wrr"}
+	mul		$tmp13 $tmp10 $tmp12 	%argrw{"wrr"}
+	add		center_x center_x_min $tmp13 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:48
+#    
+	add		$tmp15 seed_offset $const13 	%line{48} %argrw{"wrr"}
+	noise		$tmp14 $const11 $tmp15 	%argrw{"wrr"}
+	sub		$tmp16 center_y_max center_y_min 	%argrw{"wrr"}
+	mul		$tmp17 $tmp14 $tmp16 	%argrw{"wrr"}
+	add		center_y center_y_min $tmp17 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:51
+#     float height = height_min + noise("simplex", seed_offset + 3.3) * (height_max - height_min);
+	add		$tmp19 seed_offset $const15 	%line{51} %argrw{"wrr"}
+	noise		$tmp18 $const14 $tmp19 	%argrw{"wrr"}
+	sub		$tmp20 width_max width_min 	%argrw{"wrr"}
+	mul		$tmp21 $tmp18 $tmp20 	%argrw{"wrr"}
+	add		width width_min $tmp21 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:52
+#     
+	add		$tmp23 seed_offset $const16 	%line{52} %argrw{"wrr"}
+	noise		$tmp22 $const14 $tmp23 	%argrw{"wrr"}
+	sub		$tmp24 height_max height_min 	%argrw{"wrr"}
+	mul		$tmp25 $tmp22 $tmp24 	%argrw{"wrr"}
+	add		height height_min $tmp25 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:55
+#     
+	add		$tmp27 seed_offset $const18 	%line{55} %argrw{"wrr"}
+	noise		$tmp26 $const17 $tmp27 	%argrw{"wrr"}
+	mul		angle $tmp26 $const19 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:57
+#     rotation_z = angle;
+	add		$tmp29 seed_offset $const21 	%line{57} %argrw{"wrr"}
+	noise		$tmp28 $const20 $tmp29 	%argrw{"wrr"} %argderivs{2}
+	mul		rotation_z $tmp28 $const19 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:58
+# 
+	assign		rotation_z angle 	%line{58} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:60
+#     float y = uv_y - center_y;
+	sub		x uv_x center_x 	%line{60} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:61
+# 
+	sub		y uv_y center_y 	%line{61} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:63
+#     float sin_a = sin(angle);
+	cos		cos_a angle 	%line{63} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:64
+#     x_rot = x * cos_a - y * sin_a;
+	sin		sin_a angle 	%line{64} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:65
+#     y_rot = x * sin_a + y * cos_a;
+	mul		$tmp30 x cos_a 	%line{65} %argrw{"wrr"}
+	mul		$tmp31 y sin_a 	%argrw{"wrr"}
+	sub		x_rot $tmp30 $tmp31 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:66
+# 
+	mul		$tmp32 x sin_a 	%line{66} %argrw{"wrr"}
+	mul		$tmp33 y cos_a 	%argrw{"wrr"}
+	add		y_rot $tmp32 $tmp33 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:68
+#     float b = height * 0.5;
+	mul		a width $const22 	%line{68} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:69
+# 
+	mul		b height $const22 	%line{69} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:71
+# 
+	mul		$tmp34 x_rot x_rot 	%line{71} %argrw{"wrr"}
+	mul		$tmp35 a a 	%argrw{"wrr"}
+	div		$tmp36 $tmp34 $tmp35 	%argrw{"wrr"}
+	mul		$tmp37 y_rot y_rot 	%argrw{"wrr"}
+	mul		$tmp38 b b 	%argrw{"wrr"}
+	div		$tmp39 $tmp37 $tmp38 	%argrw{"wrr"}
+	add		ellipse $tmp36 $tmp39 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:74
+# 
+	mul		$tmp41 x_rot $const24 	%line{74} %argrw{"wrr"}
+	add		$tmp42 $tmp41 seed 	%argrw{"wrr"}
+	mul		$tmp43 y_rot $const24 	%argrw{"wrr"}
+	add		$tmp44 $tmp43 seed 	%argrw{"wrr"}
+	add		$tmp45 $tmp44 $const26 	%argrw{"wrr"}
+	noise		$tmp40 $const17 $tmp42 $tmp45 	%argrw{"wrrr"}
+	mul		noise_factor $tmp40 blur_intensity 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:76
+#         mask = 1.0 - smoothstep(0.8, 1.0 + noise_factor, ellipse);  
+	add		$tmp46 $const4 noise_factor 	%line{76} %argrw{"wrr"}
+	le		$tmp47 ellipse $tmp46 	%argrw{"wrr"}
+	if		$tmp47 79 80 	%argrw{"r"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:77
+#     } else {
+	add		$tmp49 $const4 noise_factor 	%line{77} %argrw{"wrr"}
+	smoothstep	$tmp48 $const27 $tmp49 ellipse 	%argrw{"wrrr"}
+	sub		mask $const4 $tmp48 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:79
+#     }
+	assign		mask $const2 	%line{79} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:82
+#         mask_rectangle = 1.0;
+	abs		$tmp50 x_rot 	%line{82} %argrw{"wr"}
+	le		$tmp51 $tmp50 a 	%argrw{"wrr"}
+	neq		$tmp52 $tmp51 $const1 	%argrw{"wrr"}
+	if		$tmp52 88 88 	%argrw{"r"}
+	abs		$tmp53 y_rot 	%argrw{"wr"}
+	le		$tmp54 $tmp53 b 	%argrw{"wrr"}
+	neq		$tmp55 $tmp54 $const1 	%argrw{"wrr"}
+	assign		$tmp52 $tmp55 	%argrw{"wr"}
+	if		$tmp52 90 91 	%argrw{"r"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:83
+#     } else {
+	assign		mask_rectangle $const4 	%line{83} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:85
+#     }
+	assign		mask_rectangle $const2 	%line{85} %argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:91
+#     float fp_center_y = center_y + (noise("perlin", seed + 11) - 0.5) * height;
+	add		$tmp57 seed $const24 	%line{91} %argrw{"wrr"}
+	noise		$tmp56 $const17 $tmp57 	%argrw{"wrr"}
+	sub		$tmp58 $tmp56 $const22 	%argrw{"wrr"}
+	mul		$tmp59 $tmp58 width 	%argrw{"wrr"}
+	add		fp_center_x center_x $tmp59 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:92
+# 
+	add		$tmp61 seed $const29 	%line{92} %argrw{"wrr"}
+	noise		$tmp60 $const17 $tmp61 	%argrw{"wrr"}
+	sub		$tmp62 $tmp60 $const22 	%argrw{"wrr"}
+	mul		$tmp63 $tmp62 height 	%argrw{"wrr"}
+	add		fp_center_y center_y $tmp63 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:95
+#     float dy = uv_y - fp_center_y;
+	sub		dx uv_x fp_center_x 	%line{95} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:96
+#     float dist = sqrt(dx * dx + dy * dy);
+	sub		dy uv_y fp_center_y 	%line{96} %argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:97
+# 
+	mul		$tmp64 dx dx 	%line{97} %argrw{"wrr"}
+	mul		$tmp65 dy dy 	%argrw{"wrr"}
+	add		$tmp66 $tmp64 $tmp65 	%argrw{"wrr"}
+	sqrt		dist $tmp66 	%argrw{"wr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:100
+# 
+	mul		$tmp68 dist wave_scale 	%line{100} %argrw{"wrr"}
+	sin		$tmp67 $tmp68 	%argrw{"wr"}
+	mul		$tmp69 $const22 $tmp67 	%argrw{"wrr"}
+	add		mask_fingerprint $const22 $tmp69 	%argrw{"wrr"}
+# D:\\Blender_projects\\Synth.Eye\\Synth_EYE_texture_develop\\Blender\\src\\osl\\RandomRectangle.osl:103
+#     
+	mul		mask_fingerprint mask_fingerprint mask_rectangle 	%line{103} %argrw{"wrr"}
+	end

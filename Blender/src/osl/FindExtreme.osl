@@ -1,0 +1,33 @@
+shader FindExtremeX(
+    float maskValue = 0,  // Hodnota masky z Color Ramp
+    point Pos = 0,        // Souřadnice bodu v objektovém prostoru
+    output int counting = 0,
+    output float minX = 1.0,  // Inicializace na maximum
+    output float maxX = -1.0, // Inicializace na minimum
+    output color outputMask = 0 // Upravená maska s červenými body
+) {
+    // Pouze body v bílé části masky bereme v úvahu pro hledání minX a maxX
+    if (maskValue > 0.5 && counting == 0) {
+        counting = counting + 1;
+        minX = min(minX, Pos[0]);
+        maxX = max(maxX, Pos[0]);
+    }
+
+
+
+
+
+    // Poloměr vizualizace kruhu kolem krajních bodů
+    float radius = 0.005; 
+
+    // Výpočet vzdálenosti od min/max X souřadnice
+    float distMin = abs(Pos[0] - minX);
+    float distMax = abs(Pos[0] - maxX);
+
+    // Pokud je bod v blízkosti minX nebo maxX, vykresli červeně
+    if ((maskValue > 0.5) && (distMin < radius || distMax < radius) && counting == 2) {
+        outputMask = color(1, 0, 0); // Červená pro označení bodu
+    } else {
+        outputMask = color(maskValue); // Jinak zachová původní masku
+    }
+}
