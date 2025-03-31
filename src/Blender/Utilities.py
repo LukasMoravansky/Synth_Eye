@@ -274,7 +274,7 @@ def Convert_Cam_To_Blender_Balance_Ratios(cam_balance_ratios: tp.List[float]) ->
             cam_balance_ratios[1]/max_cam_ratio,
             cam_balance_ratios[2]/max_cam_ratio)
 
-def Save_Synthetic_Data(file_path: str, partition_name: str, iteration: int, object_id: int, bounding_box: tp.List[tp.Union[int, float]], label_format: str, 
+def Save_Synthetic_Data(file_path: str, partition_name: str, iteration: int, cls_id: tp.List[int], bounding_box: tp.List[tp.List[tp.Union[int, float]]], label_format: str, 
                         image_format: str) -> None:
     """
     Description:
@@ -284,13 +284,13 @@ def Save_Synthetic_Data(file_path: str, partition_name: str, iteration: int, obj
     Args:
         (1) file_path [string]: The specified path of the file without extension (format).
         (2) partition_name [string]: The name of the partition of the dataset.
-        (2) iteration [int]: The current iteration of the process.
-        (3) object_id [int]: The identification number of the scanned object.
-        (4) bounding_box [Vector<float> 1x4]: The bounding box data (2D) in the specific format (YOLO, PASCAL_VOC, etc.)
-        (5) label_format [string]: The format of the saved file.
+        (3) iteration [int]: The current iteration of the process.
+        (4) cls_id [Vector<int>]: The identification number of the class or classes.
+        (5) bounding_box [Matrix<Vector<float> 1x4>]: The bounding box data (2D) in the specific format (YOLO, PASCAL_VOC, etc.)
+        (6) label_format [string]: The format of the saved file.
                                    Note:
                                     'pkl' : Pickle file; 'txt' : Text file.
-        (6) image_format [string]: The format of the saved image.
+        (7) image_format [string]: The format of the saved image.
                                    Note:
                                     'png', jpeg', etc.
     """
@@ -299,14 +299,17 @@ def Save_Synthetic_Data(file_path: str, partition_name: str, iteration: int, obj
     t_0 = time.time()
 
     # Save the label data (bounding box) to a file.
-    label_data = list(np.hstack((object_id, bounding_box))); label_data[0] = int(label_data[0])
-    File_IO.Save(f'{file_path}/labels/{partition_name}/Object_ID_{object_id}_{iteration}', label_data, label_format.lower(), ' ')
+    label_data = np.hstack((cls_id[:, np.newaxis], bounding_box))
+    label_data[:, 0] = label_data[:, 0].astype(int)
+    for _, label_data_i in enumerate(label_data):
+        formatted_data = f'{int(label_data_i[0])} ' + ' '.join(f'{x:.6f}' for x in label_data_i[1:])
+        File_IO.Save(f'{file_path}/labels/{partition_name}/Image_{iteration}', formatted_data.split(), label_format.lower(), ' ')
     
     # Ensure the compositing nodes are enabled in the scene.
     bpy.context.scene.use_nodes = True
 
     # Set the render file path.
-    bpy.context.scene.render.filepath = f'{file_path}/images/{partition_name}/Object_ID_{object_id}_{iteration}.{image_format.lower()}'
+    bpy.context.scene.render.filepath = f'{file_path}/images/{partition_name}/Image_{iteration}.{image_format.lower()}'
 
     # Check if the 'Composite' node exists in the node tree.
     if not bpy.context.scene.node_tree.nodes.get('Composite'):
@@ -317,6 +320,6 @@ def Save_Synthetic_Data(file_path: str, partition_name: str, iteration: int, obj
 
     # Display information.
     print(f'[INFO] The data in iteration {int(iteration)} was successfully saved to the folder {file_path}.')
-    print(f'[INFO]  - Image: /images/{partition_name}/Object_ID_{object_id}_{iteration}.{image_format.lower()}')
-    print(f'[INFO]  - Label: /labels/{partition_name}/Object_ID_{object_id}_{iteration}.txt')
+    print(f'[INFO]  - Image: /images/{partition_name}/Image_{iteration}.{image_format.lower()}')
+    print(f'[INFO]  - Label: /labels/{partition_name}/Image_{iteration}.txt')
     print(f'[INFO] Time: {(time.time() - t_0):0.05f} in seconds.')

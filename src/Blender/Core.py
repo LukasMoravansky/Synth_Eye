@@ -19,7 +19,7 @@
 ## =========================================================================== ## 
 # Author   : Roman Parak, Lukas Moravansky
 # Email    : Roman.Parak@outlook.com
-# Github   : https://github.com/rparak
+# Github   : https://github.com/rparak, 
 # File Name: Core.py
 ## =========================================================================== ##
 
@@ -566,7 +566,7 @@ class Object_Cls(object):
                 theta_tmp = np.random.uniform(rotation_item[1]['range'][0], rotation_item[1]['range'][1])
                 
                 # Use the generated value or convert it to binary based on the distribution flag.
-                theta[i] = theta_tmp if rotation_item[1]['Use_Distribution'] else int(theta_tmp > 0.5)
+                theta[i] = theta_tmp if rotation_item[1]['Use_Distribution'] else rotation_item[1]['range'][int(theta_tmp > 0.5)]
 
         # Create a homogeneous transformation matrix from random values.
         self.__T = self.__Obj_Param_Str.T.Rotation(theta, self.__axes_sequence_cfg).Translation(p)

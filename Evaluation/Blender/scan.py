@@ -53,6 +53,12 @@ def main():
     #   The main parameters of the object can be found at: ../Parameters/Object.py
     Object_Cls = Blender.Core.Object_Cls(Parameters.Object.Object_001_Str, 'ZYX')
 
+    # Turn on/off visibility of the object.
+    Object_Cls.Visibility(True)
+
+    # Return the object to the initialization position.
+    Object_Cls.Reset()
+
     # Initialize the material class for randomizing material properties and handling 
     # baking operations.
     Material_Cls = Blender.Core.Material_Cls('BakeTemp128')
@@ -63,12 +69,6 @@ def main():
     #       has not been generated for the material.
     #info = Material_Cls.Random('Area_Testing_Mat')
 
-    # Generate random camera and lighting properties.
-    #Object_Cls.Random()
-
-    # Turn on/off visibility of the object.
-    #Object_Cls.Visibility(True)
-    
     # Set the render file path.
     bpy.context.scene.render.filepath = f'{project_folder}/Data/Camera/Virtual/Image_{(CONST_INIT_INDEX):03}.png'
 
