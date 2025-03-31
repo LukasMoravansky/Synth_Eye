@@ -64,7 +64,7 @@ def main():
                                                                         Parameters.Scene.Basler_Cam_Str.Resolution, 'YOLO')
     
     # Check if the object's rotation along the Y-axis indicates it is flipped.
-    if bpy.data.objects[Object_Cls.Name].rotation_euler.y < Mathematics.CONST_MATH_HALF_PI:
+    if bpy.data.objects[Object_Cls.Name].rotation_euler.z < Mathematics.CONST_MATH_HALF_PI:
         if material_info_b_box == None:
             cls_id = np.array([0],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values())])
         else:
