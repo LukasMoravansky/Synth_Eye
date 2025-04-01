@@ -716,7 +716,7 @@ class Material_Cls:
             links.new(mix_shader.outputs[0], material_output.inputs['Surface'])
         
         print("Baking completed and original shader links restored.")
-    
+
     def __Get_Bounding_Box(self, image_name: str) -> tp.Optional[tp.Tuple[int, int, int, int]]:
         """
         Description:
@@ -733,7 +733,7 @@ class Material_Cls:
         if image is None:
             print(f'[WARNING] Image <{image_name}> not found.')
             return None
-    
+
         width, height = image.size
         pixels = np.array(image.pixels).reshape((height, width, 4))
     

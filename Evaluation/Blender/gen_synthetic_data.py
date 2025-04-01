@@ -70,8 +70,10 @@ def main():
         else:
             cls_id = np.array([0,2],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values()),
                                                                      material_info_b_box])
+            """
             Blender.Utilities.Save_Synthetic_Data(f'{project_folder}/Data/Dataset_v1/', 'train', f'{CONST_INIT_INDEX:03}', 
                                                   cls_id, b_box_2d, 'txt', 'png')
+            """
     else:
         cls_id = np.array([1],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values())])
 
