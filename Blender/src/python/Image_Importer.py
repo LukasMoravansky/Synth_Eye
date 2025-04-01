@@ -20,9 +20,14 @@ def rotate_resize_and_insert(image_name, new_width, new_height, center_x, center
 
     # Convert angle to radians
     angle = math.radians(angle_degrees)
+    # Check if the transformed image already exists and remove it
+    transformed_image_name = image_name + "_transformed"
+    existing_image = bpy.data.images.get(transformed_image_name)
+    if existing_image:
+        bpy.data.images.remove(existing_image)
 
     # Create a new image
-    new_image = bpy.data.images.new(name=image_name + "_transformed", width=new_width, height=new_height, alpha=True)
+    new_image = bpy.data.images.new(name=transformed_image_name, width=new_width, height=new_height, alpha=True)
     new_pixels = np.zeros((new_height, new_width, 4), dtype=np.float32)
 
     # Center of the old image in its own coordinates
@@ -65,4 +70,4 @@ def rotate_resize_and_insert(image_name, new_width, new_height, center_x, center
     print(f"Rotated and resized image '{new_image.name}' has been created.")
 
 # Run the function - set new dimensions, center, and rotation angle
-rotate_resize_and_insert("UV_Scaled_128", 1920, 1200, 512, 512, 10)
+rotate_resize_and_insert("UV_Scaled_128", 1920, 1200, 800, 400, 90)
