@@ -25,7 +25,6 @@ Description:
 CONST_INIT_INDEX = 1
 # The color of the bounding box of the object.
 CONST_OBJECT_BB_COLOR = [(255, 165, 0), (0, 165, 255), (80, 0, 255)]
-
 def main():
     """
     Description:
@@ -36,9 +35,39 @@ def main():
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
     # Load a raw image from a file.
-    image_data = cv2.imread(f'{project_folder}/Data/Dataset_v1/images/test/Image_{CONST_INIT_INDEX:03}.png')
+    image_data = cv2.imread(f'{project_folder}/Data/Dataset_v1/images/train/Image_{CONST_INIT_INDEX:03}.png')
     # Load a label (annotation) from a file.
-    label_data = File_IO.Load(f'{project_folder}/Data/Dataset_v1/labels/test/Image_{CONST_INIT_INDEX:03}', 'txt', ' ')
+    label_data = File_IO.Load(f'{project_folder}/Data/Dataset_v1/labels/train/Image_{CONST_INIT_INDEX:03}', 'txt', ' ')
+
+    """
+    data_1 = label_data[1::][0][1::]
+    res_1 = Utilities.General.Convert_Boundig_Box_Data('PASCAL_VOC', 'YOLO', {'x_min': data_1[0], 'y_min': data_1[2], 'x_max': data_1[1], 'y_max': data_1[3]}, 
+                                                       {'x': 1920, 'y': 1080})
+    print(data_1)
+    print(res_1)
+    """
+
+    data_2 = label_data[0::][0][1::]
+    res_2 = Utilities.General.Convert_Boundig_Box_Data('YOLO', 'PASCAL_VOC', {'x_c': data_2[0], 'y_c': data_2[1], 'width': data_2[2], 'height': data_2[3]}, 
+                                                       {'x': 1920, 'y': 1200})
+    bb_outer = list(res_2.values())
+    import numpy as np
+    bb_inner = label_data[1::][0][1::] 
+ 
+    # bb_outer = {'x_min': 687, 'y_min': 95, 'x_max': 1239, 'y_max': 743}
+    # bb_inner = {'x_min': 5, 'x_max': 48, 'y_min': 79, 'y_max': 127 }
+    data = np.array([0]*4, dtype=int)
+    # 85 = int(128/(60/40 - corner*2->0.5))
+    data = np.array([bb_outer[0] + ((bb_outer[2]-bb_outer[0])/83)*bb_inner[0], 
+                     bb_outer[3] - ((bb_outer[3]-bb_outer[1])/128)*bb_inner[2], 
+                     bb_outer[0] + ((bb_outer[2]-bb_outer[0])/83)*bb_inner[1], 
+                     bb_outer[3] - ((bb_outer[3]-bb_outer[1])/128)*bb_inner[3]], dtype=int)
+    
+    
+    data_tmp = Utilities.General.Convert_Boundig_Box_Data('PASCAL_VOC', 'YOLO', {'x_min': data[0], 'y_min': data[1], 'x_max': data[2], 'y_max': data[3]}, 
+                                                          {'x': 1920, 'y': 1200})
+
+    label_data[1::][0][1::] = list(data_tmp.values())
 
     for i, label_data_i in enumerate(label_data):
         # Create a bounding box from the label data.
