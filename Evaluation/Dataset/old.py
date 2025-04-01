@@ -22,7 +22,7 @@ Description:
 """
 # The identification number of the iteration to save the image. It starts with the number 1.
 #   1 = 'Image_001', 2 = 'Image_002', etc.
-CONST_INIT_INDEX = 1
+CONST_INIT_INDEX = 2
 # The color of the bounding box of the object.
 CONST_OBJECT_BB_COLOR = [(255, 165, 0), (0, 165, 255), (80, 0, 255)]
 def main():
@@ -57,11 +57,11 @@ def main():
     # bb_outer = {'x_min': 687, 'y_min': 95, 'x_max': 1239, 'y_max': 743}
     # bb_inner = {'x_min': 5, 'x_max': 48, 'y_min': 79, 'y_max': 127 }
     data = np.array([0]*4, dtype=int)
-    # 85 = int(128/(60/40 - corner*2->0.5))
+    # 85 = int((128/(60/40))-2*0.5)-1
     data = np.array([bb_outer[0] + ((bb_outer[2]-bb_outer[0])/83)*bb_inner[0], 
-                     bb_outer[3] - ((bb_outer[3]-bb_outer[1])/128)*bb_inner[2], 
+                     bb_outer[3] - ((bb_outer[3]-bb_outer[1])/127)*bb_inner[2], 
                      bb_outer[0] + ((bb_outer[2]-bb_outer[0])/83)*bb_inner[1], 
-                     bb_outer[3] - ((bb_outer[3]-bb_outer[1])/128)*bb_inner[3]], dtype=int)
+                     bb_outer[3] - ((bb_outer[3]-bb_outer[1])/127)*bb_inner[3]], dtype=int)
     
     
     data_tmp = Utilities.General.Convert_Boundig_Box_Data('PASCAL_VOC', 'YOLO', {'x_min': data[0], 'y_min': data[1], 'x_max': data[2], 'y_max': data[3]}, 

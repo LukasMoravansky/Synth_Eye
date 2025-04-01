@@ -26,7 +26,7 @@ Description:
 
 # The identification number of the iteration to save the image. It starts with the number 1.
 #   1 = 'Image_001', 2 = 'Image_002', etc.
-CONST_INIT_INDEX = 1
+CONST_INIT_INDEX = 0
 
 def main():
     """
@@ -54,20 +54,21 @@ def main():
     Object_Cls = Blender.Core.Object_Cls(Parameters.Object.Object_001_Str, 'ZYX')
 
     # Turn on/off visibility of the object.
-    Object_Cls.Visibility(True)
+    Object_Cls.Visibility(False)
 
     # Return the object to the initialization position.
     Object_Cls.Reset()
 
     # Initialize the material class for randomizing material properties and handling 
     # baking operations.
-    Material_Cls = Blender.Core.Material_Cls('BakeTemp128')
+    Material_Cls = Blender.Core.Material_Cls('UV_Scaled_128')
 
     # Generate random material properties and process bounding box detection.
     #   Note:
     #       If the returned information is None, it indicates that the bounding box 
     #       has not been generated for the material.
-    #info = Material_Cls.Random('Area_Testing_Mat')
+    #material_info_b_box = Material_Cls.Random('Area_Testing_Mat', list(Parameters.Scene.Basler_Cam_Str.Resolution.values()),
+    #                                          obj_is_flipped, obj_center_px, Object_Cls.T.Get_Rotation('ZYX')[2])
 
     # Set the render file path.
     bpy.context.scene.render.filepath = f'{project_folder}/Data/Camera/Virtual/Image_{(CONST_INIT_INDEX):03}.png'
