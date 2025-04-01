@@ -3,13 +3,11 @@ import random
 import os
 import numpy as np
 
-'''
-Call Get_Bounding_Box() method to randomize material and to get bounding box
-'''
+
 
 
 fingerprint_enabled = False
-bake_image_name = "BakeTemp128"
+bake_image_name = "UV_Scaled_128"
 
 def __generate_seed():
     '''
@@ -128,7 +126,7 @@ def __get_bounding_box(image_name):
     
     if min_x < max_x and min_y < max_y:
         # Unused verifiaction box
-        '''
+        
         box_color = (1, 0, 0, 1)  # Red color for bounding box
         for x in range(min_x, max_x + 1):
             pixels[min_y, x] = box_color
@@ -139,7 +137,7 @@ def __get_bounding_box(image_name):
         
         image.pixels = pixels.flatten()
         image.update()
-        '''
+        
         return min_x, max_x, min_y, max_y  
     else:
         print("No white area detected.")
@@ -157,9 +155,8 @@ def Get_Bounding_Box():
     randomize_material_values("Area_Testing_Mat")
     if fingerprint_enabled:
         __rewire_shader_and_bake("Area_Testing_Mat")
-        bounding_box = __get_bounding_box(bake_image_name)
+        bounding_box = __get_bounding_box(bake_image_name + "_transformed")
         print(f"Bounding box coordinates: {bounding_box}")
     randomize_material_values("Dirty_Mat")
     randomize_material_values("Hole_Mill_Mat")
     return bounding_box
-
