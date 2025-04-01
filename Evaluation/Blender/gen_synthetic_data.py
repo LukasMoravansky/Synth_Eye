@@ -21,11 +21,30 @@ import Utilities.General
 #   ../Transformation/Utilities
 import Transformation.Utilities.Mathematics as Mathematics
 
-# The identification number of the iteration to save the image. It starts with the number 1.
-#   1 = 'Image_001', 2 = 'Image_002', etc.
-CONST_INIT_INDEX = 1
+# Number of synthetic data to be generated.
+CONST_NUM_OF_GEN_DATA = 500
+# Partition the dataset into training, validation, and test sets in percentages.
+#   Note:
+#       The sum of the values in the partitions must equal 100.
+CONST_PARTITION_DATASET = {'train': 80, 'valid': 20, 'test': 0}
+# The initial number of the iteration to save the image.
+#   0 - Data storage starts from 1 (1 = 'Image_001', 2 = 'Image_002', etc.)
+CONST_INIT_INDEX = 0
 
 def main():
+    """
+    Description:
+        The main program that generates data from Blender. The main parameters of the generation can be found 
+        in the constants at the top.
+
+        Note 1:
+            Synthetic data consists of an image and a corresponding label, which is defined by a bounding box 
+            around the scanned object.
+
+        Note 2:
+            The data generation process only applies to the 2D area of view.
+    """
+        
     # Locate the path to the project folder.
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
     
@@ -42,47 +61,77 @@ def main():
     
     # Turn on/off visibility of the object.
     Object_Cls.Visibility(True)
-
-    # Generate a random position of the object.
-    Object_Cls.Random()
     
     # Initialize the material class for randomizing material properties and handling 
     # baking operations.
-    Material_Cls = Blender.Core.Material_Cls('BakeTemp128')
+    Material_Cls = Blender.Core.Material_Cls('UV_Scaled_128')
 
-    # Generate random material properties and process bounding box detection.
-    #   Note:
-    #       If the returned information is None, it indicates that the bounding box 
-    #       has not been generated for the material.
-    material_info_b_box = Material_Cls.Random('Area_Testing_Mat')
-    
-    # Generate random camera properties.
-    Camera_Cls.Random()
-    
-    # Get the 2D coordinates of the bounding box from the rendered object scanned by the camera.
-    bounding_box_2d = Utilities.General.Get_2D_Coordinates_Bounding_Box(Object_Cls.Vertices, Camera_Cls.P(), 
-                                                                        Parameters.Scene.Basler_Cam_Str.Resolution, 'YOLO')
-    
-    # Check if the object's rotation along the Y-axis indicates it is flipped.
-    if bpy.data.objects[Object_Cls.Name].rotation_euler.y < Mathematics.CONST_MATH_HALF_PI:
-        if material_info_b_box == None:
-            cls_id = np.array([0],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values())])
-        else:
-            cls_id = np.array([0,2],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values()),
-                                                                     material_info_b_box])
-            Blender.Utilities.Save_Synthetic_Data(f'{project_folder}/Data/Dataset_v1/', 'train', f'{CONST_INIT_INDEX:03}', 
-                                                  cls_id, b_box_2d, 'txt', 'png')
-    else:
-        cls_id = np.array([1],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values())])
+    try:
+        assert np.sum(list(CONST_PARTITION_DATASET.values())) == 100
 
-    print(cls_id)
-    print(b_box_2d)
-    """ 
-    # Save the image with the corresponding label.
-    Blender.Utilities.Save_Synthetic_Data(f'{project_folder}/Data/Dataset_v1/', 'train', f'{CONST_INIT_INDEX:03}', 
-                                          cls_id, b_box_2d, 'txt', 'png')                                    
-    """
+        # Generates data up to the desired maximum number of iterations, which is given by the constant {CONST_NUM_OF_GEN_DATA}.
+        i = 0; id_partition = 0; percentage_stored_data = 0
+        while CONST_NUM_OF_GEN_DATA > i:
+            # Generate a random position of the object.
+            Object_Cls.Random()
+
+            #   ....
+            P_extended = np.vstack((Camera_Cls.P(), np.ones(4)))
+            obj_center_px_tmp = (P_extended @ np.hstack((np.array(Object_Cls.T.p.all()), 1)))[0:-1]
+            obj_center_px = np.array(obj_center_px_tmp/obj_center_px_tmp[-1], dtype=int)[0:-1]
+
+            # ...
+            obj_is_flipped = not np.abs(Object_Cls.T.Get_Rotation('ZYX')[1]) < Mathematics.CONST_MATH_HALF_PI
+
+            # Generate random material properties and process bounding box detection.
+            #   Note:
+            #       If the returned information is None, it indicates that the bounding box 
+            #       has not been generated for the material.
+            material_info_b_box = Material_Cls.Random('Area_Testing_Mat', list(Parameters.Scene.Basler_Cam_Str.Resolution.values()),
+                                                    obj_is_flipped, obj_center_px, Object_Cls.T.Get_Rotation('ZYX')[2])
+            
+            # Generate random camera properties.
+            Camera_Cls.Random()
+
+            # Get the 2D coordinates of the bounding box from the rendered object scanned by the camera.
+            bounding_box_2d = Utilities.General.Get_2D_Coordinates_Bounding_Box(Object_Cls.Vertices, Camera_Cls.P(), 
+                                                                                Parameters.Scene.Basler_Cam_Str.Resolution, 'YOLO')
+            
+            # Check if the object's rotation along the Y-axis indicates it is flipped.
+            if np.abs(Object_Cls.T.Get_Rotation('ZYX')[1]) < Mathematics.CONST_MATH_HALF_PI:
+                if material_info_b_box == None:
+                    cls_id = np.array([0],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values())])
+                else:
+                    bb_fingerprint = Utilities.General.Convert_Boundig_Box_Data('PASCAL_VOC', 'YOLO', {'x_min': material_info_b_box[0], 'y_min': material_info_b_box[2], 
+                                                                                                    'x_max': material_info_b_box[1], 'y_max': material_info_b_box[3]}, 
+                                                                                                    Parameters.Scene.Basler_Cam_Str.Resolution)
+                    cls_id = np.array([0,2],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values()),
+                                                                            list(bb_fingerprint.values())])
+            else:
+                cls_id = np.array([1],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values())])
+
+
+            # Calculate the current percentage of stored data.
+            if percentage_stored_data == (CONST_NUM_OF_GEN_DATA * (list(CONST_PARTITION_DATASET.values())[id_partition]/100)):
+                id_partition += 1; percentage_stored_data = 0
+                if list(CONST_PARTITION_DATASET.values())[id_partition] == 0:
+                    id_partition += 1
+
+            # Get the name of the partition where the data will be stored.
+            partition_name = list(CONST_PARTITION_DATASET.keys())[id_partition]
+
+            # Save the image with the corresponding label.
+            Blender.Utilities.Save_Synthetic_Data(f'{project_folder}/Data/Dataset_v1/', partition_name, f'{CONST_INIT_INDEX + (i + 1):03}', 
+                                            cls_id, b_box_2d, 'txt', 'png')  
+
+            i += 1; percentage_stored_data += 1                                  
     
+    except AssertionError as error:
+        print(f'[ERROR] Information: {error}')
+        print('[ERROR] The sum of the partition dataset must be 100.')
+
+    print('[INFO] The data generation has been successfully completed.')
+
     # Release the classes.
     del Camera_Cls, Object_Cls, Material_Cls
 

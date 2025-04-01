@@ -598,7 +598,7 @@ class Material_Cls:
         # Initializes the material class with the specified bake image name.
         self.bake_image_name = bake_image_name
         self.fingerprint_enabled = False
-    
+
     def __Gen_Random_Materials(self, material_name: str) -> None:
         """
         Description:
@@ -655,7 +655,6 @@ class Material_Cls:
         elif node.label == "enable":
             # Randomly enable or disable the fingerprint on the material and print the result.
             self.fingerprint_enabled = np.random.normal(0.5, 0.2) > 0.5
-            print(f'[INFO] Fingerprint allowed on the material: {self.fingerprint_enabled}')
             node.outputs[0].default_value = self.fingerprint_enabled
     
     def __Modify_Shader(self, material_name: str) -> None:
@@ -716,7 +715,84 @@ class Material_Cls:
             links.new(mix_shader.outputs[0], material_output.inputs['Surface'])
         
         print("Baking completed and original shader links restored.")
-    
+
+    def __Transform(self, image_name: str, resolution: tp.Tuple[int, int], p: tp.Tuple[int, int], angle_z: float):
+        """
+        Transforms the image by rotating and resizing it, then stores the result in a new image.
+
+        Args:
+            image_name [string]: The name of the image to transform.
+            resolution [tuple(int, int)]: The resolution of the transformed image.
+            p [tuple(int, int)]: The position (x, y) to center the transformation.
+            angle_z [float]: The angle in radians for rotation along the Z-axis.
+
+        Returns:
+            None
+        """
+        # Load the original image
+        image = bpy.data.images.get(image_name)
+        if not image:
+            print(f"Image '{image_name}' not found!")
+            return
+
+        width = resolution[0]; height = resolution[1]
+        old_width, old_height = image.size
+        pixels = np.array(image.pixels[:]).reshape((old_height, old_width, 4))  # RGBA
+
+        scale_factor = min(552 / old_width, 648 / old_height)
+
+        # Check if the transformed image already exists and remove it
+        transformed_image_name = image_name + "_transformed"
+        existing_image = bpy.data.images.get(transformed_image_name)
+        if existing_image:
+            bpy.data.images.remove(existing_image)
+
+        # Create a new image
+        new_image = bpy.data.images.new(name=transformed_image_name, width=width, height=height, alpha=True)
+        new_pixels = np.zeros((height, width, 4), dtype=np.float32)
+
+        # Center of the old image in its own coordinates
+        cx_old, cy_old = old_width / 2, old_height / 2
+
+        # Center of the transformed image on the new canvas
+        cx_new, cy_new = p[0], p[1]  
+
+        # Iterate through each pixel in the new image to compute the source color
+        for y in range(height):
+            for x in range(width):
+                # Transform coordinates (reverse rotation and scaling)
+                dx = (x - cx_new) / scale_factor
+                dy = (y - cy_new) / scale_factor
+                src_x = cx_old + dx * np.cos(angle_z) - dy * np.sin(angle_z)
+                src_y = cy_old + dx * np.sin(angle_z) + dy * np.cos(angle_z)
+
+                # Flip the y-coordinate to adjust for the different origins
+                src_y = old_height - src_y - 1
+
+                # Check if the coordinates are inside the original image
+                if 0 <= src_x < old_width - 1 and 0 <= src_y < old_height - 1:
+                    # Bilinear interpolation
+                    x0, y0 = int(src_x), int(src_y)
+                    x1, y1 = min(x0 + 1, old_width - 1), min(y0 + 1, old_height - 1)
+                    dx, dy = src_x - x0, src_y - y0
+
+                    pixel00 = pixels[y0, x0]
+                    pixel01 = pixels[y0, x1]
+                    pixel10 = pixels[y1, x0]
+                    pixel11 = pixels[y1, x1]
+
+                    new_pixel = (pixel00 * (1 - dx) * (1 - dy) +
+                                 pixel01 * dx * (1 - dy) +
+                                 pixel10 * (1 - dx) * dy +
+                                 pixel11 * dx * dy)
+
+                    new_pixels[y, x] = new_pixel  # Store the interpolated pixel
+
+        # Write new pixels to Blender
+        new_image.pixels = new_pixels.ravel().tolist()  # Blender requires a list, not a NumPy array
+        new_image.file_format = 'PNG'  # Set the file format
+        print(f"Transformed image '{new_image.name}' has been created.")
+
     def __Get_Bounding_Box(self, image_name: str) -> tp.Optional[tp.Tuple[int, int, int, int]]:
         """
         Description:
@@ -733,7 +809,7 @@ class Material_Cls:
         if image is None:
             print(f'[WARNING] Image <{image_name}> not found.')
             return None
-    
+
         width, height = image.size
         pixels = np.array(image.pixels).reshape((height, width, 4))
     
@@ -750,7 +826,8 @@ class Material_Cls:
     
         return min_x, max_x, min_y, max_y  
     
-    def Random(self, material_name: str) -> tp.Optional[tp.Tuple[int, int, int, int]]:
+    def Random(self, material_name: str, resolution: tp.Tuple[int, int], obj_is_flipped: bool, p: tp.Tuple[int, int], 
+               angle_z: float) -> tp.Optional[tp.Tuple[int, int, int, int]]:
         """
         Description:
             Function to randomize material properties and process bounding box detection.
@@ -768,9 +845,10 @@ class Material_Cls:
         self.__Gen_Random_Materials(material_name)
         
         # If fingerprinting is enabled, modify the shader and get the bounding box.
-        if self.fingerprint_enabled:
+        if self.fingerprint_enabled == True and obj_is_flipped == False:
             self.__Modify_Shader(material_name)
-            bounding_box = self.__Get_Bounding_Box(self.bake_image_name)
+            self.__Transform(self.bake_image_name, resolution, p, angle_z)
+            bounding_box = self.__Get_Bounding_Box(f'{self.bake_image_name}_transformed')
     
         # Randomize materials for other predefined materials.
         for mat_name in ['Dirty_Mat', 'Hole_Mill_Mat']:
