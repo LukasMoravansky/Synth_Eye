@@ -141,6 +141,8 @@ def Draw_Bounding_Box(image: tp.List[tp.List[int]], bounding_box_properties: tp.
         # the transparency and translucency of the images.
         image_out = cv2.addWeighted(image_out, alpha, image, 1 - alpha, 0)
 
+    test_var = 8.0
+
     # Draw a modified rectangle around the object.
     #  --          --
     # |              |    
@@ -148,48 +150,48 @@ def Draw_Bounding_Box(image: tp.List[tp.List[int]], bounding_box_properties: tp.
     # |              |
     #  --          --
     #   Corner: Left Top
-    cv2.line(image_out, (x_min, y_min), (x_min + int(box_w/4.0), y_min), Color, line_width)
-    cv2.line(image_out, (x_min, y_min), (x_min, y_min + int(box_h/4.0)), Color, line_width)
+    cv2.line(image_out, (x_min, y_min), (x_min + int(box_w/test_var), y_min), Color, line_width)
+    cv2.line(image_out, (x_min, y_min), (x_min, y_min + int(box_h/test_var)), Color, line_width)
     #   Corner: Left Bottom
-    cv2.line(image_out, (x_min, y_max), (x_min + int(box_w/4.0), y_max), Color, line_width)
-    cv2.line(image_out, (x_min, y_max), (x_min, y_max - int(box_h/4.0)), Color, line_width)
+    cv2.line(image_out, (x_min, y_max), (x_min + int(box_w/test_var), y_max), Color, line_width)
+    cv2.line(image_out, (x_min, y_max), (x_min, y_max - int(box_h/test_var)), Color, line_width)
     #   Corner: Right Top
-    cv2.line(image_out, (x_max, y_min), (x_max - int(box_w/4.0), y_min), Color, line_width)
-    cv2.line(image_out, (x_max, y_min), (x_max, y_min + int(box_h/4.0)), Color, line_width)
+    cv2.line(image_out, (x_max, y_min), (x_max - int(box_w/test_var), y_min), Color, line_width)
+    cv2.line(image_out, (x_max, y_min), (x_max, y_min + int(box_h/test_var)), Color, line_width)
     #   Corner: Right Bottom
-    cv2.line(image_out, (x_max, y_max), (x_max - int(box_w/4.0), y_max), Color, line_width)
-    cv2.line(image_out, (x_max, y_max), (x_max, y_max - int(box_h/4.0)), Color, line_width)
+    cv2.line(image_out, (x_max, y_max), (x_max - int(box_w/test_var), y_max), Color, line_width)
+    cv2.line(image_out, (x_max, y_max), (x_max, y_max - int(box_h/test_var)), Color, line_width)
 
     if show_info == True:
         # Additional rectangles that bounds information about the object.
-        cv2.rectangle(image_out, (x_min, y_min - (int(box_h/4.0) + offset)), (x_min + box_w, y_min - offset), 
+        cv2.rectangle(image_out, (x_min, y_min - (int(box_h/test_var) + offset)), (x_min + box_w, y_min - offset), 
                         Color, -1)
-        cv2.rectangle(image_out, (x_max + offset, y_min - (int(box_h/4.0) + offset)), (x_max + offset + int(box_w/2.0), y_min - offset), 
+        cv2.rectangle(image_out, (x_max + offset, y_min - (int(box_h/test_var) + offset)), (x_max + offset + int(box_w/2.0), y_min - offset), 
                         Color, -1)
         
         # The font of the text shown in the image.
         txt_font = cv2.FONT_HERSHEY_SIMPLEX
 
         # A rectangle with the name of the object.
-        cv2.rectangle(image_out, (x_min, y_min - (int(box_h/4.0) + offset)), (x_min + box_w, y_min - offset), 
+        cv2.rectangle(image_out, (x_min, y_min - (int(box_h/test_var) + offset)), (x_min + box_w, y_min - offset), 
                       Color, line_width)
         
         #   Get the text boundary with the object name.
         #       Parameters: [0.5: font_scale, 1: thickness]
-        txt_name_boundary = cv2.getTextSize(bounding_box_properties['Name'], txt_font, 0.55, int(line_width/2))[0]
+        txt_name_boundary = cv2.getTextSize(bounding_box_properties['Name'], txt_font, 0.95, int(line_width/2))[0]
 
         # Get the coefficient of the displacement difference between the rectangles.
         #   Rectangle Id: Name
-        f = np.array([box_w/2.0, int(box_h/4.0)/2]) - np.array([txt_name_boundary[0]/2, txt_name_boundary[1]/2])
-        cv2.putText(image_out, bounding_box_properties['Name'], (x_min + int(f[0]), (y_min - offset) - int(f[1])), txt_font, 0.55, (0, 0, 0), int(line_width/2), cv2.LINE_AA)
+        f = np.array([box_w/2.0, int(box_h/test_var)/2]) - np.array([txt_name_boundary[0]/2, txt_name_boundary[1]/2])
+        cv2.putText(image_out, bounding_box_properties['Name'], (x_min + int(f[0]), (y_min - offset) - int(f[1])), txt_font, 0.95, (0, 0, 0), int(line_width/2), cv2.LINE_AA)
 
         # A rectangle indicating the precision of the match.
-        cv2.rectangle(image_out, (x_max + offset, y_min - (int(box_h/4.0) + offset)), (x_max + offset + int(box_w/2.0), y_min - offset), 
+        cv2.rectangle(image_out, (x_max + offset, y_min - (int(box_h/test_var) + offset)), (x_max + offset + int(box_w/2.0), y_min - offset), 
                       Color, line_width)
         # For precision, we use the same method as for the name.
-        txt_name_boundary = cv2.getTextSize(bounding_box_properties['Precision'], txt_font, 0.55, int(line_width/2))[0]
-        f = np.array([int(box_w/2.0)/2.0, int(box_h/4.0)/2]) - np.array([txt_name_boundary[0]/2, txt_name_boundary[1]/2])
-        cv2.putText(image_out, bounding_box_properties['Precision'], (x_max + offset + int(f[0]), (y_min - offset) - int(f[1])), txt_font, 0.55, (0, 0, 0), int(line_width/2), cv2.LINE_AA)
+        txt_name_boundary = cv2.getTextSize(bounding_box_properties['Precision'], txt_font, 0.95, int(line_width/2))[0]
+        f = np.array([int(box_w/2.0)/2.0, int(box_h/test_var)/2]) - np.array([txt_name_boundary[0]/2, txt_name_boundary[1]/2])
+        cv2.putText(image_out, bounding_box_properties['Precision'], (x_max + offset + int(f[0]), (y_min - offset) - int(f[1])), txt_font, 0.95, (0, 0, 0), int(line_width/2), cv2.LINE_AA)
 
     return image_out
 

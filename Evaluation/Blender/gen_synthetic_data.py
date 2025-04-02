@@ -21,8 +21,10 @@ import Utilities.General
 #   ../Transformation/Utilities
 import Transformation.Utilities.Mathematics as Mathematics
 
+import time
+
 # Number of synthetic data to be generated.
-CONST_NUM_OF_GEN_DATA = 500
+CONST_NUM_OF_GEN_DATA = 300
 # Partition the dataset into training, validation, and test sets in percentages.
 #   Note:
 #       The sum of the values in the partitions must equal 100.
@@ -81,24 +83,27 @@ def main():
             obj_center_px = np.array(obj_center_px_tmp/obj_center_px_tmp[-1], dtype=int)[0:-1]
 
             # ...
-            obj_is_flipped = not np.abs(Object_Cls.T.Get_Rotation('ZYX')[1]) < Mathematics.CONST_MATH_HALF_PI
+            obj_is_flipped = not (np.abs(bpy.data.objects[Object_Cls.Name].rotation_euler.y) < Mathematics.CONST_MATH_HALF_PI)
+
+            # Generate random camera properties.
+            Camera_Cls.Random()
 
             # Generate random material properties and process bounding box detection.
             #   Note:
             #       If the returned information is None, it indicates that the bounding box 
             #       has not been generated for the material.
             material_info_b_box = Material_Cls.Random('Area_Testing_Mat', list(Parameters.Scene.Basler_Cam_Str.Resolution.values()),
-                                                    obj_is_flipped, obj_center_px, Object_Cls.T.Get_Rotation('ZYX')[2])
-            
-            # Generate random camera properties.
-            Camera_Cls.Random()
+                                                      obj_is_flipped, obj_center_px, Object_Cls.T.Get_Rotation('ZYX')[2])
+
+            # ...
+            time.sleep(10)
 
             # Get the 2D coordinates of the bounding box from the rendered object scanned by the camera.
             bounding_box_2d = Utilities.General.Get_2D_Coordinates_Bounding_Box(Object_Cls.Vertices, Camera_Cls.P(), 
                                                                                 Parameters.Scene.Basler_Cam_Str.Resolution, 'YOLO')
-            
+
             # Check if the object's rotation along the Y-axis indicates it is flipped.
-            if np.abs(Object_Cls.T.Get_Rotation('ZYX')[1]) < Mathematics.CONST_MATH_HALF_PI:
+            if not obj_is_flipped:
                 if material_info_b_box == None:
                     cls_id = np.array([0],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values())])
                 else:
@@ -109,7 +114,6 @@ def main():
                                                                             list(bb_fingerprint.values())])
             else:
                 cls_id = np.array([1],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values())])
-
 
             # Calculate the current percentage of stored data.
             if percentage_stored_data == (CONST_NUM_OF_GEN_DATA * (list(CONST_PARTITION_DATASET.values())[id_partition]/100)):

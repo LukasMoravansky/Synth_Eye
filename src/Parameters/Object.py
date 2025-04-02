@@ -90,7 +90,7 @@ Description:
 Object_001_Str = Object_Parameters_Str(Name='Object_001', Id=0)
 
 # Homogeneous transformation matrix {T} of the object.
-Object_001_Str.T = Transformation.Homogeneous_Transformation_Matrix_Cls(None, np.float64).Rotation([0.0, 0.0, 0.0], 
+Object_001_Str.T = Transformation.Homogeneous_Transformation_Matrix_Cls(None, np.float64).Rotation([0.0, Mathematics.CONST_MATH_PI, 0.0], 
                                                                                           'ZYX').Translation([0.0075, 0.0, 0.004])
 
 # Parameters of the object bounding box.
@@ -99,6 +99,6 @@ Object_001_Str.Bounding_Box = Primitives.Box_Cls([0.0, 0.0, 0.0], [0.04, 0.06, 0
 # Position and rotation limits of the object.
 Object_001_Str.Limit.Position = {'x': {'range': [-0.045, 0.045], 'Use_Distribution': True}, 
                                  'y': {'range': [-0.015, 0.015], 'Use_Distribution': True}, 'z': None}
-Object_001_Str.Limit.Rotation = {'x': None, 'y': {'range': [0.0, Mathematics.CONST_MATH_PI], 'Use_Distribution': False}, 
+Object_001_Str.Limit.Rotation = {'x': None, 'y': None, 
                                  'z': {'range': [-Mathematics.CONST_MATH_HALF_PI, Mathematics.CONST_MATH_HALF_PI], 'Use_Distribution': True}}
 
