@@ -90,7 +90,8 @@ Description:
 Object_001_Str = Object_Parameters_Str(Name='Object_001', Id=0)
 
 # Homogeneous transformation matrix {T} of the object.
-Object_001_Str.T = Transformation.Homogeneous_Transformation_Matrix_Cls(None, np.float64).Rotation([0.0, Mathematics.CONST_MATH_PI, 0.0], 
+# Mathematics.CONST_MATH_PI
+Object_001_Str.T = Transformation.Homogeneous_Transformation_Matrix_Cls(None, np.float64).Rotation([0.0, 0.0, 0.0], 
                                                                                           'ZYX').Translation([0.0075, 0.0, 0.004])
 
 # Parameters of the object bounding box.

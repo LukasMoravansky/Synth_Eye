@@ -53,7 +53,7 @@ def main():
         for i, (class_id_i, b_box_i, conf_i) in enumerate(zip(class_id, b_box, conf)):
             if class_id_i == 2 and conf_i < 0.9:
                 # Create a bounding box from the label data.
-                Bounding_Box_Properties = {'Name': f'{CONST_OBJECT_NAME[int(class_id_i)]}_{i}', 'Precision': f'{str(conf_i)[0:5]}', 
+                Bounding_Box_Properties = {'Name': f'{CONST_OBJECT_NAME[int(class_id_i)]}', 'Precision': f'{str(conf_i)[0:5]}', 
                                            'Data': {'x_c': b_box_i[0], 'y_c': b_box_i[1], 'width': b_box_i[2], 'height': b_box_i[3]}}
                 
                 # Draw the bounding box of the object with additional dependencies (name, precision, etc.) in 
