@@ -8,8 +8,8 @@ Call Get_Bounding_Box() method to randomize material and to get bounding box
 '''
 
 
-fingerprint_enabled = False
-bake_image_name = "BakeTemp128"
+fingerprint_enabled = True
+bake_image_name = "UV_Scaled_128"
 
 def __generate_seed():
     '''
