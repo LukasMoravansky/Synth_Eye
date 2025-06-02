@@ -134,7 +134,7 @@ class Camera_Cls(object):
         
         # Enable and set the depth of field parameters (focus distance and DoF usage).
         bpy.data.cameras[self.__Cam_Param_Str.Name].dof.use_dof = self.__Cam_Param_Str.Use_DoF
-        bpy.data.cameras[self.__Cam_Param_Str.Name].dof.focus_distance = self.__Cam_Param_Str.Focus_Distance
+        bpy.data.cameras[self.__Cam_Param_Str.Name].dof.focus_distance = self.__Cam_Param_Str.Focus_Distance - 0.02
         
         # Set the resolution of the rendered image based on the given percentage and pixel dimensions.
         bpy.context.scene.render.resolution_percentage = self.__Cam_Param_Str.Resolution['Percentage']
@@ -160,6 +160,12 @@ class Camera_Cls(object):
         #       The shutter value represents the fraction of a frame during which the virtual 
         #       shutter remains open.
         bpy.context.scene.render.motion_blur_shutter = Mathematics.Clamp(__exposure_t_sec * float(self.__Cam_Param_Str.FPS), 0.0, 1.0)
+
+        # Set Cycles as the render engine.
+        bpy.context.scene.render.engine = 'CYCLES'
+        
+        # Set view transform to Standard (linear).
+        bpy.context.scene.view_settings.view_transform = 'Standard'
 
         # Simulate white balance adjustments using Blender's color management settings.
         bpy.context.scene.view_settings.look = 'None'
@@ -192,9 +198,12 @@ class Camera_Cls(object):
         
         # Set the rendering device to GPU for faster rendering.
         bpy.context.scene.cycles.device = 'CPU'
-        
-        # Set Cycles as the render engine.
-        bpy.context.scene.render.engine = 'CYCLES'
+
+        # Enable pixel filter and set it to Gaussian.
+        bpy.context.scene.cycles.pixel_filter_type = 'GAUSSIAN'
+
+        # Set the width of the Gaussian filter.
+        bpy.context.scene.cycles.filter_size = 1.5
 
         # Enable Adaptive Sampling.
         bpy.context.scene.cycles.use_adaptive_sampling = True
@@ -716,6 +725,25 @@ class Material_Cls:
         
         print("Baking completed and original shader links restored.")
 
+    @staticmethod
+    def draw_red_dot(image_array: np.ndarray, x: int, y: int, radius: int = 3):
+        """
+        Draw a red dot (circle) on an image array (RGBA) at position (x, y).
+        
+        Args:
+            image_array: np.ndarray of shape (H, W, 4)
+            x, y: center of the dot
+            radius: radius of the red dot in pixels
+        """
+        height, width, _ = image_array.shape
+
+        for j in range(y - radius, y + radius + 1):
+            for i in range(x - radius, x + radius + 1):
+                if 0 <= i < width and 0 <= j < height:
+                    # Use circle equation
+                    if (i - x)**2 + (j - y)**2 <= radius**2:
+                        image_array[j, i] = np.array([1.0, 0.0, 0.0, 1.0])  # Red RGBA
+
     def __Transform(self, image_name: str, resolution: tp.Tuple[int, int], p: tp.Tuple[int, int], angle_z: float):
         """
         Transforms the image by rotating and resizing it, then stores the result in a new image.
@@ -739,7 +767,11 @@ class Material_Cls:
         old_width, old_height = image.size
         pixels = np.array(image.pixels[:]).reshape((old_height, old_width, 4))  # RGBA
 
-        scale_factor = min(552 / old_width, 648 / old_height)
+        # obj_w=39 [mm], obj_h=60 [mm]
+        # int(1246.652773834147 - 829.7033093317601)
+        # int(917.4075664550235 - 291.0482477383347)
+        # {'x_min': 829.7033093317601, 'y_min': 291.0482477383347, 'x_max': 1246.652773834147, 'y_max': 917.4075664550235}
+        a = 406+6; b = 626+6
 
         # Check if the transformed image already exists and remove it
         transformed_image_name = image_name + "_transformed"
@@ -755,19 +787,21 @@ class Material_Cls:
         cx_old, cy_old = old_width / 2, old_height / 2
 
         # Center of the transformed image on the new canvas
-        cx_new, cy_new = p[0], p[1]  
+        cx_new, cy_new = p[0], height - p[1]
 
         # Iterate through each pixel in the new image to compute the source color
         for y in range(height):
             for x in range(width):
-                # Transform coordinates (reverse rotation and scaling)
-                dx = (x - cx_new) / scale_factor
-                dy = (y - cy_new) / scale_factor
+                # Coordinates relative to target center
+                dx = (x - cx_new) / (a / old_width)
+                dy = (y - cy_new) / (b / old_height)
+
+                # Inverse rotation
                 src_x = cx_old + dx * np.cos(angle_z) - dy * np.sin(angle_z)
                 src_y = cy_old + dx * np.sin(angle_z) + dy * np.cos(angle_z)
 
-                # Flip the y-coordinate to adjust for the different origins
-                src_y = old_height - src_y - 1
+                # ...
+                src_x -= 1
 
                 # Check if the coordinates are inside the original image
                 if 0 <= src_x < old_width - 1 and 0 <= src_y < old_height - 1:
@@ -786,11 +820,15 @@ class Material_Cls:
                                  pixel10 * (1 - dx) * dy +
                                  pixel11 * dx * dy)
 
-                    new_pixels[y, x] = new_pixel  # Store the interpolated pixel
+                    # Store the interpolated pixel
+                    new_pixels[y, x] = new_pixel
+
+        # Optional debug marker at the transformation center
+        #self.draw_red_dot(new_pixels, p[0], p[1], radius=1)
 
         # Write new pixels to Blender
-        new_image.pixels = new_pixels.ravel().tolist()  # Blender requires a list, not a NumPy array
-        new_image.file_format = 'PNG'  # Set the file format
+        new_image.pixels = new_pixels.ravel().tolist()
+        new_image.file_format = 'PNG'
         print(f"Transformed image '{new_image.name}' has been created.")
 
     def __Get_Bounding_Box(self, image_name: str) -> tp.Optional[tp.Tuple[int, int, int, int]]:
@@ -812,19 +850,36 @@ class Material_Cls:
 
         width, height = image.size
         pixels = np.array(image.pixels).reshape((height, width, 4))
-    
-        white_threshold = 0.5
+
+        white_threshold = 0.01
         mask = (pixels[..., :3] > white_threshold).all(axis=-1)
         coords = np.argwhere(mask)
-    
+
         if coords.size == 0:
             print('[INFO] No white area detected.')
             return None
-    
+
+        # Extract bounding box in image coordinates (top-left origin)
         min_y, min_x = coords.min(axis=0)
         max_y, max_x = coords.max(axis=0)
-    
-        return min_x, max_x, min_y, max_y  
+
+        # Optional: draw bounding box in red
+        box_color = (1, 0, 0, 1)
+        for x in range(min_x, max_x + 1):
+            pixels[min_y, x] = box_color
+            pixels[max_y, x] = box_color
+        for y in range(min_y, max_y + 1):
+            pixels[y, min_x] = box_color
+            pixels[y, max_x] = box_color
+
+        image.pixels = pixels.flatten()
+        image.update()
+
+        # Flip Y for bottom-left origin (e.g., for texture coordinates)
+        converted_min_y = height - max_y
+        converted_max_y = height - min_y
+
+        return min_x, max_x, converted_min_y, converted_max_y
     
     def Random(self, material_name: str, resolution: tp.Tuple[int, int], obj_is_flipped: bool, p: tp.Tuple[int, int], 
                angle_z: float) -> tp.Optional[tp.Tuple[int, int, int, int]]:
@@ -847,7 +902,7 @@ class Material_Cls:
         # If fingerprinting is enabled, modify the shader and get the bounding box.
         if self.fingerprint_enabled == True and obj_is_flipped == False:
             self.__Modify_Shader(material_name)
-            self.__Transform(self.bake_image_name, resolution, p, angle_z)
+            self.__Transform(self.bake_image_name, resolution, p, (-1)*angle_z)
             bounding_box = self.__Get_Bounding_Box(f'{self.bake_image_name}_transformed')
     
         # Randomize materials for other predefined materials.

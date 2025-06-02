@@ -24,11 +24,11 @@ import Transformation.Utilities.Mathematics as Mathematics
 import time
 
 # Number of synthetic data to be generated.
-CONST_NUM_OF_GEN_DATA = 300
+CONST_NUM_OF_GEN_DATA = 2500
 # Partition the dataset into training, validation, and test sets in percentages.
 #   Note:
 #       The sum of the values in the partitions must equal 100.
-CONST_PARTITION_DATASET = {'train': 80, 'valid': 20, 'test': 0}
+CONST_PARTITION_DATASET = {'train': 100, 'valid': 0, 'test': 0}
 # The initial number of the iteration to save the image.
 #   0 - Data storage starts from 1 (1 = 'Image_001', 2 = 'Image_002', etc.)
 CONST_INIT_INDEX = 0
@@ -125,7 +125,7 @@ def main():
             partition_name = list(CONST_PARTITION_DATASET.keys())[id_partition]
 
             # Save the image with the corresponding label.
-            Blender.Utilities.Save_Synthetic_Data(f'{project_folder}/Data/Dataset_v1/', partition_name, f'{CONST_INIT_INDEX + (i + 1):03}', 
+            Blender.Utilities.Save_Synthetic_Data(f'{project_folder}/Data/Dataset_v2/', partition_name, f'{CONST_INIT_INDEX + (i + 1):03}', 
                                             cls_id, b_box_2d, 'txt', 'png')  
 
             i += 1; percentage_stored_data += 1                                  

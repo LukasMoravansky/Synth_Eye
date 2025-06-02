@@ -30,9 +30,9 @@ def main():
 
     # Custom camera configuration.
     custom_cfg = {
-        'exposure_time': 1000,
+        'exposure_time': 10000,
         'gain': 10,
-        'balance_ratios': {'Red': 1.1, 'Green': 1.0, 'Blue': 1.3},
+        'balance_ratios': {'Red': 0.95, 'Green': 0.9, 'Blue': 1.2},
         'pixel_format': 'BayerRG8'
     }
 

@@ -3,7 +3,7 @@ names:
 - Cls_Back_Side
 - Cls_Fingerprint
 nc: 3
-path: /Users/rparak/Desktop/Synth_Eye/Data/Dataset_v1
+path: C:\Projects\Synth_Eye\Data\Dataset_v1
 test: images/test
 train: images/train
 val: images/valid

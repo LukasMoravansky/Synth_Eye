@@ -33,7 +33,7 @@ def main():
     model = YOLO(f'{project_folder}/YOLO/Results/Dataset_v1/train_fb_{CONST_FREEZE_BACKBONE}/weights/best.pt')
 
     # Evaluate the performance of the model on the validation dataset.
-    model.val(data=f'{project_folder}/YOLO/Configuration/config_tmp.yaml', batch=32, imgsz=640, conf=0.001, iou=0.6, rect=True, 
+    model.val(data=f'{project_folder}/YOLO/Configuration/config_tmp.yaml', batch=32, imgsz=640, device='cuda', conf=0.001, iou=0.6, rect=True, 
               save_txt=True, save_conf=True, save_json=False, split='test', name=f'{project_folder}/YOLO/Results/Dataset_v1/valid_fb_{CONST_FREEZE_BACKBONE}')
 
 if __name__ == '__main__':

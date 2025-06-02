@@ -39,21 +39,24 @@ shader random_oval_fingerprint(
     return x - floor(x);
     }
 
-    float seed_offset = fract(seed * 1345.34 + 787.89) * 1000;
-    
+    float hash(float n) {
+        return fract(sin(n) * 43758.5453);
+    }
 
-   
-    center_x = center_x_min  + noise("cell", seed_offset + 0.1) * (center_x_max - center_x_min);  
-    center_y = center_y_min  + noise("cell", seed_offset + 1.1) * (center_y_max - center_y_min);  
+    float seed_offset_x = hash(seed * 17.0 + 3.1);
+    float seed_offset_y = hash(seed * 29.0 + 7.7);
+
+    center_x = center_x_min + seed_offset_x * (center_x_max - center_x_min);
+    center_y = center_y_min + seed_offset_y * (center_y_max - center_y_min);
    
 
-    float width = width_min + noise("simplex", seed_offset + 2.2) * (width_max - width_min);
-    float height = height_min + noise("simplex", seed_offset + 3.3) * (height_max - height_min);
+    float width = width_min + noise("simplex", center_x_max + 2.2) * (width_max - width_min);
+    float height = height_min + noise("simplex", center_y_max + 3.3) * (height_max - height_min);
     
     // Náhodná rotace (plynulá změna úhlu v radiánech)
-    float angle = noise("perlin", seed_offset + 4.0) * 6.28319;  // 0–2π (0–360°)
+    float angle = noise("perlin", seed_offset_x + 4.0) * 6.28319;  // 0–2π (0–360°)
     
-    rotation_z = noise("gabor", seed_offset + 4.4) * 6.28319;  
+    rotation_z = noise("gabor", seed_offset_y + 4.4) * 6.28319;  
     rotation_z = angle;
 
     float x = uv_x - center_x;

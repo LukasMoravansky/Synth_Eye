@@ -55,8 +55,8 @@ def main():
         model.add_callback('on_train_start', Utilities.Model.Freeze_Backbone)
 
     # Training the model on a custom dataset with additional dependencies (number of epochs, image size, etc.)
-    model.train(data=f'{project_folder}/YOLO/Configuration/config_tmp.yaml', batch=-1, imgsz=640, epochs=1000, patience=0,
+    model.train(data=f'{project_folder}/YOLO/Configuration/config_tmp.yaml', batch=16, imgsz=640, device='cuda', epochs=5000, patience=100,
                 rect=True, name=f'{project_folder}/YOLO/Results/Dataset_v1/train_fb_{CONST_FREEZE_BACKBONE}')
 
 if __name__ == '__main__':
-    main()
+    main()  

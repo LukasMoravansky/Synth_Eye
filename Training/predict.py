@@ -34,7 +34,7 @@ def main():
     model = YOLO(f'{project_folder}/YOLO/Results/Dataset_v1/train_fb_{CONST_FREEZE_BACKBONE}/weights/best.pt')
 
     # Predict (test) the model on a test dataset.
-    model.predict(source=f'{project_folder}/Data/Dataset_v1/images/test', save=True, save_txt=True, save_conf=True, 
+    model.predict(source=f'{project_folder}/Data/Dataset_v1/images/test', device='cuda', save=True, save_txt=True, save_conf=True, 
                   imgsz=640, conf=0.5, iou=0.5, name=f'{project_folder}/YOLO/Results/Dataset_v1/predict_fb_{CONST_FREEZE_BACKBONE}')
 
 if __name__ == '__main__':

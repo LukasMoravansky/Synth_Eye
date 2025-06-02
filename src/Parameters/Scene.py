@@ -142,7 +142,7 @@ Basler_Cam_Str = Camera_Parameters_Str(Name='Basler_a2A1920_51gcPRO_Computar_M12
 
 # Homogeneous transformation matrix {T} of the object.
 Basler_Cam_Str.T = Transformation.Homogeneous_Transformation_Matrix_Cls(None, np.float64).Rotation([0.0, 0.0, 0.0], 
-                                                                                         'ZYX').Translation([0.0, 0.000405, 0.3321])
+                                                                                         'ZYX').Translation([0.0, 0.000405, 0.3401])
 
 # Camera resolution in pixels.
 Basler_Cam_Str.Resolution = {'x': 1920, 'y': 1200, 'Percentage': 100}
@@ -157,7 +157,7 @@ Basler_Cam_Str.Spectrum = 'Color'
 Basler_Cam_Str.Sensor = {'Width': 6.6, 'Height': 4.1, 'Fit': 'HORIZONTAL'}
 Basler_Cam_Str.Gain = 10
 Basler_Cam_Str.Exposure_Time = 1000
-Basler_Cam_Str.Balance_Ratios = (0.85, 0.95, 0.9)
+Basler_Cam_Str.Balance_Ratios = (0.95, 0.9, 0.85)
 Basler_Cam_Str.Aperture_F_Stop = 2.8  
 Basler_Cam_Str.Focus_Distance = Basler_Cam_Str.T.p.z
 Basler_Cam_Str.Use_DoF = True

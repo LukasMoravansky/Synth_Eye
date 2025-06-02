@@ -8,8 +8,8 @@ Call Get_Bounding_Box() method to randomize material and to get bounding box
 '''
 
 
-fingerprint_enabled = True
-bake_image_name = "UV_Scaled_128"
+fingerprint_enabled = False
+bake_image_name = "BakeTemp128"
 
 def __generate_seed():
     '''
@@ -122,13 +122,13 @@ def __get_bounding_box(image_name):
     
     for x in range(width):
         for y in range(height):
-            if np.all(pixels[y, x, :3] > 0.05):  # Detect white areas
+            if np.all(pixels[y, x, :3] > 0.5):  # Detect white areas
                 min_x, max_x = min(min_x, x), max(max_x, x)
                 min_y, max_y = min(min_y, y), max(max_y, y)
     
     if min_x < max_x and min_y < max_y:
         # Unused verifiaction box
-        
+        '''
         box_color = (1, 0, 0, 1)  # Red color for bounding box
         for x in range(min_x, max_x + 1):
             pixels[min_y, x] = box_color
@@ -139,7 +139,7 @@ def __get_bounding_box(image_name):
         
         image.pixels = pixels.flatten()
         image.update()
-        
+        '''
         return min_x, max_x, min_y, max_y  
     else:
         print("No white area detected.")
@@ -163,4 +163,3 @@ def Get_Bounding_Box():
     randomize_material_values("Hole_Mill_Mat")
     return bounding_box
 
-Get_Bounding_Box()

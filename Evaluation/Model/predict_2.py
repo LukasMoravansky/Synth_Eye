@@ -24,7 +24,7 @@ Description:
 """
 # The identification number of the iteration to save the image. It starts with the number 1.
 #   1 = 'Image_001', 2 = 'Image_002', etc.
-CONST_INIT_INDEX = 307
+CONST_INIT_INDEX = 5006
 # The color of the bounding box of the object.
 CONST_OBJECT_BB_COLOR = [(255, 165, 0), (0, 165, 255), (80, 0, 255)]
 
@@ -41,7 +41,7 @@ def main():
     image_data = cv2.imread(f'{project_folder}/Data/Dataset_v1/images/test/Image_{CONST_INIT_INDEX:03}.png')
 
     # Predict (test) the model on a test dataset.
-    results = model.predict(source=f'{project_folder}/Data/Dataset_v1/images/test/Image_{CONST_INIT_INDEX:03}.png', imgsz=640, conf=0.5, iou=0.7)
+    results = model.predict(source=f'{project_folder}/Data/Dataset_v1/images/test/Image_{CONST_INIT_INDEX:03}.png', imgsz=640, conf=0.8, iou=0.7)
 
     # If the model has found an object in the current processed image, express the results (class, bounding box, confidence).
     if results[0].boxes.shape[0] >= 1:
