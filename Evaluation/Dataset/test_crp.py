@@ -12,7 +12,7 @@ import Utilities.Image_Processing
 import Utilities.File_IO as File_IO
 import Utilities.General
 
-CONST_INIT_INDEX = 26
+CONST_INIT_INDEX = 9
 CONST_OBJECT_BB_COLOR = [(255, 165, 0), (0, 165, 255), (80, 0, 255)]
 
 def convert_cropped_yolo_to_original(x_c, y_c, w, h, cropped_w, cropped_h, obj_left, obj_top, orig_w, orig_h):
@@ -41,7 +41,7 @@ def absolute_to_yolo(x, y, w, h, img_w, img_h):
 
 def main():
     # Locate the project folder
-    project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
+    project_folder = os.getcwd().split('Synth_Eye_Old')[0] + 'Synth_Eye_Old'
 
     # Load the image and label
     image_path = f'{project_folder}/Data/Dataset_v1/images/train/Image_{CONST_INIT_INDEX:03}.png'
@@ -53,6 +53,13 @@ def main():
     img_h, img_w = image_data.shape[:2]
 
     cv2.imwrite(f'Image_Res_{CONST_INIT_INDEX:03}_Original.png', image_data)
+
+    """
+    General object detection	imgsz=640 or imgsz=960
+    Higher accuracy, larger objects	imgsz=1280
+    """
+    resized_image = cv2.resize(image_data, (960, 960))
+    cv2.imwrite(f'Image_Res_{CONST_INIT_INDEX:03}_Original_Resized.png', resized_image)
 
     # Initialize
     object_bbox = None
@@ -150,6 +157,7 @@ def main():
 
     image_data_bb = Utilities.Image_Processing.Draw_Bounding_Box(image_data, Bounding_Box_Properties_Orig, 'YOLO', CONST_OBJECT_BB_COLOR[int(reversed_label[0])], True, False)
     cv2.imwrite(f'Image_Res_{CONST_INIT_INDEX:03}_Original_With_Reversed_BB.png', image_data_bb)
+
 
 if __name__ == '__main__':
     sys.exit(main())
