@@ -35,16 +35,13 @@ def Freeze_Backbone(trainer):
       The backbone of the model consists of layers 0-9 (10 layers).
   """
 
-  # Number of layers to be frozen.
-  num_frozen_layers = 10
+    model = trainer.model
 
-  # Express the model.
-  model = trainer.model
+    # Freeze first N layers.
+    num_frozen_layers = 10 
+    print('[INFO] Freezing the first', num_frozen_layers, 'layers.')
 
-  print('[INFO] Freeze the backbone layers of the model:')
-  freeze = [f'model.{x}.' for x in range(num_frozen_layers)]
-  for k, v in model.named_parameters(): 
-      v.requires_grad = True
-      if any(x in k for x in freeze):
-          print(f'[INFO] Freezing: {k}') 
-          v.requires_grad = False
+    for i, layer in enumerate(model.model[:num_frozen_layers]):
+        for param in layer.parameters():
+            param.requires_grad = False
+        print(f'[INFO] Frozen layer {i}: {layer._get_name()}')
