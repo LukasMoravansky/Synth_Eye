@@ -1,4 +1,0 @@
-Cls_Front_Side_OK
-Cls_Front_Side_NOK
-Cls_Back_Side
-Cls_Fingerprint
