@@ -101,5 +101,5 @@ Object_001_Str.Bounding_Box = Primitives.Box_Cls([0.0, 0.0, 0.0], [0.04, 0.06, 0
 Object_001_Str.Limit.Position = {'x': {'range': [-0.045, 0.045], 'Use_Distribution': True}, 
                                  'y': {'range': [-0.015, 0.015], 'Use_Distribution': True}, 'z': None}
 Object_001_Str.Limit.Rotation = {'x': None, 'y': None, 
-                                 'z': {'range': [-Mathematics.Degree_To_Radian(), Mathematics.CONST_MATH_HALF_PI], 'Use_Distribution': True}}
+                                 'z': {'range': [-Mathematics.Degree_To_Radian(5.0), Mathematics.Degree_To_Radian(5.0)], 'Use_Distribution': True}}
 

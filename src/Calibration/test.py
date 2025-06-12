@@ -22,9 +22,9 @@ Pixel to mm conversion:
   → Vertical:   1 px = 0.09730 mm (avg 123.33 px per 10 mm)
 """
 
-img_n = 'R'
+img_n = 'RS'
 #image = cv2.imread("C:\projects\Synth_Eye\Data\Camera\Basler\Image_099.png")
-image = cv2.imread(f"Img_{img_n}.png")
+image = cv2.imread(r'C:\projects\Synth_Eye\Data\Camera\Basler_a2A1920_51gcPRO_Computar_M1228_MPW3_Virtual\Checkerboard.png')
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # === Find corners ===

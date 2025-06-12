@@ -18,9 +18,10 @@ import Parameters.Scene
 import Parameters.Object
 #   ../Utilities/General
 import Utilities.General
+#   ../Transformation/Core
+import Transformation.Core as Transformation 
 #   ../Transformation/Utilities
 import Transformation.Utilities.Mathematics as Mathematics
-
 import time
 
 # Number of synthetic data to be generated.
@@ -28,10 +29,10 @@ CONST_NUM_OF_GEN_DATA = 2500
 # Partition the dataset into training, validation, and test sets in percentages.
 #   Note:
 #       The sum of the values in the partitions must equal 100.
-CONST_PARTITION_DATASET = {'train': 100, 'valid': 0, 'test': 0}
+CONST_PARTITION_DATASET = {'train': 80, 'valid': 20, 'test': 0}
 # The initial number of the iteration to save the image.
 #   0 - Data storage starts from 1 (1 = 'Image_001', 2 = 'Image_002', etc.)
-CONST_INIT_INDEX = 0
+CONST_INIT_INDEX = 2500
 
 def main():
     """
@@ -57,6 +58,9 @@ def main():
     #   The main parameters of the camera and light can be found at: ../Parameters/Scene.py
     Camera_Cls = Blender.Core.Camera_Cls(Parameters.Scene.Basler_Cam_Str, Parameters.Scene.Effilux_Light_Str, 'PNG')
 
+    # ...
+    Parameters.Object.Object_001_Str.T = Transformation.Homogeneous_Transformation_Matrix_Cls(None, np.float64).Rotation([0.0, Mathematics.CONST_MATH_PI, 0.0], 
+                                                                                          'ZYX').Translation([0.0075, 0.0, 0.004])
     # Initialize the object to be captured by the camera.
     #   The main parameters of the object can be found at: ../Parameters/Object.py
     Object_Cls = Blender.Core.Object_Cls(Parameters.Object.Object_001_Str, 'ZYX')

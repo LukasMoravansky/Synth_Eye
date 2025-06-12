@@ -2,10 +2,13 @@ import cv2
 import numpy as np
 import tkinter as tk
 from tkinter import filedialog
+import os
+
+project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
 # Load image
 def load_image():
-    path = 'Test.png'
+    path = f'{project_folder}/Data/Camera/Basler_a2A1920_51gcPRO_Computar_M1228_MPW3/Image_{30:03}.png'
     if path:
         global img_original
         img_original = cv2.imread(path)

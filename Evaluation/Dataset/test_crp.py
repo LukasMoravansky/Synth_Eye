@@ -126,7 +126,7 @@ def main():
             lines.append(line)
 
             Bounding_Box_Properties = {'Name': f'{int(lbl[0])}', 'Precision': None, 
-                                'Data': {'x_c': lbl[1], 'y_c': lbl[2], 'width': lbl[3], 'height': lbl[4]}}
+                                       'Data': {'x_c': lbl[1], 'y_c': lbl[2], 'width': lbl[3], 'height': lbl[4]}}
 
             cropped_img_bb = Utilities.Image_Processing.Draw_Bounding_Box(cropped_img, Bounding_Box_Properties, 'YOLO', CONST_OBJECT_BB_COLOR[int(lbl[0])], 
                                                                 True, False)

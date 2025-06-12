@@ -653,9 +653,7 @@ class Material_Cls:
             'roughness_dirty_color': (0.642, 1),
             'scale_dirty_roughness': (1, 15),
             'detail_dirty_roughness_terrain': (7.7, 15),
-            'worn_strip_width': (-0.05, -0.09),
-            'worn_strip_left_x': (0.4, 0.35),
-            'worn_strip_right_x': (-0.2, -0.35)
+            'worn_strip_width': (-0.07, -0.10)
         }
 
         # Check if the node's label is present in the value mapping for randomization.

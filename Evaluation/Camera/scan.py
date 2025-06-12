@@ -7,12 +7,31 @@ if '../../' + 'src' not in sys.path:
 import cv2
 # OS module for file handling and accessing directories
 import os
-# Library to work with Basler cameras
+# Custom Lib.:
+#   ../Basler/Camera
 from Basler.Camera import Basler_Cls
+#   ../Parameters/Scene
+import Parameters.Scene
+
+import numpy as np
 
 # The identification number of the iteration to save the image. It starts with the number 1.
 #   1 = 'Image_001', 2 = 'Image_002', etc.
-CONST_INIT_INDEX = 99
+CONST_INIT_INDEX = 51
+
+# Camera calibration matrix.
+CAMERA_CALIBRATION_MATRIX = np.array([[7163.39148, 0.0, 884.750383], [0.0, 7185.41499, 491.271296], [0.0, 0.0, 1.0]], dtype=np.float64)
+
+# Distortion coefficients: [k1, k2, p1, p2, k3].
+CAMERA_CALIBRATION_DIST_COEFFS = np.array([-0.378556984, 28.1374127, -0.00651131765, -0.00121823652, 0.560603312], dtype=np.float64)
+
+"""
+PIXEL_TO_MM_X = 0.09744  # horizontal
+PIXEL_TO_MM_Y = 0.09730  # vertical
+
+def pixels_to_mm(x_px, y_px):
+    return x_px * PIXEL_TO_MM_X, y_px * PIXEL_TO_MM_Y
+"""
 
 def main():
     """
@@ -48,10 +67,15 @@ def main():
     del Basler_Cam_Id_1
 
     # Define output image path.
-    output_path = os.path.join(f'{project_folder}/Data/Camera/Basler/', f'Image_{(CONST_INIT_INDEX):03}.png')
+    output_path = os.path.join(f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}/', f'Image_Real_{(CONST_INIT_INDEX):03}.png')
+
+    # Undistort the image using calibration data
+    h, w = img_raw.shape[:2]
+    new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(CAMERA_CALIBRATION_MATRIX, CAMERA_CALIBRATION_DIST_COEFFS, (w, h), 1, (w, h))
+    img_undistorted = cv2.undistort(img_raw, CAMERA_CALIBRATION_MATRIX, CAMERA_CALIBRATION_DIST_COEFFS, None, new_camera_matrix)
 
     # Save the image with bounding boxes.
-    cv2.imwrite(output_path, img_raw)
+    cv2.imwrite(output_path, img_undistorted)
 
     print(f'Result saved at: {output_path}')
 
