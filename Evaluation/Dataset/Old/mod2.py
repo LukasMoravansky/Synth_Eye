@@ -1,66 +1,60 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider
+from skimage.exposure import match_histograms
+import sys
+# Add access to the custom utilities
+if '../../src' not in sys.path:
+    sys.path.append('../../src')
+import Utilities.File_IO as File_IO
 
 # ---- Load images ----
-synthetic_bgr = cv2.imread(r"C:\projects\Synth_Eye\Evaluation\Dataset\Image_002.png")
-real_bgr = cv2.imread(r"C:\projects\Data\Dataset_v1\images\test\Image_021.png")
+synthetic = cv2.imread(r"C:\projects\Synth_Eye\Evaluation\Dataset\Image_002.png")
+real = cv2.imread(r"C:\projects\Data\Dataset_v1\images\test\Image_039.png")
 
-synthetic_rgb = cv2.cvtColor(synthetic_bgr, cv2.COLOR_BGR2RGB)
-real_rgb = cv2.cvtColor(real_bgr, cv2.COLOR_BGR2RGB)
+synthetic_rgb = cv2.cvtColor(synthetic, cv2.COLOR_BGR2RGB)
+real_rgb = cv2.cvtColor(real, cv2.COLOR_BGR2RGB)
 
-# ---- Color styling function ----
-def adjust_color_style(image, alpha=1.0, beta=0, warm_r=1.0, warm_g=1.0, warm_b=1.0):
+def add_realistic_noise(image, std=5):
+    noise = np.random.normal(0, std, image.shape).astype(np.int16)
+    noisy = image.astype(np.int16) + noise
+    return np.clip(noisy, 0, 255).astype(np.uint8)
+
+def adjust_color_style(image, alpha=0.95, beta=5):
     adjusted = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
-    warm_filter = np.array([[[warm_r, warm_g, warm_b]]])
+    warm_filter = np.array([[[1.0, 1.0, 0.98]]])
     warmed = np.clip(adjusted * warm_filter, 0, 255).astype(np.uint8)
     return warmed
 
-# ---- Setup figure ----
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-plt.subplots_adjust(left=0.25, bottom=0.4)
+def apply_blur(image, kernel=(5, 5), sigma=1.0):
+    return cv2.GaussianBlur(image, kernel, sigmaX=sigma)
 
-# ---- Show initial images ----
-adjusted_image = adjust_color_style(synthetic_rgb)
-img_display = ax1.imshow(adjusted_image)
-ax1.set_title("Adjusted Synthetic Image")
-ax1.axis('off')
+def process_synthetic_image(image):
+    noisy = add_realistic_noise(image)
+    blurred_once = apply_blur(noisy, kernel=(3, 3), sigma=0.5)
+    styled = adjust_color_style(blurred_once)
+    final = apply_blur(styled, kernel=(3, 3), sigma=1.0)
+    return final
 
-ax2.imshow(real_rgb)
-ax2.set_title("Real-World Image")
-ax2.axis('off')
+# ---- Run the pipeline ----
+final_result = process_synthetic_image(synthetic_rgb)
 
-# ---- Sliders ----
-ax_alpha = plt.axes([0.25, 0.30, 0.65, 0.03])
-ax_beta = plt.axes([0.25, 0.25, 0.65, 0.03])
-ax_r = plt.axes([0.25, 0.20, 0.65, 0.03])
-ax_g = plt.axes([0.25, 0.15, 0.65, 0.03])
-ax_b = plt.axes([0.25, 0.10, 0.65, 0.03])
+# ---- Show result ----
+plt.figure(figsize=(12, 5))
+plt.subplot(1, 3, 1)
+plt.title("Synthetic Image")
+plt.imshow(synthetic_rgb)
+plt.axis('off')
 
-slider_alpha = Slider(ax_alpha, 'Alpha (Contrast)', 0.5, 2.0, valinit=1.0)
-slider_beta = Slider(ax_beta, 'Beta (Brightness)', -50, 50, valinit=0)
-slider_r = Slider(ax_r, 'Warm R', 0.8, 1.2, valinit=1.0)
-slider_g = Slider(ax_g, 'Warm G', 0.8, 1.2, valinit=1.0)
-slider_b = Slider(ax_b, 'Warm B', 0.8, 1.2, valinit=0.98)
+plt.subplot(1, 3, 2)
+plt.title("Modified Synthetic Image")
+plt.imshow(final_result)
+plt.axis('off')
 
-# ---- Update function ----
-def update(val):
-    alpha = slider_alpha.val
-    beta = slider_beta.val
-    warm_r = slider_r.val
-    warm_g = slider_g.val
-    warm_b = slider_b.val
+plt.subplot(1, 3, 3)
+plt.title("Real-World Image")
+plt.imshow(real_rgb)
+plt.axis('off')
 
-    styled = adjust_color_style(synthetic_rgb, alpha, beta, warm_r, warm_g, warm_b)
-    img_display.set_data(styled)
-    fig.canvas.draw_idle()
-
-# ---- Connect sliders ----
-slider_alpha.on_changed(update)
-slider_beta.on_changed(update)
-slider_r.on_changed(update)
-slider_g.on_changed(update)
-slider_b.on_changed(update)
-
+plt.tight_layout()
 plt.show()

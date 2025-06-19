@@ -3,14 +3,11 @@ import numpy as np
 import sys
 import os
 
-# Ensure custom utility path is included
 SRC_PATH = os.path.abspath('../../src')
 if SRC_PATH not in sys.path:
     sys.path.append(SRC_PATH)
 
-# ---- Load Image ----
-INPUT_IMAGE_PATH = r"C:\projects\Data\Dataset_v1\images\train\Image_001.png"
-OUTPUT_IMAGE_PATH = r"Image_001_processed.png"
+INPUT_IMAGE_PATH = r"Image_3234.png"; OUTPUT_IMAGE_PATH = r"Image_3234_processed.png"
 
 image = cv2.imread(INPUT_IMAGE_PATH)
 if image is None:
