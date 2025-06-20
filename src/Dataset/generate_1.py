@@ -12,45 +12,30 @@ import cv2
 import Utilities.File_IO as File_IO
 
 import numpy as np
-from pathlib import Path
-import re
+
+import Utils
 
 Cls_Id_Remove = [2]
 Dataset_Name = 'Dataset_v2'
-
-def extract_numbers_from_filenames(folder_path):
-    folder = Path(folder_path)
-    results = []
-    
-    for file in folder.iterdir():
-        if file.is_file() and file.suffix == '.png':
-            match = re.search(r'Image_((?:\w+_)*)(\d+)\.png', file.name)
-            if match:
-                prefix = match.group(1)
-                number = int(match.group(2))
-                is_background = 'Background' in prefix
-                results.append({
-                    'name': file.stem,
-                    'id': number,
-                    'is_background': is_background,
-                    'path': str(file)
-                })
-    
-    return results
 
 def main():
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
     for partition_name in ['test']:
         folder_path = f'{project_folder}/Data/Dataset_v1/images/{partition_name}'
-        file_info_list = extract_numbers_from_filenames(folder_path)
+        file_info_list = Utils.extract_numbers_from_filenames(folder_path)
         for file_info in file_info_list:
             if file_info['is_background'] == True:
                 with open(f'{project_folder}/Data/{Dataset_Name}/labels/{partition_name}/{file_info["name"]}.txt', 'w') as f:
                     pass
             else:
-                image_data = cv2.imread(file_info['path'])
+                image_data_tmp = cv2.imread(file_info['path'])
                 label_data_tmp = File_IO.Load(f'{project_folder}/Data/Dataset_v1/labels/{partition_name}/{file_info["name"]}', 'txt', ' ')
+
+                if partition_name != 'test':
+                    image_data = image_data_tmp.copy()
+                else:
+                    image_data = Utils.process_synthetic_image(image_data_tmp.copy())
 
                 label_data = np.zeros(4)
                 if np.isin(Cls_Id_Remove, label_data_tmp[:, 0]).any() and label_data_tmp[:, 0].size >= 1:

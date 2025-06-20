@@ -12,48 +12,18 @@ import cv2
 import Utilities.File_IO as File_IO
 
 import numpy as np
-from pathlib import Path
-import re
+
+import Utils
 
 Cls_Id = [2]
 Dataset_Name = 'Dataset_v2'
-
-def yolo_to_absolute(x_c, y_c, w, h, img_w, img_h):
-    abs_x = x_c * img_w
-    abs_y = y_c * img_h
-    abs_w = w * img_w
-    abs_h = h * img_h
-    return abs_x, abs_y, abs_w, abs_h
-
-def absolute_to_yolo(x, y, w, h, img_w, img_h):
-    return x / img_w, y / img_h, w / img_w, h / img_h
-
-def extract_numbers_from_filenames(folder_path):
-    folder = Path(folder_path)
-    results = []
-    
-    for file in folder.iterdir():
-        if file.is_file() and file.suffix == '.png':
-            match = re.search(r'Image_((?:\w+_)*)(\d+)\.png', file.name)
-            if match:
-                prefix = match.group(1)
-                number = int(match.group(2))
-                is_background = 'Background' in prefix
-                results.append({
-                    'name': file.stem,
-                    'id': number,
-                    'is_background': is_background,
-                    'path': str(file)
-                })
-    
-    return results
 
 def main():
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
     for partition_name in ['test']:
         folder_path = f'{project_folder}/Data/Dataset_v1/images/{partition_name}'
-        file_info_list = extract_numbers_from_filenames(folder_path)
+        file_info_list = Utils.extract_numbers_from_filenames(folder_path)
         for file_info in file_info_list:
             if file_info['is_background'] == True:
                 continue
@@ -72,7 +42,13 @@ def main():
                     return
     
                 # ..
-                image_data = cv2.imread(file_info['path'])
+                image_data_tmp = cv2.imread(file_info['path'])
+
+                if partition_name != 'test':
+                    image_data = image_data_tmp.copy()
+                else:
+                    image_data = Utils.process_synthetic_image(image_data_tmp.copy())
+                
                 img_h, img_w = image_data.shape[:2]
 
                 defect_bbox = np.zeros(4)
@@ -90,7 +66,7 @@ def main():
 
                 # Convert object bbox to pixel coordinates
                 obj_x, obj_y, obj_w, obj_h = object_bbox
-                obj_x_abs, obj_y_abs, obj_w_abs, obj_h_abs = yolo_to_absolute(obj_x, obj_y, obj_w, obj_h, img_w, img_h)
+                obj_x_abs, obj_y_abs, obj_w_abs, obj_h_abs = Utils.yolo_to_absolute(obj_x, obj_y, obj_w, obj_h, img_w, img_h)
 
                 obj_left = int(obj_x_abs - obj_w_abs / 2)
                 obj_top = int(obj_y_abs - obj_h_abs / 2)
@@ -104,7 +80,7 @@ def main():
                 if defect_bbox.shape[0] > 0:
                     # Defect bbox
                     def_x, def_y, def_w, def_h = defect_bbox[1:5]
-                    def_x_abs, def_y_abs, def_w_abs, def_h_abs = yolo_to_absolute(def_x, def_y, def_w, def_h, img_w, img_h)
+                    def_x_abs, def_y_abs, def_w_abs, def_h_abs = Utils.yolo_to_absolute(def_x, def_y, def_w, def_h, img_w, img_h)
 
                     # Shift defect coordinates relative to cropped image
                     new_x_abs = def_x_abs - obj_left
@@ -115,7 +91,7 @@ def main():
                         continue
 
                     # Convert to YOLO relative to cropped image
-                    new_def_x, new_def_y, new_def_w, new_def_h = absolute_to_yolo(
+                    new_def_x, new_def_y, new_def_w, new_def_h = Utils.absolute_to_yolo(
                         new_x_abs, new_y_abs, def_w_abs, def_h_abs, cropped_w, cropped_h
                     )
 
