@@ -10,9 +10,7 @@ import cv2
 # Custom Library:
 #   ../Utilities/File_IO
 import Utilities.File_IO as File_IO
-
 import numpy as np
-
 import Utils
 
 Cls_Id_Remove = [2]
@@ -25,18 +23,21 @@ def main():
         folder_path = f'{project_folder}/Data/Dataset_v1/images/{partition_name}'
         file_info_list = Utils.extract_numbers_from_filenames(folder_path)
         for file_info in file_info_list:
+            image_data_tmp = cv2.imread(file_info['path'])
+
+            if partition_name != 'test':
+                image_data = image_data_tmp.copy()
+            else:
+                image_data = Utils.process_synthetic_image(image_data_tmp.copy())
+
+            cv2.imwrite(f'{project_folder}/Data/{Dataset_Name}/images/{partition_name}/{file_info["name"]}.png', image_data.copy())
+
             if file_info['is_background'] == True:
                 with open(f'{project_folder}/Data/{Dataset_Name}/labels/{partition_name}/{file_info["name"]}.txt', 'w') as f:
                     pass
             else:
-                image_data_tmp = cv2.imread(file_info['path'])
                 label_data_tmp = File_IO.Load(f'{project_folder}/Data/Dataset_v1/labels/{partition_name}/{file_info["name"]}', 'txt', ' ')
-
-                if partition_name != 'test':
-                    image_data = image_data_tmp.copy()
-                else:
-                    image_data = Utils.process_synthetic_image(image_data_tmp.copy())
-
+                
                 label_data = np.zeros(4)
                 if np.isin(Cls_Id_Remove, label_data_tmp[:, 0]).any() and label_data_tmp[:, 0].size >= 1:
                     for _, label_data_i in enumerate(label_data_tmp):
@@ -52,8 +53,6 @@ def main():
                 for _, label_data_i in enumerate(label_data):
                     formatted_data = f'{int(label_data_i[0])} ' + ' '.join(f'{x:.6f}' for x in label_data_i[1:])
                     File_IO.Save(f'{project_folder}/Data/{Dataset_Name}/labels/{partition_name}/{file_info["name"]}', formatted_data.split(), 'txt', ' ')
-            
-            cv2.imwrite(f'{project_folder}/Data/{Dataset_Name}/images/{partition_name}/{file_info["name"]}.png', image_data.copy())
     
 if __name__ == '__main__':
     sys.exit(main())

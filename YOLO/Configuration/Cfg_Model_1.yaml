@@ -1,0 +1,21 @@
+# Description:
+#   The configuration file for training the NN model to detect three classes of objects:
+#     1. Obj_Front_Side
+#     2. Obj_Back_Side
+#     3. Obj_Front_Side_Defect
+#   The dataset is organized into training, validation, and testing partitions.
+
+# The absolute path to the main directory of the dataset.
+path: 'C:/Projects/Synth_Eye/Data/Dataset_v2'
+
+# Paths to the specific partitions (train, validation, test) that contain the dataset images and labels.
+train: 'images/train'
+val: 'images/valid'
+test: 'images/test'
+
+# Parameters:
+#   The total number of classes in the dataset.
+nc: 3
+
+# List of class names.
+names: ['Obj_Front_Side', 'Obj_Back_Side', 'Obj_Front_Side_Defect']
