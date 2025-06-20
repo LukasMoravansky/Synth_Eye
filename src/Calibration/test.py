@@ -1,5 +1,8 @@
 import cv2
 import numpy as np
+import sys
+sys.path.append('..')
+import Dataset.Utils as Utils
 
 # https://calib.io/pages/camera-calibration-pattern-generator
 
@@ -25,6 +28,7 @@ Pixel to mm conversion:
 img_n = 'RS'
 #image = cv2.imread("C:\projects\Synth_Eye\Data\Camera\Basler\Image_099.png")
 image = cv2.imread(r'C:\projects\Synth_Eye\Data\Camera\Basler_a2A1920_51gcPRO_Computar_M1228_MPW3_Virtual\Checkerboard.png')
+image = Utils.process_synthetic_image(image.copy())
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # === Find corners ===

@@ -16,12 +16,12 @@ import numpy as np
 import Utils
 
 Cls_Id = [2]
-Dataset_Name = 'Dataset_v2'
+Dataset_Name = 'Dataset_v3'
 
 def main():
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
-    for partition_name in ['test']:
+    for partition_name in ['train', 'test', 'valid']:
         folder_path = f'{project_folder}/Data/Dataset_v1/images/{partition_name}'
         file_info_list = Utils.extract_numbers_from_filenames(folder_path)
         for file_info in file_info_list:
@@ -44,18 +44,21 @@ def main():
                 # ..
                 image_data_tmp = cv2.imread(file_info['path'])
 
-                if partition_name != 'test':
-                    image_data = image_data_tmp.copy()
+                if image_data_tmp is None:
+                    raise FileNotFoundError(f"Unable to load image from: {file_info['path']}")
+
+                if partition_name in ['train', 'valid']:
+                    image_data = Utils.process_synthetic_image(image_data_tmp)
                 else:
-                    image_data = Utils.process_synthetic_image(image_data_tmp.copy())
+                    image_data = image_data_tmp.copy()
                 
                 img_h, img_w = image_data.shape[:2]
 
-                defect_bbox = np.zeros(4)
+                defect_bbox = []
                 if np.isin(Cls_Id, label_data_tmp[:, 0]).any() and label_data_tmp[:, 0].size >= 1:
                     for _, label_data_i in enumerate(label_data_tmp):
                         if label_data_i[0] in Cls_Id:
-                            defect_bbox = np.append([0], label_data_i[1:])
+                            defect_bbox.append(np.append([0], label_data_i[1:]))
                             break
                 else:
                     if label_data_tmp[0, 0] == 0:
@@ -77,9 +80,9 @@ def main():
                 cropped_img = image_data[obj_top:obj_bottom, obj_left:obj_right]
                 cropped_h, cropped_w = cropped_img.shape[:2]
 
-                if defect_bbox.shape[0] > 0:
+                if len(defect_bbox) > 0:
                     # Defect bbox
-                    def_x, def_y, def_w, def_h = defect_bbox[1:5]
+                    def_x, def_y, def_w, def_h = defect_bbox[0][1::]
                     def_x_abs, def_y_abs, def_w_abs, def_h_abs = Utils.yolo_to_absolute(def_x, def_y, def_w, def_h, img_w, img_h)
 
                     # Shift defect coordinates relative to cropped image
@@ -104,6 +107,7 @@ def main():
                         File_IO.Save(f'{project_folder}/Data/{Dataset_Name}/labels/{partition_name}/{file_info["name"]}', formatted_data.split(), 'txt', ' ')
 
             cv2.imwrite(f'{project_folder}/Data/{Dataset_Name}/images/{partition_name}/{file_info["name"]}.png', cropped_img.copy())
+            print(f'{partition_name} | {file_info["name"]}')
     
 if __name__ == '__main__':
     sys.exit(main())
