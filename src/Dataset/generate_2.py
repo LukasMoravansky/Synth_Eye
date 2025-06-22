@@ -21,7 +21,7 @@ Dataset_Name = 'Dataset_v3'
 def main():
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
-    for partition_name in ['train', 'test', 'valid']:
+    for partition_name in ['train', 'valid', 'test']:
         folder_path = f'{project_folder}/Data/Dataset_v1/images/{partition_name}'
         file_info_list = Utils.extract_numbers_from_filenames(folder_path)
         for file_info in file_info_list:

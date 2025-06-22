@@ -1,8 +1,8 @@
 # System (Default)
 import sys
 #   Add access if it is not in the system path.
-if '../' + 'src' not in sys.path:
-    sys.path.append('../' + 'src')
+if '../../' + 'src' not in sys.path:
+    sys.path.append('../../' + 'src')
 # Ultralytics (Real-time object detection and image segmentation 
 # model) [pip install ultralytics]
 from ultralytics import YOLO
@@ -11,6 +11,8 @@ import os
 # Custom Library:
 #   ../Utilities/Model
 import Utilities.Model
+
+import torch
 
 """
 Description:
@@ -41,7 +43,10 @@ def main():
 
     # Locate the path to the project folder.
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
-  
+
+    # Automatically select device
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     # Remove the YOLO model, if it already exists.
     if os.path.isfile(f'{CONST_YOLO_SIZE}.pt'):
         print(f'[INFO] Removing the YOLO model.')
@@ -56,19 +61,18 @@ def main():
 
     # Training the model on a custom dataset with additional dependencies (number of epochs, image size, etc.)
     model.train(
-        data=f'{project_folder}/YOLO/Configuration/Cfg_Model_2.yaml',  # Your defect dataset yaml
-        batch=16,                   # Larger batch size due to smaller crops
-        imgsz=640,                  # Smaller input resolution suitable for cropped defects
-        device='cuda',
-        epochs=500,                 # Enough to learn defect features
+        data=f'{project_folder}/YOLO/Configuration/Cfg_Model_1.yaml',
+        batch=4,                    # Safe batch size for 16GB GPU at 1280 img size
+        imgsz=1280,                 # Resolution fitting your images
+        device=device,
+        epochs=500,                 # Enough for convergence
         patience=50,                # Early stopping patience
-        rect=True,                  # Keep aspect ratio (good for variable crop shapes)
-        freeze=10,                  # Optionally freeze backbone layers (adjust as needed)
-        name=f'{project_folder}/YOLO/Results/Dataset_v2/train_fb_{CONST_FREEZE_BACKBONE}',
-        lr0=0.001,                  # Starting learning rate
-        warmup_epochs=3,
-        close_mosaic=15,            # Disable mosaic near end of training
-        amp=True                    # Mixed precision for faster training
+        rect=True,                  # Use rectangular training for variable aspect ratio
+        name=f'{project_folder}/YOLO/Results/Dataset_v1/train_fb_{CONST_FREEZE_BACKBONE}',
+        lr0=0.001,                  # Initial learning rate
+        warmup_epochs=3,            # Gradual warm-up
+        close_mosaic=15,            # Disable mosaic augmentation in last 15 epochs
+        amp=True                    # Mixed precision training for speed and memory efficiency
     )
 
 if __name__ == '__main__':

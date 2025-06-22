@@ -19,7 +19,7 @@ Dataset_Name = 'Dataset_v2'
 def main():
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
-    for partition_name in ['train', 'test', 'valid']:
+    for partition_name in ['train', 'valid', 'test']:
         folder_path = f'{project_folder}/Data/Dataset_v1/images/{partition_name}'
         file_info_list = Utils.extract_numbers_from_filenames(folder_path)
         for file_info in file_info_list:
@@ -51,7 +51,7 @@ def main():
                 else:
                     id_new = 1 if label_data_tmp[0, 0] == 1 else 0
                     label_data = np.array([np.append([id_new], label_data_tmp[0, 1::])], dtype=label_data_tmp.dtype)
-
+                    
                 label_data[:, 0] = label_data[:, 0].astype(int)
                 for _, label_data_i in enumerate(label_data):
                     formatted_data = f'{int(label_data_i[0])} ' + ' '.join(f'{x:.6f}' for x in label_data_i[1:])

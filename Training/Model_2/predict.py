@@ -4,6 +4,8 @@ from ultralytics import YOLO
 # OS (Operating system interfaces)
 import os
 
+import torch
+
 """
 Description:
     Initialization of constants.
@@ -30,20 +32,23 @@ def main():
     # Locate the path to the project folder.
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
+    # Automatically select device
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     # Load a pre-trained custom YOLO model.
     model = YOLO(f'{project_folder}/YOLO/Results/Dataset_v1/train_fb_{CONST_FREEZE_BACKBONE}/weights/best.pt')
 
     # Predict (test) the model on a test dataset.
     _ = model.predict(
-        source=f'{project_folder}/Data/Dataset_v1/images/test',
-        imgsz=1280,
-        conf=0.25,                  # Higher confidence threshold for deployment
-        iou=0.45,                   # Standard NMS IoU threshold for inference
-        device='cuda',
-        save=True,                  # Save predicted images with bounding boxes
-        save_txt=True,              # Save YOLO format predicted labels
-        save_conf=True,             # Include confidence scores in saved labels
-        name=f'{project_folder}/YOLO/Results/Dataset_v1/predict_fb_{CONST_FREEZE_BACKBONE}'
+        source=f'{project_folder}/Data/Defect_Dataset/images/test',
+        imgsz=640,
+        conf=0.25,                  # Stricter confidence threshold for deployment
+        iou=0.45,
+        device=device,
+        save=True,
+        save_txt=True,
+        save_conf=True,
+        name=f'{project_folder}/YOLO/Results/Dataset_v2/predict_fb_{CONST_FREEZE_BACKBONE}'
     )
 
 if __name__ == '__main__':
