@@ -12,7 +12,6 @@ CONST_SQUARE_SIZE_M = 12.0 / 1000.0
 # Checkerboard size (width, height) on A4 format in meters.
 CONST_A4_SIZE_M = (0.210, 0.297)
 
-
 def main():
     """
     Description:

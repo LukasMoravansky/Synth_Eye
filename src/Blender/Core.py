@@ -667,7 +667,7 @@ class Material_Cls:
         # Check if the node's label is present in the value mapping for randomization.
         if node.label in value_mapping:
             node.outputs[0].default_value = np.random.uniform(*value_mapping[node.label])
-        elif node.label == "enable":
+        elif node.label == 'enable':
             # Randomly enable or disable the fingerprint on the material and print the result.
             self.fingerprint_enabled = np.random.normal(0.5, 0.2) > 0.5
             node.outputs[0].default_value = self.fingerprint_enabled
@@ -729,41 +729,21 @@ class Material_Cls:
         for link in original_links:
             links.new(mix_shader.outputs[0], material_output.inputs['Surface'])
         
-        print("Baking completed and original shader links restored.")
+        print('[INFO] Baking completed and original shader links restored.')
 
-    @staticmethod
-    def draw_red_dot(image_array: np.ndarray, x: int, y: int, radius: int = 3):
+    def __Transform(self, image_name: str, resolution: tp.Tuple[int, int], p: tp.Tuple[int, int], angle_z: float) -> None:
         """
-        Draw a red dot (circle) on an image array (RGBA) at position (x, y).
-        
-        Args:
-            image_array: np.ndarray of shape (H, W, 4)
-            x, y: center of the dot
-            radius: radius of the red dot in pixels
-        """
-        height, width, _ = image_array.shape
-
-        for j in range(y - radius, y + radius + 1):
-            for i in range(x - radius, x + radius + 1):
-                if 0 <= i < width and 0 <= j < height:
-                    # Use circle equation
-                    if (i - x)**2 + (j - y)**2 <= radius**2:
-                        image_array[j, i] = np.array([1.0, 0.0, 0.0, 1.0])  # Red RGBA
-
-    def __Transform(self, image_name: str, resolution: tp.Tuple[int, int], p: tp.Tuple[int, int], angle_z: float):
-        """
-        Transforms the image by rotating and resizing it, then stores the result in a new image.
+        Description:
+            Transforms the image by rotating and resizing it, then stores the result in a new image.
 
         Args:
-            image_name [string]: The name of the image to transform.
-            resolution [tuple(int, int)]: The resolution of the transformed image.
-            p [tuple(int, int)]: The position (x, y) to center the transformation.
-            angle_z [float]: The angle in radians for rotation along the Z-axis.
-
-        Returns:
-            None
+            (1) image_name [string]: The name of the image to transform.
+            (2) resolution [tuple(int, int)]: The resolution of the transformed image.
+            (3) p [tuple(int, int)]: The position (x, y) to center the transformation.
+            (4) angle_z [float]: The angle in radians for rotation along the Z-axis.
         """
-        # Load the original image
+
+        # Load the original image.
         image = bpy.data.images.get(image_name)
         if not image:
             print(f"Image '{image_name}' not found!")
@@ -771,15 +751,12 @@ class Material_Cls:
 
         width = resolution[0]; height = resolution[1]
         old_width, old_height = image.size
-        pixels = np.array(image.pixels[:]).reshape((old_height, old_width, 4))  # RGBA
+        pixels = np.array(image.pixels[:]).reshape((old_height, old_width, 4))
 
-        # obj_w=39 [mm], obj_h=60 [mm]
-        # int(1246.652773834147 - 829.7033093317601)
-        # int(917.4075664550235 - 291.0482477383347)
-        # {'x_min': 829.7033093317601, 'y_min': 291.0482477383347, 'x_max': 1246.652773834147, 'y_max': 917.4075664550235}
-        a = 406+6; b = 626+6
+        # Determine the width and height of the object in pixels with a slight tolerance.
+        object_width_px = 412; object_height_px = 632
 
-        # Check if the transformed image already exists and remove it
+        # Check if the transformed image already exists and remove it.
         transformed_image_name = image_name + "_transformed"
         existing_image = bpy.data.images.get(transformed_image_name)
         if existing_image:
@@ -789,29 +766,27 @@ class Material_Cls:
         new_image = bpy.data.images.new(name=transformed_image_name, width=width, height=height, alpha=True)
         new_pixels = np.zeros((height, width, 4), dtype=np.float32)
 
-        # Center of the old image in its own coordinates
+        # Center of the old image in its own coordinates.
         cx_old, cy_old = old_width / 2, old_height / 2
 
-        # Center of the transformed image on the new canvas
+        # Center of the transformed image on the new canvas.
         cx_new, cy_new = p[0], height - p[1]
 
-        # Iterate through each pixel in the new image to compute the source color
+        # Iterate through each pixel in the new image to compute the source color.
         for y in range(height):
             for x in range(width):
-                # Coordinates relative to target center
-                dx = (x - cx_new) / (a / old_width)
-                dy = (y - cy_new) / (b / old_height)
+                # Coordinates relative to target center.
+                dx = (x - cx_new) / (object_width_px / old_width)
+                dy = (y - cy_new) / (object_height_px / old_height)
 
-                # Inverse rotation
+                # Inverse rotation.
                 src_x = cx_old + dx * np.cos(angle_z) - dy * np.sin(angle_z)
+                src_x -= 1
                 src_y = cy_old + dx * np.sin(angle_z) + dy * np.cos(angle_z)
 
-                # ...
-                src_x -= 1
-
-                # Check if the coordinates are inside the original image
+                # Check if the coordinates are inside the original image.
                 if 0 <= src_x < old_width - 1 and 0 <= src_y < old_height - 1:
-                    # Bilinear interpolation
+                    # Bilinear interpolation.
                     x0, y0 = int(src_x), int(src_y)
                     x1, y1 = min(x0 + 1, old_width - 1), min(y0 + 1, old_height - 1)
                     dx, dy = src_x - x0, src_y - y0
@@ -826,16 +801,13 @@ class Material_Cls:
                                  pixel10 * (1 - dx) * dy +
                                  pixel11 * dx * dy)
 
-                    # Store the interpolated pixel
+                    # Store the interpolated pixel.
                     new_pixels[y, x] = new_pixel
 
-        # Optional debug marker at the transformation center
-        #self.draw_red_dot(new_pixels, p[0], p[1], radius=1)
-
-        # Write new pixels to Blender
+        # Write new pixels to Blender.
         new_image.pixels = new_pixels.ravel().tolist()
         new_image.file_format = 'PNG'
-        print(f"Transformed image '{new_image.name}' has been created.")
+        print(f'[INFO] Transformed image <{new_image.name}> has been created.')
 
     def __Get_Bounding_Box(self, image_name: str) -> tp.Optional[tp.Tuple[int, int, int, int]]:
         """
@@ -865,11 +837,11 @@ class Material_Cls:
             print('[INFO] No white area detected.')
             return None
 
-        # Extract bounding box in image coordinates (top-left origin)
+        # Extract bounding box in image coordinates (top-left origin).
         min_y, min_x = coords.min(axis=0)
         max_y, max_x = coords.max(axis=0)
 
-        # Optional: draw bounding box in red
+        # Optional: draw bounding box in red.
         box_color = (1, 0, 0, 1)
         for x in range(min_x, max_x + 1):
             pixels[min_y, x] = box_color
@@ -881,7 +853,7 @@ class Material_Cls:
         image.pixels = pixels.flatten()
         image.update()
 
-        # Flip Y for bottom-left origin (e.g., for texture coordinates)
+        # Flip Y for bottom-left origin (e.g., for texture coordinates).
         converted_min_y = height - max_y
         converted_max_y = height - min_y
 

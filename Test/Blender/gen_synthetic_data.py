@@ -24,15 +24,23 @@ import Transformation.Core as Transformation
 import Transformation.Utilities.Mathematics as Mathematics
 import time
 
+"""
+Description:
+    Initialization of constants.
+"""
 # Number of synthetic data to be generated.
-CONST_NUM_OF_GEN_DATA = 3000*0.2 - 232
+CONST_NUM_OF_GEN_DATA = 1
 # Partition the dataset into training, validation, and test sets in percentages.
 #   Note:
 #       The sum of the values in the partitions must equal 100.
-CONST_PARTITION_DATASET = {'train': 0, 'valid': 100, 'test': 0}
+CONST_PARTITION_DATASET = {'train': 100, 'valid': 0, 'test': 0}
 # The initial number of the iteration to save the image.
 #   0 - Data storage starts from 1 (1 = 'Image_001', 2 = 'Image_002', etc.)
-CONST_INIT_INDEX = 5632
+CONST_INIT_INDEX = 0
+# Indicates whether the object is flipped or not.
+CONST_OBJ_IS_FLIPPED = False
+# Indicates whether or not fingerprint generation is enabled on the object.
+CONST_ENABLE_FINGERPRINT = False
 
 def main():
     """
@@ -58,9 +66,13 @@ def main():
     #   The main parameters of the camera and light can be found at: ../Parameters/Scene.py
     Camera_Cls = Blender.Core.Camera_Cls(Parameters.Scene.Basler_Cam_Str, Parameters.Scene.Effilux_Light_Str, 'PNG')
 
-    # ...
-    Parameters.Object.Object_001_Str.T = Transformation.Homogeneous_Transformation_Matrix_Cls(None, np.float64).Rotation([0.0, Mathematics.CONST_MATH_PI, 0.0], 
-                                                                                          'ZYX').Translation([0.0075, 0.0, 0.004])
+    # Set the object flip position based on a constant.
+    if CONST_OBJ_IS_FLIPPED == True:
+        Parameters.Object.Object_001_Str.T = Transformation.Homogeneous_Transformation_Matrix_Cls(None, np.float64).Rotation([0.0, Mathematics.CONST_MATH_PI, 0.0], 
+                                                                                            'ZYX').Translation([0.0075, 0.0, 0.004])
+    else:
+        Parameters.Object.Object_001_Str.T = Transformation.Homogeneous_Transformation_Matrix_Cls(None, np.float64).Rotation([0.0, 0.0, 0.0], 
+                                                                                            'ZYX').Translation([0.0075, 0.0, 0.004])
     # Initialize the object to be captured by the camera.
     #   The main parameters of the object can be found at: ../Parameters/Object.py
     Object_Cls = Blender.Core.Object_Cls(Parameters.Object.Object_001_Str, 'ZYX')
@@ -81,13 +93,11 @@ def main():
             # Generate a random position of the object.
             Object_Cls.Random()
 
-            #   ....
+            # Determine the object's center pixel coordinates by projecting its 3D position using the camera matrix 
+            # in homogeneous coordinates and normalizing the result.
             P_extended = np.vstack((Camera_Cls.P(), np.ones(4)))
             obj_center_px_tmp = (P_extended @ np.hstack((np.array(Object_Cls.T.p.all()), 1)))[0:-1]
             obj_center_px = np.array(obj_center_px_tmp/obj_center_px_tmp[-1], dtype=int)[0:-1]
-
-            # ...
-            obj_is_flipped = not (np.abs(bpy.data.objects[Object_Cls.Name].rotation_euler.y) < Mathematics.CONST_MATH_HALF_PI)
 
             # Generate random camera properties.
             Camera_Cls.Random()
@@ -97,9 +107,8 @@ def main():
             #       If the returned information is None, it indicates that the bounding box 
             #       has not been generated for the material.
             material_info_b_box = Material_Cls.Random('Area_Testing_Mat', list(Parameters.Scene.Basler_Cam_Str.Resolution.values()),
-                                                      obj_is_flipped, obj_center_px, Object_Cls.T.Get_Rotation('ZYX')[2])
-
-            # ...
+                                                      CONST_OBJ_IS_FLIPPED, obj_center_px, Object_Cls.T.Get_Rotation('ZYX')[2])
+            # Wait 10 seconds to ensure material generation is complete.
             time.sleep(10)
 
             # Get the 2D coordinates of the bounding box from the rendered object scanned by the camera.
@@ -107,11 +116,14 @@ def main():
                                                                                 Parameters.Scene.Basler_Cam_Str.Resolution, 'YOLO')
 
             # Check if the object's rotation along the Y-axis indicates it is flipped.
-            if not obj_is_flipped:
+            if not CONST_OBJ_IS_FLIPPED:
                 if material_info_b_box == None:
+                    if CONST_ENABLE_FINGERPRINT == True:
+                        continue
                     cls_id = np.array([0],dtype=int); b_box_2d = np.array([list(bounding_box_2d.values())])
                 else:
-                    continue
+                    if CONST_ENABLE_FINGERPRINT == False:
+                        continue
                     bb_fingerprint = Utilities.General.Convert_Boundig_Box_Data('PASCAL_VOC', 'YOLO', {'x_min': material_info_b_box[0], 'y_min': material_info_b_box[2], 
                                                                                                     'x_max': material_info_b_box[1], 'y_max': material_info_b_box[3]}, 
                                                                                                     Parameters.Scene.Basler_Cam_Str.Resolution)
