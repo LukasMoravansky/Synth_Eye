@@ -25,14 +25,14 @@ import Transformation.Utilities.Mathematics as Mathematics
 import time
 
 # Number of synthetic data to be generated.
-CONST_NUM_OF_GEN_DATA = 1000
+CONST_NUM_OF_GEN_DATA = 3000*0.2 - 232
 # Partition the dataset into training, validation, and test sets in percentages.
 #   Note:
 #       The sum of the values in the partitions must equal 100.
-CONST_PARTITION_DATASET = {'train': 80, 'valid': 20, 'test': 0}
+CONST_PARTITION_DATASET = {'train': 0, 'valid': 100, 'test': 0}
 # The initial number of the iteration to save the image.
 #   0 - Data storage starts from 1 (1 = 'Image_001', 2 = 'Image_002', etc.)
-CONST_INIT_INDEX = 5000
+CONST_INIT_INDEX = 5632
 
 def main():
     """
