@@ -290,5 +290,95 @@ def YOLO_ONNX_Format_Object_Detection(image: tp.List[tp.List[int]], model_onnx: 
     else:
         print('[INFO] The model did not find object in the input image.')
         return (None, None, None)
+    
+class Process_Image_Cls:
+    """
+    Description:
+        A class for processing images based on the type ('synthetic' or 'real').
+
+    Note:
+        Includes methods for adding Gaussian noise, adjusting color style, and applying Gaussian blur.
+    
+    Args:
+        (1) image_type [str]: Type of the image to process. Must be either 'synthetic' or 'real'.
+    """
+
+    def __init__(self, image_type: str):
+        if image_type not in ['synthetic', 'real']:
+            raise ValueError("[ERROR] Image type must be 'synthetic' or 'real'.")
+        self.__image_type = image_type
+
+    def __Noise(self, image: np.ndarray, std_dev: float = 5.0) -> np.ndarray:
+        """
+        Description:
+            Adds Gaussian noise to an image to simulate sensor noise in synthetic data.
+
+        Args:
+            (1) image [np.ndarray]: Input image in uint8 format.
+            (2) std_dev [float]: Standard deviation of the Gaussian noise.
+
+        Returns:
+            (1) parameter [np.ndarray]: Output image with added noise.
+        """
+
+        random_noise = np.random.normal(0, std_dev, image.shape).astype(np.int16)
+        noisy_img = image.astype(np.int16) + random_noise
+        return np.clip(noisy_img, 0, 255).astype(np.uint8)
+
+    def __Color_Style(self, image: np.ndarray, alpha: float = 0.95, beta: int = 5) -> np.ndarray:
+        """
+        Description:
+            Adjusts brightness and contrast, with optional warm filter effect.
+
+        Args:
+            (1) image [np.ndarray]: Input image.
+            (2) alpha [float]: Contrast factor (1.0 = no change).
+            (3) beta [int]: Brightness offset.
+
+        Returns:
+            (1) parameter [np.ndarray]: Color-adjusted image.
+        """
+
+        adjusted_img = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
+        return np.clip(adjusted_img * np.array([[[1.0, 1.0, 1.0]]]), 0, 255).astype(np.uint8)
+
+    def __Blur(self, image: np.ndarray, kernel_size: tp.Tuple[int, int] = (5, 5), sigma: float = 1.0) -> np.ndarray:
+        """
+        Description:
+            Applies Gaussian blur to reduce sharpness and simulate camera effects.
+
+        Args:
+            (1) image [np.ndarray]: Input image.
+            (2) kernel_size [Tuple[int, int]]: Size of the Gaussian kernel.
+            (3) sigma [float]: Gaussian kernel standard deviation.
+
+        Returns:
+            (1) parameter [np.ndarray]: Blurred image.
+        """
+
+        return cv2.GaussianBlur(image, kernel_size, sigmaX=sigma)
+
+    def Apply(self, image: np.ndarray) -> np.ndarray:
+        """
+        Description:
+            Applies the image processing pipeline based on image type.
+
+        Args:
+            (1) image [np.ndarray]: Input image in uint8 format.
+
+        Returns:
+            (1) parameter [np.ndarray]: Processed image.
+        """
+
+        image_tmp = image.copy()
+
+        if self.__image_type == 'synthetic':
+            noisy_img = self.__Noise(image_tmp, std_dev=5.0)
+            blurred_img = self.__Blur(noisy_img, kernel_size=(3, 3), sigma=0.5)
+            styled_img = self.__Color_Style(blurred_img, alpha=0.95, beta=1)
+            return self.__Blur(styled_img, kernel_size=(3, 3), sigma=1.0)
+        elif self.__image_type == 'real':
+            return self.__Color_Style(image_tmp, alpha=0.95, beta=1)
+
 
     

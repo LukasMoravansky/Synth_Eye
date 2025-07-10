@@ -1,11 +1,11 @@
-data: YOLO/Configuration/Cfg_Model_2.yaml
-imgsz: 640
+data: Configuration.yaml
 batch: 16
+imgsz: 640
 device: 0
 epochs: 1000
 patience: 0
 rect: true
-name: YOLO/Results/Dataset_v3/train_fb_${CONST_FREEZE_BACKBONE}
+name: train_fb
 lr0: 0.001
 warmup_epochs: 5
 mosaic: 0.2
@@ -22,5 +22,5 @@ augment: true
 amp: true
 cache: disk
 workers: 8
-verbose: true
 freeze: 10
+verbose: true

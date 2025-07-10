@@ -1,37 +1,17 @@
-from pathlib import Path
-import re
-import numpy as np
 import cv2
+import numpy as np
+import sys
+import os
 
-def extract_numbers_from_filenames(folder_path):
-    folder = Path(folder_path)
-    results = []
-    
-    for file in folder.iterdir():
-        if file.is_file() and file.suffix == '.png':
-            match = re.search(r'Image_((?:\w+_)*)(\d+)\.png', file.name)
-            if match:
-                prefix = match.group(1)
-                number = int(match.group(2))
-                is_background = 'Background' in prefix
-                results.append({
-                    'name': file.stem,
-                    'id': number,
-                    'is_background': is_background,
-                    'path': str(file)
-                })
-    
-    return results
+SRC_PATH = os.path.abspath('../../src')
+if SRC_PATH not in sys.path:
+    sys.path.append(SRC_PATH)
 
-def yolo_to_absolute(x_c, y_c, w, h, img_w, img_h):
-    abs_x = x_c * img_w
-    abs_y = y_c * img_h
-    abs_w = w * img_w
-    abs_h = h * img_h
-    return abs_x, abs_y, abs_w, abs_h
+INPUT_IMAGE_PATH = r"Image_3234.png"; OUTPUT_IMAGE_PATH = r"Image_3234_processed.png"
 
-def absolute_to_yolo(x, y, w, h, img_w, img_h):
-    return x / img_w, y / img_h, w / img_w, h / img_h
+image = cv2.imread(INPUT_IMAGE_PATH)
+if image is None:
+    raise FileNotFoundError(f"Unable to load image from: {INPUT_IMAGE_PATH}")
 
 # ---- Image Processing Utilities ----
 def add_realistic_noise(image: np.ndarray, std_dev: float = 5.0) -> np.ndarray:
@@ -59,6 +39,9 @@ def process_synthetic_image(image: np.ndarray) -> np.ndarray:
     final_output = apply_blur(styled, kernel_size=(3, 3), sigma=1.0)
     return final_output
 
+# ---- Process and Save Result ----
+processed_image = process_synthetic_image(image)
+cv2.imwrite(OUTPUT_IMAGE_PATH, processed_image)
+print(f"Processed image saved to: {OUTPUT_IMAGE_PATH}")
 
-def process_real_image(image: np.ndarray) -> np.ndarray:
-    return adjust_color_style(image)
+

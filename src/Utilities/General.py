@@ -27,6 +27,10 @@
 import numpy as np
 # Typing (Support for type hints)
 import typing as tp
+# Path (Object-oriented filesystem paths)
+from pathlib import Path
+# re (Regular expression operations)
+import re
 
 def Get_Min_Max(vertices: tp.List[float]) -> tp.Tuple[tp.List[float], tp.List[float]]:
     """
@@ -185,4 +189,88 @@ def Get_2D_Coordinates_Bounding_Box(vertices: tp.List[tp.List[float]], P: tp.Lis
     except AssertionError as error:
         print(f'[ERROR] Information: {error}')
         print('[INFO] The output format must be YOLO, as other formats are not yet implemented.')
+
+def YOLO_To_Absolute_Coordinates(Bounding_Box: tp.Tuple[tp.List[float]], Resolution: tp.Tuple[int, int]) -> tp.Tuple[tp.Dict]:
+    """
+    Description:
+        Converts bounding box coordinates from YOLO format (normalized center coordinates and size) to absolute pixel 
+        coordinates relative to the image dimensions.
+
+    Args:
+        (1) Bounding_Box [Dictionary {'x_c': float, 'y_c': float, 
+                                      'width': float, 'height': float}]: Input bounding box in the YOLO format.
+        (2) Resolution [Dictionary {'x': width, 'y': height}]: Resolution of the processed image.
+
+    Returns:
+        (1) parameter [Dictionary {'x': float, 'y': float, 
+                                   'width': float, 'height': float}]: Output bounding box in the absolute coordinates format.
+    """
+
+    return {
+        'x': Bounding_Box['x_c'] * Resolution['width'],
+        'y': Bounding_Box['y_c'] * Resolution['height'],
+        'width': Bounding_Box['width'] * Resolution['width'],
+        'height': Bounding_Box['height'] * Resolution['height']
+    }
+
+def Absolute_Coordinates_To_YOLO(Bounding_Box: tp.Tuple[tp.List[float]], Resolution: tp.Tuple[int, int]) -> tp.Tuple[tp.Dict]:
+    """
+    Description:
+        Converts bounding box coordinates from absolute pixel values to YOLO format (normalized center coordinates 
+        and size relative to the image dimensions).
+
+    Args:
+        (1) Bounding_Box [Dictionary {'x': float, 'y': float, 
+                                      'width': float, 'height': float}]: Input bounding box in the absolute coordinates format.
+        (3) Resolution [Dictionary {'x': width, 'y': height}]: Resolution of the processed image.
+
+    Returns:
+        (1) parameter [Dictionary {'x_c': float, 'y_c': float, 
+                                   'width': float, 'height': float}]: Output bounding box in the YOLO format.
+    """
+
+    return {
+        'x_c': Bounding_Box['x'] / Resolution['width'],
+        'y_c': Bounding_Box['y'] / Resolution['height'],
+        'width': Bounding_Box['width'] / Resolution['width'],
+        'height': Bounding_Box['height'] / Resolution['height']
+    }
+
+def Extract_Num_From_Filename(img_name: str, path_name: str) -> tp.List[tp.Dict]:
+    """
+    Description:
+        Extracts numeric identifiers and background flags from filenames in a specified directory 
+        that follow a specific naming convention starting with a dynamic prefix.
+
+    Args:
+        (1) img_name [str]: The dynamic prefix string to search for in filenames.
+        (2) path_name [str]: The directory path containing the files to be searched.
+
+    Returns:
+        (1) parameter [List[Dict]]: A list of dictionaries, each representing a matched file with keys:
+            - 'Name' [str]: The filename without extension.
+            - 'Id' [int]: The extracted numeric identifier.
+            - 'Is_Background' [bool]: Flag indicating if 'Background' is present in the filename parts.
+            - 'Path' [str]: The full file path as a string.
+    """
+
+    # Dynamic prefix pattern.
+    pattern = rf'{img_name}_((?:\w+_)*)(\d+)\.png'
+    
+    results = []
+    for file in Path(path_name).iterdir():
+        if file.is_file() and file.suffix == '.png':
+            match = re.search(pattern, file.name)
+            if match:
+                # Check if 'Background' is in the grouped prefix part.
+                is_background = 'Background' in match.group(1)
+
+                results.append({
+                    'Name': file.stem,
+                    'Id': int(match.group(2)),
+                    'Is_Background': is_background,
+                    'Path': str(file)
+                })
+
+    return results
     
