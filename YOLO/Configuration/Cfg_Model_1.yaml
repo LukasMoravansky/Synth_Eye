@@ -1,5 +1,5 @@
 # Description:
-#   The configuration file for training the NN model to detect three classes of objects:
+#   The configuration file for training the NN model to detect two classes of objects:
 #     1. Cls_Obj_Front_Side
 #     2. Cls_Obj_Back_Side
 #   The dataset is organized into training, validation, and testing partitions.
