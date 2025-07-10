@@ -5,20 +5,28 @@ if '../../' + 'src' not in sys.path:
     sys.path.append('../../' + 'src')
 # OpenCV library for computer vision tasks
 import cv2
-# OS module for file handling and accessing directories
-import os
-# Library to work with Basler cameras
+# Custom Lib.:
+#   ../Basler/Camera
 from Basler.Camera import Basler_Cls
+#   ../Calibration/Parameters
+from Calibration.Parameters import Basler_Calib_Param_Str
 
 def main():
-    # Locate the path to the project folder
-    project_folder = os.getcwd().split('BIW_Vision_AI')[0] + 'BIW_Vision_AI'
+    """
+    Description:
+        A program to configure a Basler camera (a2A1920-51gcPRO) with custom settings for continuous image capture. The system is equipped
+        with the EFFI-FD-200-200-000 lighting for optimal illumination in the vision stand.
 
+        Setup:
+            Camera Model: Basler a2A1920-51gcPRO GigE Camera
+            Lighting: EFFI-FD-200-200-000 High-Power Flat Light
+    """
+        
     # Custom camera configuration.
     custom_cfg = {
-        'exposure_time': 1000,
+        'exposure_time': 10000,
         'gain': 10,
-        'balance_ratios': {'Red': 1.1, 'Green': 1.0, 'Blue': 1.3},
+        'balance_ratios': {'Red': 0.95, 'Green': 0.9, 'Blue': 1.2},
         'pixel_format': 'BayerRG8'
     }
 
@@ -33,14 +41,13 @@ def main():
             print("No image captured!")
             break
         
-        # Convert the image from BGR to RGB color format
-        img_rgb = cv2.cvtColor(img_raw, cv2.COLOR_BGR2RGB)
-
-        # Get image dimensions
-        img_height, img_width, _ = img_rgb.shape
+        # Undistort the image using camera calibration parameters.
+        h, w = img_raw.shape[:2]
+        new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(Basler_Calib_Param_Str.K, Basler_Calib_Param_Str.Coefficients, (w, h), 1, (w, h))
+        img_undistorted = cv2.undistort(img_raw, Basler_Calib_Param_Str.K, Basler_Calib_Param_Str.Coefficients, None, new_camera_matrix)
 
         # Show the captured image.
-        cv2.imshow("Captured Image", img_raw)
+        cv2.imshow("Captured Image", img_undistorted)
         
         # Wait for the user to press the 'c' key to exit the loop or stop if the camera is no longer grabbing.
         key = cv2.waitKey(100) & 0xFF
