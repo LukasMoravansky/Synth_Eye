@@ -24,7 +24,7 @@ Description:
 #   Nano: 'yolov8n', Small: 'yolov8s', Medium: 'yolov8m', Large: 'yolov8l', XLarge: 'yolov8x'}
 CONST_YOLO_SIZE = 'yolov8m'
 # An indication of whether the backbone layers of the model should be frozen.
-CONST_FREEZE_BACKBONE = True
+CONST_FREEZE_BACKBONE = False
 
 def main():
     """
@@ -44,9 +44,6 @@ def main():
     # Locate the path to the project folder.
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
-    # Automatically select device
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
     # Remove the YOLO model, if it already exists.
     if os.path.isfile(f'{CONST_YOLO_SIZE}.pt'):
         print(f'[INFO] Removing the YOLO model.')
@@ -62,18 +59,34 @@ def main():
     # Training the model on a custom dataset with additional dependencies (number of epochs, image size, etc.)
     model.train(
         data=f'{project_folder}/YOLO/Configuration/Cfg_Model_1.yaml',
-        batch=4,                    # Safe batch size for 16GB GPU at 1280 img size
-        imgsz=1280,                 # Resolution fitting your images
-        device=device,
-        epochs=500,                 # Enough for convergence
-        patience=50,                # Early stopping patience
-        rect=True,                  # Use rectangular training for variable aspect ratio
-        name=f'{project_folder}/YOLO/Results/Dataset_v1/train_fb_{CONST_FREEZE_BACKBONE}',
-        lr0=0.001,                  # Initial learning rate
-        warmup_epochs=3,            # Gradual warm-up
-        close_mosaic=15,            # Disable mosaic augmentation in last 15 epochs
-        amp=True                    # Mixed precision training for speed and memory efficiency
+        batch=16,
+        imgsz=640,
+        device=0,
+        epochs=300,
+        patience=0,
+        rect=True,
+        name=f'{project_folder}/YOLO/Results/Dataset_v2/train_fb_{CONST_FREEZE_BACKBONE}',
+        lr0=0.001,
+        warmup_epochs=5,
+        cos_lr=True,
+        mosaic=0.2,
+        close_mosaic=50,
+        hsv_h=0.015,
+        hsv_s=0.2,
+        hsv_v=0.2,
+        fliplr=0.5,
+        flipud=0.0,
+        scale=0.05,
+        translate=0.05,
+        amp=True,
+        cache='disk',
+        workers=8,
+        freeze=0,
+        val=True,
+        verbose=True
     )
+
+    # augment=True ???
 
 if __name__ == '__main__':
     main()  

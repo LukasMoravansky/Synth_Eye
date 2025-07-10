@@ -44,36 +44,44 @@ def main():
     # Locate the path to the project folder.
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
   
-    # Automatically select device
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
     # Remove the YOLO model, if it already exists.
     if os.path.isfile(f'{CONST_YOLO_SIZE}.pt'):
         print(f'[INFO] Removing the YOLO model.')
         os.remove(f'{CONST_YOLO_SIZE}.pt')
 
-    # Load a pre-trained YOLO model.
+    # Load the model
     model = YOLO(f'{CONST_YOLO_SIZE}.pt')
 
-    if CONST_FREEZE_BACKBONE == True:
-        # Triggered when the training starts.
+    if CONST_FREEZE_BACKBONE:
         model.add_callback('on_train_start', Utilities.Model.Freeze_Backbone)
 
-    # Training the model on a custom dataset with additional dependencies (number of epochs, image size, etc.)
     model.train(
-        data=f'{project_folder}/YOLO/Configuration/Cfg_Model_2.yaml',  # Your defect dataset yaml
-        batch=16,                   # Larger batch size due to smaller crops
-        imgsz=640,                  # Smaller input resolution suitable for cropped defects
-        device=device,
-        epochs=500,                 # Enough to learn defect features
-        patience=50,                # Early stopping patience
-        rect=True,                  # Keep aspect ratio (good for variable crop shapes)
-        freeze=10,                  # Optionally freeze backbone layers (adjust as needed)
-        name=f'{project_folder}/YOLO/Results/Dataset_v2/train_fb_{CONST_FREEZE_BACKBONE}',
-        lr0=0.001,                  # Starting learning rate
-        warmup_epochs=3,
-        close_mosaic=15,            # Disable mosaic near end of training
-        amp=True                    # Mixed precision for faster training
+        data=f'{project_folder}/YOLO/Configuration/Cfg_Model_2.yaml',
+        imgsz=640,
+        batch=16,
+        device=0,
+        epochs=1000,
+        patience=0,
+        rect=True,
+        name=f'{project_folder}/YOLO/Results/Dataset_v3/train_fb_{CONST_FREEZE_BACKBONE}',
+        lr0=0.001,
+        warmup_epochs=5,
+        mosaic=0.2,
+        close_mosaic=50,
+        cos_lr=True,
+        hsv_h=0.015,
+        hsv_s=0.3,
+        hsv_v=0.3,
+        fliplr=0.5,
+        flipud=0.0,
+        scale=0.01,
+        translate=0.01,
+        augment=True,
+        amp=True,
+        cache='disk',
+        workers=8,
+        verbose=True,
+        freeze=10
     )
 
 if __name__ == '__main__':

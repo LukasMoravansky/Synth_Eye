@@ -10,13 +10,9 @@ import torch
 Description:
     Initialization of constants.
 """
-# Select the desired size of YOLOv* to build the model.
-#   Note:
-#     Detection Model.
-#   Nano: 'yolov8n', Small: 'yolov8s', Medium: 'yolov8m', Large: 'yolov8l', XLarge: 'yolov8x'}
-CONST_YOLO_SIZE = 'yolov8m'
+
 # An indication of whether the backbone layers of the model should be frozen.
-CONST_FREEZE_BACKBONE = True
+CONST_FREEZE_BACKBONE = False
 
 def main():
     """
@@ -31,25 +27,17 @@ def main():
     # Locate the path to the project folder.
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
-    # Automatically select device
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
     # Load a pre-trained custom YOLO model.
-    model = YOLO(f'{project_folder}/YOLO/Results/Dataset_v1/train_fb_{CONST_FREEZE_BACKBONE}/weights/best.pt')
+    model = YOLO(f'{project_folder}/YOLO/Results/Dataset_v2/train_fb_{CONST_FREEZE_BACKBONE}/weights/best.pt')
 
     # Evaluate the performance of the model on the validation dataset.
-    model.val(
+    _ = model.val(
         data=f'{project_folder}/YOLO/Configuration/Cfg_Model_1.yaml',
-        batch=4,
-        imgsz=1280,
-        device=device,
-        conf=0.1,                   # Reasonable confidence threshold for validation
-        iou=0.6,                    # IoU threshold for NMS during validation
-        save_txt=True,              # Save predicted boxes as YOLO format .txt files
-        save_conf=True,             # Include confidence scores in saved .txt files
-        save_json=False,            # Disable COCO json saving (optional)
-        split='val',
-        name=f'{project_folder}/YOLO/Results/Dataset_v1/valid_fb_{CONST_FREEZE_BACKBONE}'
+        imgsz=640,
+        batch=16,
+        device=0,
+        verbose=True,
+        name=f'{project_folder}/YOLO/Results/Dataset_v2/valid_fb_{CONST_FREEZE_BACKBONE}'
     )
 
 if __name__ == '__main__':

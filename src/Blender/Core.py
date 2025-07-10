@@ -146,8 +146,16 @@ class Camera_Cls(object):
         bpy.context.scene.render.pixel_aspect_y = 1
         
         # Set the camera's projection type (perspective, orthographic, etc.).
-        bpy.data.cameras[self.__Cam_Param_Str.Name].type = self.__Cam_Param_Str.Type
-        bpy.data.cameras[self.__Cam_Param_Str.Name].lens_unit = 'MILLIMETERS'
+        if self.__Cam_Param_Str.Type == 'PERSP':
+            bpy.data.objects[self.__Cam_Param_Str.Name].data.lens = self.__Cam_Param_Str.f
+            bpy.data.cameras[self.__Cam_Param_Str.Name].lens_unit = 'MILLIMETERS'
+        else:
+            bpy.data.objects[self.__Cam_Param_Str.Name].data.ortho_scale = self.__Cam_Param_Str.Orthographic_Scale
+
+        # Enable and set the depth of field parameters (focus distance and DoF usage).
+        bpy.data.cameras[self.__Cam_Param_Str.Name].dof.use_dof = self.__Cam_Param_Str.Use_DoF
+        if self.__Cam_Param_Str.Use_DoF == True:
+            bpy.data.cameras[self.__Cam_Param_Str.Name].dof.focus_distance = self.__Cam_Param_Str.Focus_Distance - 0.02
         
         # Convert exposure time from microseconds to seconds.
         __exposure_t_sec = self.__Cam_Param_Str.Exposure_Time / 1e6  
@@ -653,7 +661,7 @@ class Material_Cls:
             'roughness_dirty_color': (0.642, 1),
             'scale_dirty_roughness': (1, 15),
             'detail_dirty_roughness_terrain': (7.7, 15),
-            'worn_strip_width': (-0.07, -0.10)
+            'worn_strip_width': (-0.07, -0.09)
         }
 
         # Check if the node's label is present in the value mapping for randomization.

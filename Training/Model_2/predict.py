@@ -4,17 +4,10 @@ from ultralytics import YOLO
 # OS (Operating system interfaces)
 import os
 
-import torch
-
 """
 Description:
     Initialization of constants.
 """
-# Select the desired size of YOLOv* to build the model.
-#   Note:
-#     Detection Model.
-#   Nano: 'yolov8n', Small: 'yolov8s', Medium: 'yolov8m', Large: 'yolov8l', XLarge: 'yolov8x'}
-CONST_YOLO_SIZE = 'yolov8m'
 # An indication of whether the backbone layers of the model should be frozen.
 CONST_FREEZE_BACKBONE = True
 
@@ -32,23 +25,20 @@ def main():
     # Locate the path to the project folder.
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
-    # Automatically select device
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
     # Load a pre-trained custom YOLO model.
-    model = YOLO(f'{project_folder}/YOLO/Results/Dataset_v1/train_fb_{CONST_FREEZE_BACKBONE}/weights/best.pt')
+    model = YOLO(f'{project_folder}/YOLO/Results/Dataset_v3/train_fb_{CONST_FREEZE_BACKBONE}/weights/best.pt')
 
     # Predict (test) the model on a test dataset.
     _ = model.predict(
-        source=f'{project_folder}/Data/Defect_Dataset/images/test',
+        source=f'{project_folder}/Data/Dataset_v3/images/test',
         imgsz=640,
-        conf=0.25,                  # Stricter confidence threshold for deployment
-        iou=0.45,
-        device=device,
+        conf=0.25,
+        iou=0.5,
+        device=0,
         save=True,
         save_txt=True,
         save_conf=True,
-        name=f'{project_folder}/YOLO/Results/Dataset_v2/predict_fb_{CONST_FREEZE_BACKBONE}'
+        name=f'{project_folder}/YOLO/Results/Dataset_v3/predict_fb_{CONST_FREEZE_BACKBONE}'
     )
 
 if __name__ == '__main__':

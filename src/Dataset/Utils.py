@@ -58,3 +58,7 @@ def process_synthetic_image(image: np.ndarray) -> np.ndarray:
     styled = adjust_color_style(blurred_once)
     final_output = apply_blur(styled, kernel_size=(3, 3), sigma=1.0)
     return final_output
+
+
+def process_real_image(image: np.ndarray) -> np.ndarray:
+    return adjust_color_style(image)

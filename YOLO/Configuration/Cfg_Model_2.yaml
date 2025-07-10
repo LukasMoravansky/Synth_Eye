@@ -4,8 +4,7 @@
 #   The dataset is organized into training, validation, and testing partitions.
 
 # The absolute path to the main directory of the dataset.
-#path: 'C:/Projects/Synth_Eye/Data/Dataset_v3'
-path: /Users/rparak/Desktop/Synth_Eye/Data/Dataset_v3
+path: 'C:/Projects/Synth_Eye/Data/Dataset_v3'
 
 # Paths to the specific partitions (train, validation, test) that contain the dataset images and labels.
 train: 'images/train'

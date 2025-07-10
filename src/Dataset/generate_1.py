@@ -31,7 +31,7 @@ def main():
             if partition_name in ['train', 'valid']:
                 image_data = Utils.process_synthetic_image(image_data_tmp)
             else:
-                image_data = image_data_tmp.copy()
+                image_data = Utils.process_real_image(image_data_tmp)
 
             cv2.imwrite(f'{project_folder}/Data/{Dataset_Name}/images/{partition_name}/{file_info["name"]}.png', image_data.copy())
 
@@ -45,7 +45,7 @@ def main():
                 if np.isin(Cls_Id_Remove, label_data_tmp[:, 0]).any() and label_data_tmp[:, 0].size >= 1:
                     for _, label_data_i in enumerate(label_data_tmp):
                         if label_data_i[0] not in Cls_Id_Remove:
-                            label_data.append(np.append([2], label_data_i[1:]))
+                            label_data.append(np.append([0], label_data_i[1:]))
                     
                     label_data = np.array(label_data, dtype=label_data_i.dtype)
                 else:

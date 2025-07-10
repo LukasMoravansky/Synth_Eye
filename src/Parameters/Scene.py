@@ -71,6 +71,8 @@ class Camera_Parameters_Str:
     Use_DoF: bool = False
     # Frame rate of the camera.
     FPS: int = 24
+    # Orthographic camera zoom level (higher = zoomed out).
+    Orthographic_Scale: float = 0.0
 
     def __post_init__(self):
         # Ensure valid default values for depth of field and focus distance.
