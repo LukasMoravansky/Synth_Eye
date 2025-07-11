@@ -87,7 +87,7 @@ class Checkerboard_Calibration_Cls:
         self.__Calib_Param_Str.Conversion_Factor = self.__Get_Pixel_To_MM_Factor(corners_subpix)
 
         if draw_chessboard_corners == True:
-            img_corners = cv2.drawChessboardCorners(img_gray, self.__inner_corners, corners_subpix, ret)
-            cv2.imwrite(f'{path}/Image_Checkerboard_Detected.png', img_corners)
+            img_corners = cv2.drawChessboardCorners(image, self.__inner_corners, corners_subpix, ret)
+            cv2.imwrite(f'{path}/Image_Checkerboard_Calibrated.png', img_corners)
 
         return True, self.__Calib_Param_Str
