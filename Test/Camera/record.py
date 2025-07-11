@@ -5,6 +5,8 @@ if '../../' + 'src' not in sys.path:
     sys.path.append('../../' + 'src')
 # OpenCV library for computer vision tasks
 import cv2
+# Numpy (Array computing)
+import numpy as np
 # Custom Lib.:
 #   ../Basler/Camera
 from Basler.Camera import Basler_Cls
@@ -51,8 +53,10 @@ def main():
 
         # Undistort the image using camera calibration parameters.
         h, w = img_raw_processed.shape[:2]
-        new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(Basler_Calib_Param_Str.K, Basler_Calib_Param_Str.Coefficients, (w, h), 1, (w, h))
-        img_undistorted = cv2.undistort(img_raw_processed, Basler_Calib_Param_Str.K, Basler_Calib_Param_Str.Coefficients, None, new_camera_matrix)
+        new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(Basler_Calib_Param_Str.K, np.array(list(Basler_Calib_Param_Str.Coefficients.values()), dtype=np.float64), 
+                                                             (w, h), 1, (w, h))
+        img_undistorted = cv2.undistort(img_raw_processed, Basler_Calib_Param_Str.K, np.array(list(Basler_Calib_Param_Str.Coefficients.values()), dtype=np.float64), 
+                                        None, new_camera_matrix)
 
         # Show the captured image.
         cv2.imshow("Captured Image", img_undistorted)

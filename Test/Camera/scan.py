@@ -5,6 +5,8 @@ if '../../' + 'src' not in sys.path:
     sys.path.append('../../' + 'src')
 # OpenCV library for computer vision tasks
 import cv2
+# Numpy (Array computing)
+import numpy as np
 # OS module for file handling and accessing directories
 import os
 # Custom Lib.:
@@ -69,8 +71,10 @@ def main():
 
     # Undistort the image using camera calibration parameters.
     h, w = img_raw_processed.shape[:2]
-    new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(Basler_Calib_Param_Str.K, Basler_Calib_Param_Str.Coefficients, (w, h), 1, (w, h))
-    img_undistorted = cv2.undistort(img_raw_processed, Basler_Calib_Param_Str.K, Basler_Calib_Param_Str.Coefficients, None, new_camera_matrix)
+    new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(Basler_Calib_Param_Str.K, np.array(list(Basler_Calib_Param_Str.Coefficients.values()), dtype=np.float64), 
+                                                         (w, h), 1, (w, h))
+    img_undistorted = cv2.undistort(img_raw_processed, Basler_Calib_Param_Str.K, np.array(list(Basler_Calib_Param_Str.Coefficients.values()), dtype=np.float64), 
+                                    None, new_camera_matrix)
 
     # Save the image with bounding boxes.
     cv2.imwrite(output_path, img_undistorted)
