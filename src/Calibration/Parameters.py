@@ -12,16 +12,16 @@ class Camera_Calibration_Parameters_Str:
         The structure of the main parameters of the camera calibration
     """
 
-    # Intrinsic camera calibration matrix.
+    # Camera calibration matrix.
     K: np.ndarray = field(default_factory=lambda: np.zeros((3, 3), dtype=np.float64))
     # Distortion coefficients: [k1, k2, p1, p2, k3]
     Coefficients: tp.Dict[str, float] = field(default_factory=dict)
-    # Pixel to millimeter conversion factors for x and y axes
+    # Pixel to millimeter conversion factors for x and y axes.
     Conversion_Factor: tp.Dict[str, float] = field(default_factory=dict)
 
 """
 Description:
-    Intrinsic calibration parameters of the Basler a2A1920-51gcPRO camera using 
+    Calibration parameters of the Basler a2A1920-51gcPRO camera using 
     the Computar M1228-MPW3 lens.
 """
 Basler_Calib_Param_Str = Camera_Calibration_Parameters_Str()

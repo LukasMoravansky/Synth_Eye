@@ -26,7 +26,7 @@ CONST_INIT_INDEX = 1
 def main():
     """
     Description:
-        A program to capture images of a checkerboard pattern using a Basler a2A1920-51gcPRO camera and perform intrinsic camera calibration based 
+        A program to capture images of a checkerboard pattern using a Basler a2A1920-51gcPRO camera and perform camera calibration based 
         on the captured images. The system is equipped with EFFI-FD-200-200-000 lighting to ensure optimal illumination.
 
         The calibration computes the camera matrix, distortion coefficients, and pixel-to-millimeter conversion factors 
@@ -59,22 +59,30 @@ def main():
     # Release the camera resources.
     del Basler_Cam_Id_1
 
-     # Define output image path.
+    # Define output image path.
     output_path = os.path.join(f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}/', f'Image_Checkerboard_{(CONST_INIT_INDEX):03}.png')
+
+    # Initialize the class for custom image processing.
+    Process_Image_Cls = Utilities.Image_Processing.Process_Image_Cls('real')
+
+    # Apply the image processing pipeline.
+    img_raw_processed = Process_Image_Cls.Apply(img_raw)
 
     # Function to adjust the contrast and brightness parameters of the input image 
     # by clipping the histogram.
-    (alpha_custom, beta_custom) = Utilities.Image_Processing.Get_Alpha_Beta_Parameters(img_raw, 1.0)  
+    (alpha_custom, beta_custom) = Utilities.Image_Processing.Get_Alpha_Beta_Parameters(img_raw_processed, 1.0)  
     
     # Adjust the contrast and brightness of the image using the alpha and beta parameters.
     #   Equation:
     #       g(i, j) = alpha * f(i, j) + beta
-    image_out = cv2.convertScaleAbs(img_raw, alpha=alpha_custom, beta=beta_custom)
+    image_out = cv2.convertScaleAbs(img_raw_processed, alpha=alpha_custom, beta=beta_custom)
 
     # Saves the image to the specified file.
-    cv2.imwrite('Test_100_Old.png', image_out)
-
+    cv2.imwrite(output_path, image_out)
     print('[INFO] The data processing was completed successfully.')
+
+    # Release the classes.
+    del Process_Image_Cls
 
 if __name__ == '__main__':
     sys.exit(main())

@@ -1,0 +1,63 @@
+# System (Default)
+import sys
+#   Add access if it is not in the system path.
+if '../../' + 'src' not in sys.path:
+    sys.path.append('../../' + 'src')
+# OS (Operating system interfaces)
+import os
+# OpenCV (Computer Vision) [pip3 install opencv-python]
+import cv2
+# Custom Library:
+#   ../Utilities/Image_Processing
+import Utilities.Image_Processing
+#   ../Parameters/Scene
+import Parameters.Scene
+
+"""
+Description:
+    Initialization of constants.
+"""
+# The identification number of the iteration to load the image. It starts with the number 1.
+#   1 = 'Image_001', 2 = 'Image_002', etc.
+CONST_INIT_INDEX = 1
+
+def main():
+    """
+    Description:
+        A program to perform camera calibration using images generated synthetically from a virtual camera setup.  
+        Each image is loaded from a file produced by Blender, simulating a Basler a2A1920-51gcPRO camera equipped with  
+        virtual EFFI-FD-200-200-000 lighting to ensure realistic illumination.
+
+        The calibration process computes the camera matrix, distortion coefficients, and pixel-to-millimeter conversion factors 
+        to correct synthetic image distortions and align the virtual camera model with real-world camera parameters.
+    """
+
+    # Locate the path to the project folder.
+    project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
+
+    # Define input and output image path.
+    input_path = os.path.join(f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}_Virtual/', 
+                              f'Image_Checkerboard_{(CONST_INIT_INDEX):03}.png')
+    output_path = os.path.join(f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}_Virtual/', 
+                              f'Image_Checkerboard_{(CONST_INIT_INDEX):03}_Processed.png')
+
+    # Load a raw image from a file.
+    img_raw = cv2.imread(input_path)
+
+    # Initialize the class for custom image processing.
+    Process_Image_Cls = Utilities.Image_Processing.Process_Image_Cls('synthetic')
+
+    # Apply the image processing pipeline.
+    img_raw_processed = Process_Image_Cls.Apply(img_raw)
+
+    # Here apply calibration....
+
+    # Saves the image to the specified file.
+    cv2.imwrite(output_path, img_raw_processed)
+    print('[INFO] The data processing was completed successfully.')
+
+    # Release the classes.
+    del Process_Image_Cls
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -797,9 +797,9 @@ def Get_Matrix_From_Angle_Axis(alpha: float, v: tp.List[float]) -> tp.List[tp.Li
             v_hat = [v_{x}, v_{y}, v{z}]^T
 
         General representation:
-            R(alpha, v_hat) = cos(alpha) * I + sin(alpha) * [k]_{x} + (1 - cos(alpha)) * (k \otimes k),
+            R(alpha, v_hat) = cos(alpha) * I + sin(alpha) * [k]_{x} + (1 - cos(alpha)) * (k \\otimes k),
 
-            where {[k]_{x}} is the cross-product skew symmetric matrix associated with {v_hat = [v_{x}, v_{y}, v_{z}]^T}, (v \otimes v) is the outer 
+            where {[k]_{x}} is the cross-product skew symmetric matrix associated with {v_hat = [v_{x}, v_{y}, v_{z}]^T}, (v \\otimes v) is the outer 
             product of two coordinate vectors.
 
         Simplification of the general representation:
@@ -2074,9 +2074,9 @@ class Quaternion_Cls(object):
             Get the distance between two quaternions using the selected method.
 
             The equation of the distance calculation is defined as follows:
-                1\ Euclidean norm
+                1\\ Euclidean norm
                     d(q_{0}, q_{1}) = min(||q_{0} - q_{1}||, ||q_{0} + q_{1}||)
-                2\ Geodesic norm
+                2\\ Geodesic norm
                     d(q_{0}, q_{1}) = ln(||q_{0}^(-1) * q_{1}||)
 
         Args:
@@ -2088,7 +2088,6 @@ class Quaternion_Cls(object):
 
         Returns:
             (1) parameter [cls_data_type]: Distance calculated using the selected method.
-
         """
 
         if isinstance(q, (list, np.ndarray)):

@@ -10,6 +10,8 @@ import cv2
 from Basler.Camera import Basler_Cls
 #   ../Calibration/Parameters
 from Calibration.Parameters import Basler_Calib_Param_Str
+#   ../Utilities/Image_Processing
+import Utilities.Image_Processing
 
 def main():
     """
@@ -41,10 +43,16 @@ def main():
             print("No image captured!")
             break
         
+        # Initialize the class for custom image processing.
+        Process_Image_Cls = Utilities.Image_Processing.Process_Image_Cls('real')
+
+        # Apply the image processing pipeline.
+        img_raw_processed = Process_Image_Cls.Apply(img_raw)
+
         # Undistort the image using camera calibration parameters.
-        h, w = img_raw.shape[:2]
+        h, w = img_raw_processed.shape[:2]
         new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(Basler_Calib_Param_Str.K, Basler_Calib_Param_Str.Coefficients, (w, h), 1, (w, h))
-        img_undistorted = cv2.undistort(img_raw, Basler_Calib_Param_Str.K, Basler_Calib_Param_Str.Coefficients, None, new_camera_matrix)
+        img_undistorted = cv2.undistort(img_raw_processed, Basler_Calib_Param_Str.K, Basler_Calib_Param_Str.Coefficients, None, new_camera_matrix)
 
         # Show the captured image.
         cv2.imshow("Captured Image", img_undistorted)
@@ -57,7 +65,9 @@ def main():
 
     # Release the camera resources and close the OpenCV window.
     cv2.destroyAllWindows()
-    del Basler_Cam_Id_1
+
+    # Release the classes.
+    del Basler_Cam_Id_1; del Process_Image_Cls
 
 if __name__ == '__main__':
     sys.exit(main())
