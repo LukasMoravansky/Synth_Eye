@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import sys
 sys.path.append('..')
-import Dataset.Utils as Utils
 
 # https://calib.io/pages/camera-calibration-pattern-generator
 
@@ -27,8 +26,7 @@ Pixel to mm conversion:
 
 img_n = 'RS'
 #image = cv2.imread("C:\projects\Synth_Eye\Data\Camera\Basler\Image_099.png")
-image = cv2.imread(r'C:\projects\Synth_Eye\Data\Camera\Basler_a2A1920_51gcPRO_Computar_M1228_MPW3_Virtual\Checkerboard.png')
-image = Utils.process_synthetic_image(image.copy())
+image = cv2.imread(r'C:\projects\Synth_Eye\Data\Camera\Basler_a2A1920_51gcPRO_Computar_M1228_MPW3_Virtual\Image_Checkerboard_001_Processed.png')
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # === Find corners ===
@@ -40,10 +38,6 @@ if ret:
 
     objpoints.append(objp)
     imgpoints.append(corners_subpix)
-
-    # === Draw and save the detected checkerboard ===
-    vis = cv2.drawChessboardCorners(image.copy(), CHECKERBOARD, corners_subpix, ret)
-    cv2.imwrite(f"Detected_Checkerboard_{img_n}.png", vis)
 
     # === Camera Calibration ===
     ret, cameraMatrix, distCoeffs, rvecs, tvecs = cv2.calibrateCamera(
@@ -59,6 +53,7 @@ if ret:
         horizontal_dists = []
         vertical_dists = []
 
+        print(rows)
         for row in range(rows):
             for col in range(cols - 1):
                 i = row * cols + col
@@ -66,9 +61,11 @@ if ret:
                 pt2 = corners[i + 1][0]
                 dist = np.linalg.norm(pt2 - pt1)
                 horizontal_dists.append(dist)
+                #print(dist, pt1, pt2)
 
         for col in range(cols):
             for row in range(rows - 1):
+                print(cols)
                 i = row * cols + col
                 pt1 = corners[i][0]
                 pt2 = corners[i + cols][0]

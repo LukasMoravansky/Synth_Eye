@@ -55,8 +55,7 @@ def main():
     # Here apply calibration....
     Checkerboard_Calib_Cls = Calibration.Core.Checkerboard_Calibration_Cls(inner_corners=(11, 8),square_size=12.0)
 
-    _, x = Checkerboard_Calib_Cls.Solve(img_raw_processed, True, f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}_Virtual')
-    print(x) # Wrong calculation! Compare with test.py.
+    _, x = Checkerboard_Calib_Cls.Solve(img_raw_processed, False, f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}_Virtual')
 
     # Saves the image to the specified file.
     cv2.imwrite(output_path, img_raw_processed)

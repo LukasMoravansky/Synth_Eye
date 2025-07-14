@@ -10,7 +10,7 @@ from Calibration.Parameters import Camera_Calibration_Parameters_Str
 
 class Checkerboard_Calibration_Cls:
     def __init__(self, inner_corners: tp.Tuple[int, int], square_size: float):
-        self.__inner_corners = inner_corners
+        self.__inner_corners = [x_i - 1 for x_i in inner_corners]
         self.__square_size = square_size
         self.__Calib_Param_Str = Camera_Calibration_Parameters_Str()
 
@@ -34,21 +34,21 @@ class Checkerboard_Calibration_Cls:
         """
 
         dist_horizontal = []; dist_vertical = []
-
+ 
         # Measure horizontal distances between adjacent columns in each row.
-        for row_i in range(self.__inner_corners[0]):
-            for column_i in range(self.__inner_corners[1] - 1):
-                idx = row_i * self.__inner_corners[1] + column_i
-                dist_horizontal.append(np.linalg.norm(corner_subpix[idx + 1][0] 
-                                                      - corner_subpix[idx][0]))
+        for row_i in range(self.__inner_corners[1]):
+            for column_i in range(self.__inner_corners[0] - 1):
+                i = row_i * self.__inner_corners[0] + column_i
+                dist_horizontal.append(np.linalg.norm(corner_subpix[i + 1][0] 
+                                                      - corner_subpix[i][0]))
 
-        # Measure vertical distances between adjacent rows in each column
-        for column_i in range(self.__inner_corners[1]):
-            for row_i in range(self.__inner_corners[0] - 1):
-                idx = row_i * self.__inner_corners[1] + column_i
-                dist_vertical.append(np.linalg.norm(corner_subpix[idx + self.__inner_corners[1]][0] 
-                                                    - corner_subpix[idx][0]))
-
+        # Measure vertical distances between adjacent rows in each column.
+        for column_i in range(self.__inner_corners[0]):
+            for row_i in range(self.__inner_corners[1] - 1):
+                i = row_i * self.__inner_corners[0] + column_i
+                dist_vertical.append(np.linalg.norm(corner_subpix[i + self.__inner_corners[0]][0] 
+                                                    - corner_subpix[i][0]))
+        
         return {
             'x': self.__square_size / float(np.mean(dist_horizontal)),
             'y': self.__square_size / float(np.mean(dist_vertical))
