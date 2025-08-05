@@ -14,6 +14,8 @@ import Utilities.Image_Processing
 from Basler.Camera import Basler_Cls
 #   ../Parameters/Scene
 import Parameters.Scene
+#   ../Calibration/Core
+import Calibration.Core
 
 """
 Description:
@@ -77,9 +79,26 @@ def main():
     #       g(i, j) = alpha * f(i, j) + beta
     image_out = cv2.convertScaleAbs(img_raw_processed, alpha=alpha_custom, beta=beta_custom)
 
-    # Saves the image to the specified file.
-    cv2.imwrite(output_path, image_out)
-    print('[INFO] The data processing was completed successfully.')
+    # Initialize the checkerboard calibration class with checkerboard dimensions and square size (in mm).
+    Checkerboard_Calib_Cls = Calibration.Core.Checkerboard_Calibration_Cls(inner_corners=(11, 8), square_size=12.0)
+
+    # Perform camera calibration using the provided checkerboard image.
+    flag, x = Checkerboard_Calib_Cls.Solve(image_out, False, f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}')
+
+    # Check whether calibration was successful
+    if flag == True:
+        # Display the camera calibration results: intrinsic matrix, distortion coefficients, and scaling factor.
+        print(f'[INFO] Intrinsic Matrix (K):\n{x.K}')
+        print(f'[INFO] Distortion Coefficients:\n{x.Coefficients}')
+        print(f'[INFO] Pixel-to-mm Conversion Factor:\n{x.Conversion_Factor}')
+
+        # Save the image after successful calibration to the specified output path.
+        cv2.imwrite(output_path, image_out)
+        print('[INFO] The data processing was completed successfully.')
+        print(f'[INFO] Output image saved to: {output_path}')
+    else:
+        # Inform user that checkerboard detection or calibration failed.
+        print('[WARNING] Data processing was not completed successfully. An error occurred.')
 
     # Release the classes.
     del Process_Image_Cls

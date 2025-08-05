@@ -40,12 +40,14 @@ def main():
     if device_id.type == 'cuda':
         print(f"[INFO] GPU Name: {torch.cuda.get_device_name(0)}")
 
-    # Load configuration metadata.
-    with open(f'{project_folder}/YOLO/Configuration/Cfg_Model_{CONST_CONFIGURATION_ID}.yaml', 'r') as f:
-        meta_args = yaml.safe_load(f)
+    # Load hyperparameters and dataset configuration files.
+    meta_args = []
+    for cfg_name_i in ['Args_Model', f'{project_folder}/YOLO/Configuration/Cfg_Model']:
+        with open(f'{cfg_name_i}_{CONST_CONFIGURATION_ID}.yaml', 'r') as f:
+            meta_args.append(yaml.safe_load(f))
 
-    # Extract dataset name from the config path.
-    dataset_name = os.path.basename(meta_args['path'])
+    # Extract dataset name (e.g., "Dataset_v2") from config path.
+    dataset_name = os.path.basename(meta_args[1]['path'])
 
     # Load the best model weights from training.
     model = YOLO(f'{project_folder}/YOLO/Results/{dataset_name}/train_fb_{CONST_FREEZE_BACKBONE}/weights/best.pt')
@@ -53,8 +55,8 @@ def main():
     # Run model validation using the specified dataset and parameters.
     _ = model.val(
         data=f'{project_folder}/YOLO/Configuration/Cfg_Model_{CONST_CONFIGURATION_ID}.yaml',
-        imgsz=640,
-        batch=16,
+        imgsz=meta_args[0]['imgsz'],
+        batch=meta_args[0]['batch'],
         device=device_id,
         verbose=True,
         name=f'{project_folder}/YOLO/Results/{dataset_name}/valid_fb_{CONST_FREEZE_BACKBONE}'

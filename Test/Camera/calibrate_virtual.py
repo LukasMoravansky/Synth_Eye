@@ -12,7 +12,7 @@ import cv2
 import Utilities.Image_Processing
 #   ../Parameters/Scene
 import Parameters.Scene
-#   ..
+#   ../Calibration/Core
 import Calibration.Core
 
 """
@@ -52,14 +52,26 @@ def main():
     # Apply the image processing pipeline.
     img_raw_processed = Process_Image_Cls.Apply(img_raw)
 
-    # Here apply calibration....
-    Checkerboard_Calib_Cls = Calibration.Core.Checkerboard_Calibration_Cls(inner_corners=(11, 8),square_size=12.0)
+    # Initialize the checkerboard calibration class with checkerboard dimensions and square size (in mm).
+    Checkerboard_Calib_Cls = Calibration.Core.Checkerboard_Calibration_Cls(inner_corners=(11, 8), square_size=12.0)
 
-    _, x = Checkerboard_Calib_Cls.Solve(img_raw_processed, False, f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}_Virtual')
+    # Perform camera calibration using the provided checkerboard image.
+    flag, x = Checkerboard_Calib_Cls.Solve(img_raw_processed, False, f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}_Virtual')
 
-    # Saves the image to the specified file.
-    cv2.imwrite(output_path, img_raw_processed)
-    print('[INFO] The data processing was completed successfully.')
+    # Check whether calibration was successful.
+    if flag == True:
+        # Display the camera calibration results: intrinsic matrix, distortion coefficients, and scaling factor.
+        print(f'[INFO] Intrinsic Matrix (K):\n{x.K}')
+        print(f'[INFO] Distortion Coefficients:\n{x.Coefficients}')
+        print(f'[INFO] Pixel-to-mm Conversion Factor:\n{x.Conversion_Factor}')
+
+        # Save the image after successful calibration to the specified output path.
+        cv2.imwrite(output_path, img_raw_processed)
+        print('[INFO] The data processing was completed successfully.')
+        print(f'[INFO] Output image saved to: {output_path}')
+    else:
+        # Inform user that checkerboard detection or calibration failed.
+        print('[WARNING] Data processing was not completed successfully. An error occurred.')
 
     # Release the classes.
     del Process_Image_Cls
