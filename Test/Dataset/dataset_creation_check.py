@@ -17,32 +17,34 @@ import Utilities.File_IO as File_IO
 Description:
     Initialization of constants.
 """
-# The identification number of the iteration to save the image. It starts with the number 1.
+# The identification number of the iteration to evaluate the image. It starts with the number 1.
 #   1 = 'Image_001', 2 = 'Image_002', etc.
-CONST_INIT_INDEX = 100
+CONST_INIT_INDEX = 1
+# Dataset partition name used for evaluation (e.g., 'train', 'valid', or 'test')
+CONST_PARTITION_NAME = 'test'
 # The name of the dataset and color of the object bounding boxes.
 #   Dataset_v2 - [(255, 165, 0), (0, 165, 255)]
 #   Dataset_v3 - [(80, 0, 255)]
-CONST_DATASET = {'Name': 'Dataset_v2', 'Color': [(255, 165, 0), (0, 165, 255)]}
+CONST_DATASET = {'Name': 'Dataset_v3', 'Color': [(255, 165, 0), (0, 165, 255)]}
 
 def main():
     """
     Description:
-        A program to evaluate data (image with corresponding label) generated from Blender or a real-world camera.
+        A program to evaluate data (image with corresponding label) generated from Blender 
+        or a real-world camera.
     """
 
     # Locate the path to the project folder.
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
-    image_path = os.path.join(project_folder, 'Data', CONST_DATASET['Name'], 'images', 'train', 
+    image_path = os.path.join(project_folder, 'Data', CONST_DATASET['Name'], 'images', CONST_PARTITION_NAME, 
                               f'Image_{CONST_INIT_INDEX:03}.png')
-    label_path = os.path.join(project_folder, 'Data', CONST_DATASET['Name'], 'labels', 'train', 
+    label_path = os.path.join(project_folder, 'Data', CONST_DATASET['Name'], 'labels', CONST_PARTITION_NAME, 
                               f'Image_{CONST_INIT_INDEX:03}')
 
-    # Load image and label data
+    # Load image and label data.
     image_data = cv2.imread(image_path)
     if image_data is None:
         raise FileNotFoundError(f'Image file not found: {image_path}')
-
     label_data = File_IO.Load(label_path, 'txt', ' ')
     if hasattr(label_data, 'size') and label_data.size == 0:
         raise FileNotFoundError(f'Label file not found or empty: {label_path}')
@@ -68,7 +70,7 @@ def main():
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
-    output_filename = f'Image_Res_{CONST_INIT_INDEX:03}.png'
+    output_filename = f'{CONST_DATASET['Name']}_{CONST_PARTITION_NAME}_Image_{CONST_INIT_INDEX:03}_Evaluated.png'
     cv2.imwrite(output_filename, image_data)
     print(f'Saved annotated image to {output_filename}')
     

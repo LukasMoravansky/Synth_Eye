@@ -207,10 +207,10 @@ def YOLO_To_Absolute_Coordinates(Bounding_Box: tp.Tuple[tp.List[float]], Resolut
     """
 
     return {
-        'x': Bounding_Box['x_c'] * Resolution['width'],
-        'y': Bounding_Box['y_c'] * Resolution['height'],
-        'width': Bounding_Box['width'] * Resolution['width'],
-        'height': Bounding_Box['height'] * Resolution['height']
+        'x': Bounding_Box['x_c'] * Resolution['x'],
+        'y': Bounding_Box['y_c'] * Resolution['y'],
+        'width': Bounding_Box['width'] * Resolution['x'],
+        'height': Bounding_Box['height'] * Resolution['y']
     }
 
 def Absolute_Coordinates_To_YOLO(Bounding_Box: tp.Tuple[tp.List[float]], Resolution: tp.Tuple[int, int]) -> tp.Tuple[tp.Dict]:
@@ -230,10 +230,10 @@ def Absolute_Coordinates_To_YOLO(Bounding_Box: tp.Tuple[tp.List[float]], Resolut
     """
 
     return {
-        'x_c': Bounding_Box['x'] / Resolution['width'],
-        'y_c': Bounding_Box['y'] / Resolution['height'],
-        'width': Bounding_Box['width'] / Resolution['width'],
-        'height': Bounding_Box['height'] / Resolution['height']
+        'x_c': Bounding_Box['x'] / Resolution['x'],
+        'y_c': Bounding_Box['y'] / Resolution['y'],
+        'width': Bounding_Box['width'] / Resolution['x'],
+        'height': Bounding_Box['height'] / Resolution['y']
     }
 
 def Extract_Num_From_Filename(img_name: str, path_name: str) -> tp.List[tp.Dict]:
