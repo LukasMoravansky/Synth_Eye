@@ -115,9 +115,7 @@ def Draw_Bounding_Box(image: tp.List[tp.List[int]], bounding_box_properties: tp.
     Resolution = {'x': image_out.shape[1], 'y': image_out.shape[0]}
     #   Line width of the rectangle.
     line_width = 2
-    # Offset of an additional rectangles.
-    offset = 5
-    
+
     # Obtain data in PASCAL_VOC format to determine the bounding box to be rendered.
     #   data = {'x_min', 'y_min', 'x_max', 'y_max'}
     if format == 'YOLO':
@@ -143,7 +141,6 @@ def Draw_Bounding_Box(image: tp.List[tp.List[int]], bounding_box_properties: tp.
 
     test_var = 8.0
 
-    # Draw a modified rectangle around the object.
     #  --          --
     # |              |    
     #      Object    
@@ -162,36 +159,10 @@ def Draw_Bounding_Box(image: tp.List[tp.List[int]], bounding_box_properties: tp.
     cv2.line(image_out, (x_max, y_max), (x_max - int(box_w/test_var), y_max), Color, line_width)
     cv2.line(image_out, (x_max, y_max), (x_max, y_max - int(box_h/test_var)), Color, line_width)
 
+    # Show additional information such as name and precision.
     if show_info == True:
-        # Additional rectangles that bounds information about the object.
-        cv2.rectangle(image_out, (x_min, y_min - (int(box_h/test_var) + offset)), (x_min + box_w, y_min - offset), 
-                        Color, -1)
-        cv2.rectangle(image_out, (x_max + offset, y_min - (int(box_h/test_var) + offset)), (x_max + offset + int(box_w/2.0), y_min - offset), 
-                        Color, -1)
-        
-        # The font of the text shown in the image.
-        txt_font = cv2.FONT_HERSHEY_SIMPLEX
-
-        # A rectangle with the name of the object.
-        cv2.rectangle(image_out, (x_min, y_min - (int(box_h/test_var) + offset)), (x_min + box_w, y_min - offset), 
-                      Color, line_width)
-        
-        #   Get the text boundary with the object name.
-        #       Parameters: [0.5: font_scale, 1: thickness]
-        txt_name_boundary = cv2.getTextSize(bounding_box_properties['Name'], txt_font, 0.95, int(line_width/2))[0]
-
-        # Get the coefficient of the displacement difference between the rectangles.
-        #   Rectangle Id: Name
-        f = np.array([box_w/2.0, int(box_h/test_var)/2]) - np.array([txt_name_boundary[0]/2, txt_name_boundary[1]/2])
-        cv2.putText(image_out, bounding_box_properties['Name'], (x_min + int(f[0]), (y_min - offset) - int(f[1])), txt_font, 0.95, (0, 0, 0), int(line_width/2), cv2.LINE_AA)
-
-        # A rectangle indicating the precision of the match.
-        cv2.rectangle(image_out, (x_max + offset, y_min - (int(box_h/test_var) + offset)), (x_max + offset + int(box_w/2.0), y_min - offset), 
-                      Color, line_width)
-        # For precision, we use the same method as for the name.
-        txt_name_boundary = cv2.getTextSize(bounding_box_properties['Precision'], txt_font, 0.95, int(line_width/2))[0]
-        f = np.array([int(box_w/2.0)/2.0, int(box_h/test_var)/2]) - np.array([txt_name_boundary[0]/2, txt_name_boundary[1]/2])
-        cv2.putText(image_out, bounding_box_properties['Precision'], (x_max + offset + int(f[0]), (y_min - offset) - int(f[1])), txt_font, 0.95, (0, 0, 0), int(line_width/2), cv2.LINE_AA)
+        cv2.putText(image_out, f'Class {bounding_box_properties['Name']}: {bounding_box_properties['Precision']}', 
+                    (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, Color, 2)
 
     return image_out
 

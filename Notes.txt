@@ -5,3 +5,5 @@ Training/: Done!
 Test/Dataset/: Done!
 Test/Dataset/Modify/: Done!
 Test/Model/: Not Started.
+Test/Measure/: Not Started.
+.... Predictor or Detector...

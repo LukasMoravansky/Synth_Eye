@@ -55,7 +55,7 @@ def main():
 
     # Perform prediction on the test image set.
     _ = model.predict(
-        source=os.path.join(meta_args["path"], 'images', 'test'),
+        source=os.path.join(meta_args['path'], 'images', 'test'),
         imgsz=meta_args[0]['imgsz'],
         conf=0.25,
         iou=0.5,

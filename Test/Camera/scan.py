@@ -55,7 +55,7 @@ def main():
     # Capture a single image.
     img_raw = Basler_Cam_Id_1.Capture()
     if img_raw is None:
-        raise ValueError('No image captured!')
+        raise ValueError('[ERROR] No image captured!')
 
     # Release the camera resources.
     del Basler_Cam_Id_1
@@ -78,7 +78,7 @@ def main():
 
     # Save the image with bounding boxes.
     cv2.imwrite(output_path, img_undistorted)
-    print(f'Result saved at: {output_path}')
+    print(f'[INFO] Result saved at: {output_path}')
 
     # Release the classes.
     del Process_Image_Cls

@@ -56,7 +56,7 @@ def main():
     # Capture a single image.
     img_raw = Basler_Cam_Id_1.Capture()
     if img_raw is None:
-        raise ValueError('No image captured!')
+        raise ValueError('[ERROR] No image captured!')
 
     # Release the camera resources.
     del Basler_Cam_Id_1

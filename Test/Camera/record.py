@@ -40,10 +40,8 @@ def main():
     while True:
         # Capture a single image.
         img_raw = Basler_Cam_Id_1.Capture()
-
         if img_raw is None:
-            print("No image captured!")
-            break
+            raise ValueError('[ERROR] No image captured!')
         
         # Initialize the class for custom image processing.
         Process_Image_Cls = Utilities.Image_Processing.Process_Image_Cls('real')
@@ -59,12 +57,12 @@ def main():
                                         None, new_camera_matrix)
 
         # Show the captured image.
-        cv2.imshow("Captured Image", img_undistorted)
+        cv2.imshow('Captured Image', img_undistorted)
         
         # Wait for the user to press the 'c' key to exit the loop or stop if the camera is no longer grabbing.
         key = cv2.waitKey(100) & 0xFF
         if key == ord('c') or Basler_Cam_Id_1.Is_Grabbing == True:
-            print("Exiting the capture loop.")
+            print('[INFO] Exiting the capture loop.')
             break
 
     # Release the camera resources and close the OpenCV window.

@@ -93,7 +93,7 @@ def main():
             # Load image.
             image = cv2.imread(image_path)
             if image is None:
-                raise FileNotFoundError(f'Unable to load image from: {image_path}')
+                raise FileNotFoundError(f'[ERROR] Unable to load image from: {image_path}')
 
             # Apply the image processing pipeline depending on partition type.
             if partition_name_i in ['train', 'valid']:
@@ -182,6 +182,9 @@ def main():
         print(f'[INFO] [{partition.capitalize():<1} Partition] samples: {count}')
     print(f'[INFO] Total samples processed: {total_processed}')
     print(f'[INFO] Time: {int(minutes)}m {int(seconds)}s')
+
+    # Release the classes.
+    del Process_Real_Image_Cls, Process_Synthetic_Image_Cls
     
 if __name__ == '__main__':
     sys.exit(main())
