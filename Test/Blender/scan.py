@@ -71,7 +71,7 @@ def main():
     #                                          obj_is_flipped, obj_center_px, Object_Cls.T.Get_Rotation('ZYX')[2])
 
     # Set the render file path.
-    bpy.context.scene.render.filepath = f'{project_folder}/Data/Camera/Virtual/Image_{(CONST_INIT_INDEX):03}.png'
+    bpy.context.scene.render.filepath = f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}_Virtual/Image_{(CONST_INIT_INDEX):03}.png'
 
     # Check if the 'Composite' node exists in the node tree.
     if not bpy.context.scene.node_tree.nodes.get('Composite'):

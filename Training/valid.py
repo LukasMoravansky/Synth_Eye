@@ -17,8 +17,6 @@ import torch
 Description:
     Initialization of constants.
 """
-# Whether to freeze the model's backbone during training.
-CONST_FREEZE_BACKBONE = False
 # Configuration file ID to load dataset and model parameters.
 CONST_CONFIGURATION_ID = 1
 
@@ -49,6 +47,12 @@ def main():
     # Extract dataset name (e.g., "Dataset_v2") from config path.
     dataset_name = os.path.basename(meta_args[1]['path'])
 
+    # An indication of whether the backbone layers of the model should be frozen.
+    if meta_args[0]['freeze'] > 0:
+        CONST_FREEZE_BACKBONE = True
+    else:
+        CONST_FREEZE_BACKBONE = False
+        
     # Load the best model weights from training.
     model = YOLO(f'{project_folder}/YOLO/Results/{dataset_name}/train_fb_{CONST_FREEZE_BACKBONE}/weights/best.pt')
 

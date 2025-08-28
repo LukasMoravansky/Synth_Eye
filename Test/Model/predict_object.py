@@ -26,13 +26,10 @@ import Utilities.General
 Description:
     Initialization of constants.
 """
-# The identification number of the iteration to save the image. It starts with the number 1.
-#   1 = 'Image_001', 2 = 'Image_002', etc.
-CONST_INIT_INDEX = 1
-# The name of the dataset and color of the object bounding boxes.
-#   Dataset_v2 - [(255, 165, 0), (0, 165, 255)]
-#   Dataset_v3 - [(80, 0, 255)]
-CONST_DATASET = {'Name': 'Dataset_v2', 'Color': [(255, 165, 0), (0, 165, 255)]}
+# The name of the dataset, model, and color of the object bounding boxes.
+#   Dataset_v2 - yolov8m_object_detection - [(255, 165, 0), (0, 165, 255)]
+#   Dataset_v3 - yolov8m_defect_detection - [(80, 0, 255)]
+CONST_CONFIG = {'Name': 'Dataset_v3', 'Model': 'yolov8m_defect_detection', 'Color': [(80, 0, 255)]}
 
 def main():
     """
@@ -61,10 +58,10 @@ def main():
         meta_args = yaml.safe_load(f)
 
     # Load a pre-trained custom YOLO model.
-    model = YOLO(f'{project_folder}/YOLO/Model/{CONST_DATASET['Name']}/yolov8m_object_detection.pt')
+    model = YOLO(f'{project_folder}/YOLO/Model/{CONST_CONFIG['Name']}/{CONST_CONFIG['Model']}.pt')
 
     # Extracts numeric identifiers and background flags from filenames in a specified directory.
-    image_dir_info = Utilities.General.Extract_Num_From_Filename('Image', os.path.join(project_folder, 'Data', CONST_DATASET['Name'], 
+    image_dir_info = Utilities.General.Extract_Num_From_Filename('Image', os.path.join(project_folder, 'Data', CONST_CONFIG['Name'], 
                                                                                        'images', 'test'))
 
     # Initialize the timer and counters.
@@ -95,13 +92,14 @@ def main():
                 
                 # Draw the bounding box of the object with additional dependencies (name, precision, etc.) in 
                 # the raw image.
-                processed_image = Utilities.Image_Processing.Draw_Bounding_Box(image, Bounding_Box_Properties, 'YOLO', CONST_DATASET['Color'][int(class_id_i)], 
+                processed_image = Utilities.Image_Processing.Draw_Bounding_Box(image, Bounding_Box_Properties, 'YOLO', CONST_CONFIG['Color'][int(class_id_i)], 
                                                                                True, True)
+                image = processed_image.copy()
         else:
             processed_image = image.copy()
             
         # Save processed image.
-        cv2.imwrite(f'{project_folder}/YOLO/Prediction/{CONST_DATASET['Name']}/{image_name}.png', processed_image)
+        cv2.imwrite(f'{project_folder}/YOLO/Prediction/{CONST_CONFIG['Name']}/{image_name}.png', processed_image)
 
         # Release the image.
         del processed_image

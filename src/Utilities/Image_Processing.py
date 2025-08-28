@@ -349,7 +349,8 @@ class Process_Image_Cls:
             styled_img = self.__Color_Style(blurred_img, alpha=0.95, beta=1)
             return self.__Blur(styled_img, kernel_size=(3, 3), sigma=1.0)
         elif self.__image_type == 'real':
-            return self.__Color_Style(image_tmp, alpha=0.95, beta=1)
+            blurred_img = self.__Blur(image_tmp, kernel_size=(3, 3), sigma=0.5)
+            return self.__Color_Style(blurred_img, alpha=0.95, beta=1)
 
 
     

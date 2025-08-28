@@ -23,8 +23,6 @@ Description:
 # Select the desired size of YOLOv* to build the model.
 #   Nano: 'yolov8n', Small: 'yolov8s', Medium: 'yolov8m', Large: 'yolov8l', XLarge: 'yolov8x'}
 CONST_YOLO_SIZE = 'yolov8m'
-# An indication of whether the backbone layers of the model should be frozen.
-CONST_FREEZE_BACKBONE = False
 # The identification number of the configuration file for training the NN model.
 CONST_CONFIGURATION_ID = 1
 
@@ -65,6 +63,12 @@ def main():
     # Extract dataset name (e.g., "Dataset_v2") from config path.
     dataset_name = os.path.basename(meta_args[1]['path'])
 
+    # An indication of whether the backbone layers of the model should be frozen.
+    if meta_args[0]['freeze'] > 0:
+        CONST_FREEZE_BACKBONE = True
+    else:
+        CONST_FREEZE_BACKBONE = False
+        
     # Update the dataset config path and training output directory.
     meta_args[0]['data'] = f'{project_folder}/YOLO/Configuration/Cfg_Model_{CONST_CONFIGURATION_ID}.yaml'
     meta_args[0]['name'] = f'{project_folder}/YOLO/Results/{dataset_name}/train_fb_{CONST_FREEZE_BACKBONE}'

@@ -19,13 +19,13 @@ Description:
 """
 # The identification number of the iteration to evaluate the image. It starts with the number 1.
 #   1 = 'Image_001', 2 = 'Image_002', etc.
-CONST_INIT_INDEX = 1
+CONST_INIT_INDEX = 5297 # 5398, 5394, 5386, 5376, 5360, 5343, 5297, 5062
 # Dataset partition name used for evaluation (e.g., 'train', 'valid', or 'test')
-CONST_PARTITION_NAME = 'test'
+CONST_PARTITION_NAME = 'train'
 # The name of the dataset and color of the object bounding boxes.
 #   Dataset_v2 - [(255, 165, 0), (0, 165, 255)]
 #   Dataset_v3 - [(80, 0, 255)]
-CONST_DATASET = {'Name': 'Dataset_v3', 'Color': [(255, 165, 0), (0, 165, 255)]}
+CONST_DATASET = {'Name': 'Dataset_v2', 'Color': [(255, 165, 0), (0, 165, 255)]}
 
 def main():
     """

@@ -28,7 +28,7 @@ CONST_CLS_ID_REMOVE = [2]
 # Name of the output dataset where the processed images and labels will be saved.
 CONST_DATASET_NAME = 'Dataset_v2'
 # List of partitions to be processed.
-CONST_PARTITION_LIST = ['train', 'valid', 'test']
+CONST_PARTITION_LIST = ['test']
 
 def main():
     """
