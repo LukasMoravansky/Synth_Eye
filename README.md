@@ -7,4 +7,5 @@
 # TODO
 - improvements of the light configuration to be rectangle friendly
 - add dataset template structure to the main tree of the repo.
+- gen_synthetic_data.py - remove time.sleep(10)
 
