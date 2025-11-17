@@ -1,0 +1,66 @@
+/*
+Description:
+    Generates a horizontal array of evenly spaced circles, each with a smooth radial
+    gradient from center color to edge color. Circle edge thickness is randomized
+    per instance. The first circle intersecting the shading point determines the
+    final output color.
+
+Args:
+    (1) uv [vector]: UV coordinates of the shading point, typically from a Mapping node.
+    (2) seed [float]: Seed controlling random thickness variation.
+
+Returns:
+    (1) result [color]: Shaded color at the current point based on the first intersecting circle.
+*/
+
+shader Circle_Gradient_Pattern(
+    vector uv = vector(0.5, 0.5, 0.0),
+    float seed = 43758.5453123,
+    output color result = 0
+)
+{
+    // Constants for circle array, colors, and edge thickness.
+    float RADIUS = 0.35;
+    float SPACING = 0.1;
+    float MIN_THICKNESS = 0.005;
+    float MAX_THICKNESS = 0.01;
+    color CENTER_COLOR = color(0.8, 0.8, 0.8);
+    color EDGE_COLOR = color(0.0, 0.0, 0.0);
+    color BACKGROUND_COLOR = color(0.0, 0.0, 0.0);
+    int CIRCLES_COUNT = 200;
+
+    // Initialize output to background color.
+    result = BACKGROUND_COLOR;
+
+    // Pseudo-random generator for thickness variation.
+    float random(float s) { return fmod(sin(s) * 43758.5453123, 1.0); }
+
+    // Extract UV coordinates.
+    float x = uv[0];
+    float y = uv[1];
+
+    // Iterate through circle array to find first containing circle.
+    for (int i = 0; i < CIRCLES_COUNT; i++)
+    {
+        float center_x = i * SPACING;
+
+        // Randomized edge thickness per circle instance.
+        float thickness = mix(MIN_THICKNESS, MAX_THICKNESS, random(i + seed));
+
+        // Distance from current shading point to circle center.
+        float dx = x - center_x;
+        float dy = y;
+        float dist = sqrt(dx*dx + dy*dy);
+
+        // Check if point lies inside the circle radius.
+        if (dist <= RADIUS)
+        {
+            // Blend factor for radial gradient from center to edge.
+            float factor = smoothstep(RADIUS, RADIUS - thickness, dist);
+
+            // Compute final color and exit loop.
+            result = mix(CENTER_COLOR, EDGE_COLOR, factor);
+            break;
+        }
+    }
+}

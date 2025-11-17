@@ -16,6 +16,9 @@ def main():
     """
     Description:
         Generate the checkerboard squares on top of the base plane using given materials.
+
+        Note:
+            Open a new Blender file and copy + paste this script and run it.
     """
 
     # Select and delete all objects in the current scene.

@@ -19,11 +19,11 @@ import Utilities.General
 
 """
 Description:
-    Open *.blend file from the Blender folder and copy + paste this script and run it.
+    Open Generation.blend from the Blender folder and copy + paste this script and run it.
 
     Terminal:
         $ cd ../{project_name}/Blender
-        $ blender {blender_file_name}.blend
+        $ blender Generation.blend
 """
 
 """

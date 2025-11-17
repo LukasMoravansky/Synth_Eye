@@ -1,0 +1,107 @@
+shader random_oval_fingerprint(
+    point Pos = 0,                
+    float seed = 0.0,             
+    float width_min = 0.2,        
+    float width_max = 0.5,        
+    float height_min = 0.2,       
+    float height_max = 0.5,       
+    float blur_intensity = 0.2,   // Intenzita rozostření hran
+    float wave_scale = 30.0,      // Hustota vln (čím vyšší, tím více pruhů)
+    int enable_mask = 1,
+    float center_x_min = 0,     
+    float center_x_max = 0.65,     
+    float center_y_min = 0,     
+    float center_y_max = 1,  
+    
+    
+    output float mask = 0,        
+    output float mask_rectangle = 0,
+    output float mask_fingerprint = 0, // Výstupní maska otisku prstu
+    output float center_x = 0,    
+    output float center_y = 0,    
+    output float x_rot = 0,    
+    output float y_rot = 0,     
+    output float rotation_z = 0)    
+{
+    if (enable_mask == 0) 
+    {
+    mask = 0;
+    mask_rectangle = 0;
+    mask_fingerprint = 0;
+    return;
+    }
+
+    float uv_x = clamp(Pos[0], 0, 1);
+    float uv_y = clamp(Pos[1], 0, 1);
+    
+    
+    float fract(float x) {
+    return x - floor(x);
+    }
+
+    float hash(float n) {
+        return fract(sin(n) * 43758.5453);
+    }
+
+    float seed_offset_x = hash(seed * 17.0 + 3.1);
+    float seed_offset_y = hash(seed * 29.0 + 7.7);
+
+    center_x = center_x_min + seed_offset_x * (center_x_max - center_x_min);
+    center_y = center_y_min + seed_offset_y * (center_y_max - center_y_min);
+   
+
+    float width = width_min + noise("simplex", center_x_max + 2.2) * (width_max - width_min);
+    float height = height_min + noise("simplex", center_y_max + 3.3) * (height_max - height_min);
+    
+    // Náhodná rotace (plynulá změna úhlu v radiánech)
+    float angle = noise("perlin", seed_offset_x + 4.0) * 6.28319;  // 0–2π (0–360°)
+    
+    rotation_z = noise("gabor", seed_offset_y + 4.4) * 6.28319;  
+    rotation_z = angle;
+
+    float x = uv_x - center_x;
+    float y = uv_y - center_y;
+
+    float cos_a = cos(angle);
+    float sin_a = sin(angle);
+    x_rot = x * cos_a - y * sin_a;
+    y_rot = x * sin_a + y * cos_a;
+
+    float a = width * 0.5;
+    float b = height * 0.5;
+
+    float ellipse = (x_rot * x_rot) / (a * a) + (y_rot * y_rot) / (b * b);
+
+    // **Rozostření hran pomocí šumu**
+    float noise_factor = noise("perlin", x_rot * 10 + seed, y_rot * 10 + seed + 5) * blur_intensity;
+
+    if (ellipse <= 1.0 + noise_factor) {
+        mask = 1.0 - smoothstep(0.8, 1.0 + noise_factor, ellipse);  
+    } else {
+        mask = 0.0;  
+    }
+
+    if (abs(x_rot) <= a && abs(y_rot) <= b) {
+        mask_rectangle = 1.0;
+    } else {
+        mask_rectangle = 0.0;
+    }
+
+    // === OBLAST PRO GENEROVÁNÍ MASKY ODISKU PRSTU ===
+    
+    // Náhodný střed kruhů uvnitř obdélníku (pouze jeden)
+    float fp_center_x = center_x + (noise("perlin", seed + 10) - 0.5) * width;
+    float fp_center_y = center_y + (noise("perlin", seed + 11) - 0.5) * height;
+
+    // Vzdálenost bodu od středu otisku prstu
+    float dx = uv_x - fp_center_x;
+    float dy = uv_y - fp_center_y;
+    float dist = sqrt(dx * dx + dy * dy);
+
+    // Simulace soustředných kruhů vycházejících pouze z JEDNOHO bodu
+    mask_fingerprint = 0.5 + 0.5 * sin(dist * wave_scale);
+
+    // Omezíme otisk jen na oblast obdélníku
+    mask_fingerprint *= mask_rectangle;
+    
+}

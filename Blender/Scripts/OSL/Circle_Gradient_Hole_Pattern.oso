@@ -1,0 +1,154 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.13.7.0
+# options: -o /var/folders/m0/9483mct508b7g5yhjpwllmxc0000gn/T/tmp4w2tyexe.oso -I/Applications/Blender.app/Contents/Resources/4.2/scripts/addons_core/cycles/shader
+shader Circle_Gradient_Hole_Pattern
+param	vector	uv	0.5 0.5 0		%read{8,9} %write{2147483647,-1}
+param	float	seed	43758.5469		%read{23,26} %write{2147483647,-1}
+oparam	color	result	0 0 0		%read{2147483647,-1} %write{7,46}
+local	float	RADIUS	%read{12,46} %write{0,0}
+local	float	CIRCLE_RADIUS	%read{12,46} %write{1,1}
+local	float	MIN_THICKNESS	%read{12,46} %write{2,2}
+local	float	MAX_THICKNESS	%read{12,46} %write{3,3}
+local	color	CIRCLE_COLOR	%read{12,46} %write{4,4}
+local	color	BACKGROUND_COLOR	%read{7,7} %write{5,5}
+local	int	CIRCLES_COUNT	%read{12,46} %write{6,6}
+local	float	x	%read{12,46} %write{8,8}
+local	float	y	%read{12,46} %write{9,9}
+local	int	___363_i	%read{12,46} %write{11,46}
+local	float	___364_angle	%read{12,46} %write{12,46}
+local	float	___364_center_x	%read{12,46} %write{12,46}
+local	float	___364_center_y	%read{12,46} %write{12,46}
+local	float	___364_thickness	%read{12,46} %write{12,46}
+local	float	___364_dx	%read{12,46} %write{12,46}
+local	float	___364_dy	%read{12,46} %write{12,46}
+local	float	___364_dist	%read{12,46} %write{12,46}
+const	float	$const1	0.300000012		%read{0,0} %write{2147483647,-1}
+const	float	$const2	0.0500000007		%read{1,1} %write{2147483647,-1}
+const	float	$const3	0.00100000005		%read{2,2} %write{2147483647,-1}
+const	float	$const4	0.00200000009		%read{3,3} %write{2147483647,-1}
+const	color	$const5	1 1 1		%read{4,4} %write{2147483647,-1}
+const	color	$const6	0 0 0		%read{5,5} %write{2147483647,-1}
+const	int	$const7	20		%read{6,6} %write{2147483647,-1}
+const	int	$const8	0		%read{8,40} %write{2147483647,-1}
+const	int	$const9	1		%read{9,46} %write{2147483647,-1}
+temp	int	$tmp1	%read{12,46} %write{12,46}
+temp	int	$tmp2	%read{10,46} %write{11,46}
+const	float	$const10	6.28318548		%read{15,15} %write{2147483647,-1}
+temp	float	$tmp3	%read{12,46} %write{12,46}
+temp	float	$tmp4	%read{12,46} %write{12,46}
+temp	float	$tmp5	%read{12,46} %write{12,46}
+temp	float	$tmp6	%read{12,46} %write{12,46}
+temp	float	$tmp7	%read{12,46} %write{12,46}
+temp	float	$tmp8	%read{12,46} %write{12,46}
+temp	float	$tmp9	%read{12,46} %write{12,46}
+temp	float	$tmp10	%read{12,46} %write{12,46}
+const	string	$const11	"random"		%read{24,24} %write{2147483647,-1}
+temp	float	$tmp11	%read{12,46} %write{12,46}
+temp	float	$tmp12	%read{12,46} %write{12,46}
+const	float	$const12	1		%read{27,27} %write{2147483647,-1}
+temp	float	$tmp13	%read{12,46} %write{12,46}
+temp	float	$tmp14	%read{12,46} %write{12,46}
+temp	float	$tmp15	%read{12,46} %write{12,46}
+temp	int	$tmp16	%read{12,46} %write{12,46}
+temp	int	$tmp17	%read{12,46} %write{12,46}
+temp	float	$tmp18	%read{12,46} %write{12,46}
+temp	int	$tmp19	%read{12,46} %write{12,46}
+temp	int	$tmp20	%read{12,46} %write{12,46}
+temp	int	$tmp21	%read{2147483647,-1} %write{12,46}
+code ___main___
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:24
+#     float CIRCLE_RADIUS = 0.05;
+	assign		RADIUS $const1 	%filename{"Scripts/OSL/Circle_Gradient_Hole_Pattern.osl"} %line{24} %argrw{"wr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:25
+#     float MIN_THICKNESS = 0.001;
+	assign		CIRCLE_RADIUS $const2 	%line{25} %argrw{"wr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:26
+#     float MAX_THICKNESS = 0.002;
+	assign		MIN_THICKNESS $const3 	%line{26} %argrw{"wr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:27
+#     color CIRCLE_COLOR = color(1.0, 1.0, 1.0);
+	assign		MAX_THICKNESS $const4 	%line{27} %argrw{"wr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:28
+#     color BACKGROUND_COLOR = color(0.0, 0.0, 0.0);
+	assign		CIRCLE_COLOR $const5 	%line{28} %argrw{"wr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:29
+#     int CIRCLES_COUNT = 20;
+	assign		BACKGROUND_COLOR $const6 	%line{29} %argrw{"wr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:30
+# 
+	assign		CIRCLES_COUNT $const7 	%line{30} %argrw{"wr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:33
+# 
+	assign		result BACKGROUND_COLOR 	%line{33} %argrw{"wr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:39
+#     float y = uv[1];
+	compref		x uv $const8 	%line{39} %argrw{"wrr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:40
+# 
+	compref		y uv $const9 	%line{40} %argrw{"wrr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:43
+#     {
+	for		$tmp2 12 14 45 47 	%line{43} %argrw{"r"}
+	assign		___363_i $const8 	%argrw{"wr"}
+	lt		$tmp1 ___363_i CIRCLES_COUNT 	%argrw{"wrr"}
+	neq		$tmp2 $tmp1 $const8 	%argrw{"wrr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:46
+# 
+	assign		$tmp4 ___363_i 	%line{46} %argrw{"wr"}
+	mul		$tmp3 $const10 $tmp4 	%argrw{"wrr"}
+	assign		$tmp5 CIRCLES_COUNT 	%argrw{"wr"}
+	div		___364_angle $tmp3 $tmp5 	%argrw{"wrr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:49
+#         float center_y = RADIUS * sin(angle);
+	cos		$tmp6 ___364_angle 	%line{49} %argrw{"wr"}
+	mul		___364_center_x RADIUS $tmp6 	%argrw{"wrr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:50
+# 
+	sin		$tmp7 ___364_angle 	%line{50} %argrw{"wr"}
+	mul		___364_center_y RADIUS $tmp7 	%argrw{"wrr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:53
+# 
+	assign		$tmp10 ___363_i 	%line{53} %argrw{"wr"}
+	add		$tmp9 $tmp10 seed 	%argrw{"wrr"}
+	functioncall	$const11 28 	%argrw{"r"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:36
+# 
+	sin		$tmp11 $tmp9 	%line{36} %argrw{"wr"}
+	mul		$tmp12 $tmp11 seed 	%argrw{"wrr"}
+	fmod		$tmp8 $tmp12 $const12 	%argrw{"wrr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:53
+# 
+	mix		___364_thickness MIN_THICKNESS MAX_THICKNESS $tmp8 	%line{53} %argrw{"wrrr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:56
+#         float dy = y - center_y;
+	sub		___364_dx x ___364_center_x 	%line{56} %argrw{"wrr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:57
+#         float dist = sqrt(dx*dx + dy*dy);
+	sub		___364_dy y ___364_center_y 	%line{57} %argrw{"wrr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:58
+# 
+	mul		$tmp13 ___364_dx ___364_dx 	%line{58} %argrw{"wrr"}
+	mul		$tmp14 ___364_dy ___364_dy 	%argrw{"wrr"}
+	add		$tmp15 $tmp13 $tmp14 	%argrw{"wrr"}
+	sqrt		___364_dist $tmp15 	%argrw{"wr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:61
+#         {
+	le		$tmp16 ___364_dist CIRCLE_RADIUS 	%line{61} %argrw{"wrr"}
+	neq		$tmp17 $tmp16 $const8 	%argrw{"wrr"}
+	if		$tmp17 42 42 	%argrw{"r"}
+	sub		$tmp18 CIRCLE_RADIUS ___364_thickness 	%argrw{"wrr"}
+	ge		$tmp19 ___364_dist $tmp18 	%argrw{"wrr"}
+	neq		$tmp20 $tmp19 $const8 	%argrw{"wrr"}
+	assign		$tmp17 $tmp20 	%argrw{"wr"}
+	if		$tmp17 45 45 	%argrw{"r"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:63
+#             break;
+	assign		result CIRCLE_COLOR 	%line{63} %argrw{"wr"}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:64
+#         }
+	break	%line{64}
+# Scripts/OSL/Circle_Gradient_Hole_Pattern.osl:43
+#     {
+	assign		$tmp21 ___363_i 	%line{43} %argrw{"wr"}
+	add		___363_i ___363_i $const9 	%argrw{"wrr"}
+	end

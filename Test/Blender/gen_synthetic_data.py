@@ -26,6 +26,15 @@ import time
 
 """
 Description:
+    Open Generation.blend from the Blender folder and copy + paste this script and run it.
+
+    Terminal:
+        $ cd ../{project_name}/Blender
+        $ blender Generation.blend
+"""
+
+"""
+Description:
     Initialization of constants.
 """
 # Number of synthetic data to be generated.

@@ -1,0 +1,66 @@
+/*
+Description:
+    Creates a circular ring composed of smaller circles positioned evenly
+    along a defined radius. Each mini-circle has a thin, randomly varied
+    visible band. Points inside this ring pattern are colored, producing
+    a perforated or mechanical decorative effect.
+
+Args:
+    (1) uv [vector]: UV coordinates of the shading point, typically from a Mapping node.
+    (2) seed [float]: Seed controlling random thickness variation.
+
+Returns:
+    (1) result [color]: Shaded color at the current point based on the ring pattern.
+*/
+
+shader Circle_Gradient_Hole_Pattern(
+    vector uv = vector(0.5, 0.5, 0.0),
+    float seed = 43758.5453123,
+    output color result = 0
+)
+{
+    // Constants for parent radius, mini-circle radius, colors, thickness, and circle count.
+    float RADIUS = 0.3;
+    float CIRCLE_RADIUS = 0.05;
+    float MIN_THICKNESS = 0.001;
+    float MAX_THICKNESS = 0.002;
+    color CIRCLE_COLOR = color(1.0, 1.0, 1.0);
+    color BACKGROUND_COLOR = color(0.0, 0.0, 0.0);
+    int CIRCLES_COUNT = 20;
+
+    // Initialize output to background color.
+    result = BACKGROUND_COLOR;
+
+    // Pseudo-random generator producing values in [0,1].
+    float random(float s) { return fmod(sin(s) * seed, 1.0); }
+
+    // Extract UV coordinates.
+    float x = uv[0];
+    float y = uv[1];
+
+    // Iterate over all mini-circles placed around the parent radius.
+    for (int i = 0; i < CIRCLES_COUNT; i++)
+    {
+        // Angular position of the current circle on the parent radius.
+        float angle = (2.0 * M_PI * i) / CIRCLES_COUNT;
+
+        // Cartesian coordinates of the mini-circle center.
+        float center_x = RADIUS * cos(angle);
+        float center_y = RADIUS * sin(angle);
+
+        // Randomized visible band thickness.
+        float thickness = mix(MIN_THICKNESS, MAX_THICKNESS, random(i + seed));
+
+        // Distance from shading point to mini-circle center.
+        float dx = x - center_x;
+        float dy = y - center_y;
+        float dist = sqrt(dx*dx + dy*dy);
+
+        // Check if point lies within the thin visible band of the circle.
+        if (dist <= CIRCLE_RADIUS && dist >= (CIRCLE_RADIUS - thickness))
+        {
+            result = CIRCLE_COLOR;
+            break;
+        }
+    }
+}

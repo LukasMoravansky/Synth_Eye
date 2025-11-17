@@ -1,0 +1,83 @@
+/*
+Description:
+    Generates procedural masks for an ellipse and a fingerprint-style pattern.
+    The shader produces a soft elliptical mask, a hard rectangular mask aligned 
+    with the rotated ellipse, and a radial fingerprint wave mask. The ellipse 
+    position, size, and rotation are randomized based on a seed.
+
+Args:
+    (1) Pos [point]: Object-space position (UV coordinates) of the shading point.
+    (2) seed [float]: Seed controlling all randomized parameters.
+    (3) enable_mask [int]: Enable or disable mask generation.
+
+Returns:
+    (1) mask [float]: Soft elliptical mask with blurred edges.
+    (2) mask_rectangle [float]: Hard rectangular mask aligned with the rotated ellipse.
+    (3) mask_fingerprint [float]: Fingerprint-style radial wave mask within ellipse bounds.
+*/
+
+shader Random_Fingerprint_Mask(
+    point Pos = 0,              
+    float seed = 0.0,           
+    int enable_mask = 1,        
+    output float mask = 0.0,            
+    output float mask_rectangle = 0.0,  
+    output float mask_fingerprint = 0.0 
+)
+{
+    // Constants for ellipse size, blur, and fingerprint pattern.
+    float WIDTH_MIN = 0.2, WIDTH_MAX = 0.5;
+    float HEIGHT_MIN = 0.2, HEIGHT_MAX = 0.5;
+    float BLUR_INTENSITY = 0.2;
+    float WAVE_SCALE = 30.0;
+    float CENTER_X_MIN = 0.0, CENTER_X_MAX = 0.65;
+    float CENTER_Y_MIN = 0.0, CENTER_Y_MAX = 1.0;
+
+    // Early exit if mask generation is disabled.
+    if (enable_mask == 0) {
+        mask = mask_rectangle = mask_fingerprint = 0.0;
+        return;
+    }
+
+    // Helper function to get fractional part.
+    float fract(float x) { return x - floor(x); }
+
+    // Clamp UV coordinates to [0,1] range.
+    float uv_x = clamp(Pos[0], 0.0, 1.0);
+    float uv_y = clamp(Pos[1], 0.0, 1.0);
+
+    // Compute stable offset for random values based on seed.
+    float seed_offset = fract(seed * 1345.34 + 787.89) * 1000.0;
+
+    // Randomize ellipse center within bounds.
+    float center_x = CENTER_X_MIN + noise("cell", seed_offset + 0.1) * (CENTER_X_MAX - CENTER_X_MIN);
+    float center_y = CENTER_Y_MIN + noise("cell", seed_offset + 1.1) * (CENTER_Y_MAX - CENTER_Y_MIN);
+
+    // Randomize ellipse width and height.
+    float width  = WIDTH_MIN + noise("simplex", seed_offset + 2.2) * (WIDTH_MAX - WIDTH_MIN);
+    float height = HEIGHT_MIN + noise("simplex", seed_offset + 3.3) * (HEIGHT_MAX - HEIGHT_MIN);
+
+    // Random rotation of the ellipse.
+    float rotation_z = noise("perlin", seed_offset + 4.0) * 2.0 * M_PI;
+    float cos_a = cos(rotation_z), sin_a = sin(rotation_z);
+
+    // Transform UV coordinates into ellipse-local space.
+    float x_rot = (uv_x - center_x) * cos_a - (uv_y - center_y) * sin_a;
+    float y_rot = (uv_x - center_x) * sin_a + (uv_y - center_y) * cos_a;
+
+    // Compute soft elliptical mask with edge noise.
+    float a = width * 0.5, b = height * 0.5;
+    float ellipse_eq = (x_rot*x_rot)/(a*a) + (y_rot*y_rot)/(b*b);
+    float edge_noise = noise("perlin", x_rot*10.0 + seed, y_rot*10.0 + seed + 5.0) * BLUR_INTENSITY;
+    mask = (ellipse_eq <= 1.0 + edge_noise) ? 1.0 - smoothstep(0.8, 1.0 + edge_noise, ellipse_eq) : 0.0;
+
+    // Compute hard rectangular mask aligned with rotated ellipse.
+    mask_rectangle = (abs(x_rot) <= a && abs(y_rot) <= b) ? 1.0 : 0.0;
+
+    // Generate fingerprint-style radial wave pattern within ellipse bounds.
+    float fp_center_x = center_x + (noise("perlin", seed + 10.0) - 0.5) * width;
+    float fp_center_y = center_y + (noise("perlin", seed + 11.0) - 0.5) * height;
+    float dx = uv_x - fp_center_x, dy = uv_y - fp_center_y;
+    float dist = sqrt(dx*dx + dy*dy);
+    mask_fingerprint = (0.5 + 0.5 * sin(dist * WAVE_SCALE)) * mask_rectangle;
+}

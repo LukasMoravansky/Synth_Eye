@@ -1,0 +1,42 @@
+shader draw_circles(
+    vector mapping = vector(0.5, 0.5, 0), // Vstup z Mapping node
+    float radius = 0.35,                  // Poloměr kruhů (zvětšený)
+    float spacing = 0.1,                   // Rozteč mezi středy kruhů v ose X
+    float min_thickness = 0.005,           // Zvýšená minimální tloušťka kruhu
+    float max_thickness = 0.01,            // Zvýšená maximální tloušťka kruhu
+    color center_color = color(0.8, 0.8, 0.8), // Barva ve středu kruhu (světle šedá)
+    color edge_color = color(0, 0, 0),         // Barva na okraji kruhu (černá)
+    color background_color = color(0, 0, 0),   // Barva pozadí
+    float Circles_count = 200,
+    output color result = color(0, 0, 0))    // Výstupní barva
+    
+{
+    float coord_x = mapping[0];
+    float coord_y = mapping[1];
+
+    result = background_color;
+
+    // Funkce pro generování náhodného čísla v daném rozsahu
+    float random(float seed) {
+        return fmod(sin(seed) * 43758.5453123, 1.0);
+    }
+
+    for (int i = 0; i < Circles_count; i++) {
+        float center_x = i * spacing;
+        float rand_thickness = mix(min_thickness, max_thickness, random(i));
+
+        float dx = coord_x - center_x;
+        float dy = coord_y - 0.0;
+        float dist_to_center = sqrt(dx * dx + dy * dy);
+
+        // Pokud je bod uvnitř zvětšeného kruhu
+        if (dist_to_center <= radius) {
+            // Vypočítáme faktor přechodu od středu k okraji
+            float gradient_factor = smoothstep(radius, radius - rand_thickness, dist_to_center);
+            
+            // Interpolace mezi světle šedou a černou podle gradientu
+            result = mix(center_color, edge_color, gradient_factor);
+            break;
+        }
+    }
+}
