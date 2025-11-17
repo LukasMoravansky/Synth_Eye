@@ -27,18 +27,20 @@ Description:
     Initialization of constants.
 """
 # The name of the dataset, model, and color of the object bounding boxes.
-#   Dataset_v2 - yolov8m_object_detection - [(255, 165, 0), (0, 165, 255)]
-#   Dataset_v3 - yolov8m_defect_detection - [(80, 0, 255)]
-CONST_CONFIG = {'Name': 'Dataset_v3', 'Model': 'yolov8m_defect_detection', 'Color': [(80, 0, 255)]}
+CONST_CONFIG_MODEL_OBJ = {'Model': 'yolov8m_object_detection', 'Color': [(255, 165, 0), (0, 165, 255)]}
+CONST_CONFIG_MODEL_DEFECT = {'Model': 'yolov8m_defect_detection', 'Color': [(80, 0, 255)]}
 
 def main():
     """
     Description:
-        A program to perform AI-based object detection on a test image dataset using a pre-trained 
+        A program to perform AI-based object and defect detection on a test image dataset using a pre-trained 
         YOLOv8 model.
 
+        1. Model: Object detection - yolov8m_object_detection.pt
+        2. Model: Defect detection - yolov8m_defect_detection.pot
+
         It loads test images, runs inference, draws bounding boxes around detected 
-        objects, and saves the annotated images.
+        objects/defects, and saves the annotated images.
 
         Note:
             For more information about the training process, see: {project_folder}/Training
@@ -58,10 +60,11 @@ def main():
         meta_args = yaml.safe_load(f)
 
     # Load a pre-trained custom YOLO model.
-    model = YOLO(f'{project_folder}/YOLO/Model/{CONST_CONFIG['Name']}/{CONST_CONFIG['Model']}.pt')
+    model_object = YOLO(f"{project_folder}/YOLO/Model/Dataset_v2/{CONST_CONFIG_MODEL_OBJ['Model']}.pt")
+    model_defect = YOLO(f"{project_folder}/YOLO/Model/Dataset_v3/{CONST_CONFIG_MODEL_DEFECT['Model']}.pt")
 
     # Extracts numeric identifiers and background flags from filenames in a specified directory.
-    image_dir_info = Utilities.General.Extract_Num_From_Filename('Image', os.path.join(project_folder, 'Data', CONST_CONFIG['Name'], 
+    image_dir_info = Utilities.General.Extract_Num_From_Filename('Image', os.path.join(project_folder, 'Data', 'Dataset_v2', 
                                                                                        'images', 'test'))
 
     # Initialize the timer and counters.
@@ -75,15 +78,15 @@ def main():
         if image is None:
             raise FileNotFoundError(f'[ERROR] Unable to load image from: {image_path}')
 
-        # Perform prediction on the test image set.
-        results = model.predict(source=image_path, device=device_id, imgsz=meta_args['imgsz'], conf=0.25, iou=0.5)
+        # Perform prediction of the object on the test image set.
+        results_object = model_object.predict(source=image_path, device=device_id, imgsz=meta_args['imgsz'], conf=0.25, iou=0.5)
 
         # If the model has found an object in the current processed image, express the results (class, bounding box, confidence).
-        if results[0].boxes.shape[0] >= 1:
+        if results_object[0].boxes.shape[0] >= 1:
             # Express the data from the prediction:
             #   ID name of the class, Bounding box in the YOLO format and Confidence.
-            class_id = results[0].boxes.cls.cpu().numpy(); b_box = results[0].boxes.xywhn.cpu().numpy()
-            conf = results[0].boxes.conf.cpu().numpy()
+            class_id = results_object[0].boxes.cls.cpu().numpy(); b_box = results_object[0].boxes.xywhn.cpu().numpy()
+            conf = results_object[0].boxes.conf.cpu().numpy()
 
             for _, (class_id_i, b_box_i, conf_i) in enumerate(zip(class_id, b_box, conf)):
                 # Create a bounding box from the label data.
@@ -92,14 +95,65 @@ def main():
                 
                 # Draw the bounding box of the object with additional dependencies (name, precision, etc.) in 
                 # the raw image.
-                processed_image = Utilities.Image_Processing.Draw_Bounding_Box(image, Bounding_Box_Properties, 'YOLO', CONST_CONFIG['Color'][int(class_id_i)], 
-                                                                               True, True)
+                processed_image = Utilities.Image_Processing.Draw_Bounding_Box(image, Bounding_Box_Properties, 'YOLO', CONST_CONFIG_MODEL_OBJ['Color'][int(class_id_i)], 
+                                                                               False, False)
                 image = processed_image.copy()
+
+                # Determine resolution of the processed image.
+                img_h, img_w = image.shape[:2]
+                Resolution = {'x': img_w, 'y': img_h}
+
+                # Converts bounding box coordinates from YOLO format to absolute pixel coordinates.
+                abs_coordinates_obj = Utilities.General.YOLO_To_Absolute_Coordinates({'x_c': b_box_i[0], 'y_c': b_box_i[1], 
+                                                                                    'width': b_box_i[2], 'height': b_box_i[3]}, 
+                                                                                    Resolution)
+                    
+                # Calculate object bounding box edges from center-based coordinates.
+                obj_left = int(abs_coordinates_obj['x'] - abs_coordinates_obj['width'] / 2)
+                obj_top = int(abs_coordinates_obj['y'] - abs_coordinates_obj['height'] / 2)
+                obj_right = int(abs_coordinates_obj['x'] + abs_coordinates_obj['width'] / 2)
+                obj_bottom = int(abs_coordinates_obj['y'] + abs_coordinates_obj['height'] / 2)
+
+                # Crop the object region from the original image.
+                cropped_image = image[obj_top:obj_bottom, obj_left:obj_right]
+
+                # Perform defect detection only on specific object classes.
+                #   Class ID (0) - Front side of the metalic object.
+                if class_id_i == 0:
+                    # Perform prediction of the defect on the test image set.
+                    results_defect = model_defect.predict(source=cropped_image, device=device_id, imgsz=meta_args['imgsz'], conf=0.25, iou=0.5)
+
+                    if results_defect[0].boxes.shape[0] >= 1:
+                        # Express the data from the prediction of the defect.
+                        defect_cls = results_defect[0].boxes.cls.cpu().numpy(); defect_b_box = results_defect[0].boxes.xywhn.cpu().numpy(); defect_conf = results_defect[0].boxes.conf.cpu().numpy()
+
+                        for _, (d_class_i, d_b_box_i, d_conf_i) in enumerate(zip(defect_cls, defect_b_box, defect_conf)):
+                            # Convert bounding box of the defect to absolute coordinates within cropped object.
+                            abs_coordinates_defect = Utilities.General.YOLO_To_Absolute_Coordinates({'x_c': d_b_box_i[0], 'y_c': d_b_box_i[1], 
+                                                                                                     'width': d_b_box_i[2], 'height': d_b_box_i[3]}, 
+                                                                                                    {'x': cropped_image.shape[1], 'y': cropped_image.shape[0]})
+
+                            # Shift to original image.
+                            abs_coordinates_defect['x'] += obj_left; abs_coordinates_defect['y'] += obj_top
+
+                            # Generate YOLO-format label for original image.
+                            yolo_coordinates_defect = Utilities.General.Absolute_Coordinates_To_YOLO(abs_coordinates_defect, Resolution)
+
+                            # Create a bounding box from the label data of the defect.
+                            Bounding_Box_Defect_Properties = {'Name': f'{int(d_class_i)}', 'Precision': f'{str(d_conf_i)[0:5]}', 
+                                                              'Data': yolo_coordinates_defect}
+                            
+                            # Draw the bounding box of the defect with additional dependencies (name, precision, etc.) in 
+                            # the raw image.
+                            processed_image = Utilities.Image_Processing.Draw_Bounding_Box(image, Bounding_Box_Defect_Properties, 'YOLO', CONST_CONFIG_MODEL_DEFECT['Color'][int(class_id_i)], 
+                                                                                           False, False)
+                            image = processed_image.copy()
+        
         else:
             processed_image = image.copy()
             
         # Save processed image.
-        cv2.imwrite(f'{project_folder}/YOLO/Prediction/{CONST_CONFIG['Name']}/{image_name}.png', processed_image)
+        cv2.imwrite(f"{project_folder}/YOLO/Prediction/Dataset_v2_ALL/{image_name}.png", processed_image)
 
         # Release the image.
         del processed_image
@@ -115,4 +169,4 @@ def main():
     print(f'[INFO] Time: {int(minutes)}m {int(seconds)}s')
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

@@ -161,7 +161,7 @@ def Draw_Bounding_Box(image: tp.List[tp.List[int]], bounding_box_properties: tp.
 
     # Show additional information such as name and precision.
     if show_info == True:
-        cv2.putText(image_out, f'Class {bounding_box_properties['Name']}: {bounding_box_properties['Precision']}', 
+        cv2.putText(image_out, f"Class {bounding_box_properties['Name']}: {bounding_box_properties['Precision']}", 
                     (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, Color, 2)
 
     return image_out
