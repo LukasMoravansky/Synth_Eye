@@ -29,6 +29,8 @@ Description:
 # The name of the dataset, model, and color of the object bounding boxes.
 CONST_CONFIG_MODEL_OBJ = {'Model': 'yolov8m_object_detection', 'Color': [(255, 165, 0), (0, 165, 255)]}
 CONST_CONFIG_MODEL_DEFECT = {'Model': 'yolov8m_defect_detection', 'Color': [(80, 0, 255)]}
+# The boundaries of an object (bounding box) determined using gen_obj_boundaries.py script.
+CONST_OBJECT_BB_AREA = {'Min': 0.1, 'Max':0.15}
 
 def main():
     """
@@ -81,6 +83,9 @@ def main():
         # Perform prediction of the object on the test image set.
         results_object = model_object.predict(source=image_path, device=device_id, imgsz=meta_args['imgsz'], conf=0.25, iou=0.5)
 
+        # Initialize the variable to hold the processed image.
+        processed_image = image.copy()
+
         # If the model has found an object in the current processed image, express the results (class, bounding box, confidence).
         if results_object[0].boxes.shape[0] >= 1:
             # Express the data from the prediction:
@@ -89,6 +94,18 @@ def main():
             conf = results_object[0].boxes.conf.cpu().numpy()
 
             for _, (class_id_i, b_box_i, conf_i) in enumerate(zip(class_id, b_box, conf)):
+                # Get the area of the rectangle.
+                A = b_box_i[2] *  b_box_i[3]
+
+                # If the calculated area of the object's bounding box is outside the limits, do not predict 
+                # the object.
+                if A < CONST_OBJECT_BB_AREA['Min'] or A > CONST_OBJECT_BB_AREA['Max']:
+                    continue
+
+                # If the confidence of the prediction is less than 90%, do not predict the object.
+                if conf_i < 0.9:
+                    continue
+
                 # Create a bounding box from the label data.
                 Bounding_Box_Properties = {'Name': f'{int(class_id_i)}', 'Precision': f'{str(conf_i)[0:5]}', 
                                            'Data': {'x_c': b_box_i[0], 'y_c': b_box_i[1], 'width': b_box_i[2], 'height': b_box_i[3]}}
@@ -96,9 +113,7 @@ def main():
                 # Draw the bounding box of the object with additional dependencies (name, precision, etc.) in 
                 # the raw image.
                 processed_image = Utilities.Image_Processing.Draw_Bounding_Box(image, Bounding_Box_Properties, 'YOLO', CONST_CONFIG_MODEL_OBJ['Color'][int(class_id_i)], 
-                                                                               False, False)
-                image = processed_image.copy()
-
+                                                                               True, False)
                 # Determine resolution of the processed image.
                 img_h, img_w = image.shape[:2]
                 Resolution = {'x': img_w, 'y': img_h}
@@ -128,6 +143,10 @@ def main():
                         defect_cls = results_defect[0].boxes.cls.cpu().numpy(); defect_b_box = results_defect[0].boxes.xywhn.cpu().numpy(); defect_conf = results_defect[0].boxes.conf.cpu().numpy()
 
                         for _, (d_class_i, d_b_box_i, d_conf_i) in enumerate(zip(defect_cls, defect_b_box, defect_conf)):
+                            # If the confidence of the prediction is less than 80%, do not predict the object.
+                            if d_conf_i < 0.8:
+                                continue
+
                             # Convert bounding box of the defect to absolute coordinates within cropped object.
                             abs_coordinates_defect = Utilities.General.YOLO_To_Absolute_Coordinates({'x_c': d_b_box_i[0], 'y_c': d_b_box_i[1], 
                                                                                                      'width': d_b_box_i[2], 'height': d_b_box_i[3]}, 
@@ -145,12 +164,8 @@ def main():
                             
                             # Draw the bounding box of the defect with additional dependencies (name, precision, etc.) in 
                             # the raw image.
-                            processed_image = Utilities.Image_Processing.Draw_Bounding_Box(image, Bounding_Box_Defect_Properties, 'YOLO', CONST_CONFIG_MODEL_DEFECT['Color'][int(class_id_i)], 
-                                                                                           False, False)
-                            image = processed_image.copy()
-        
-        else:
-            processed_image = image.copy()
+                            processed_image = Utilities.Image_Processing.Draw_Bounding_Box(processed_image, Bounding_Box_Defect_Properties, 'YOLO', CONST_CONFIG_MODEL_DEFECT['Color'][int(class_id_i)], 
+                                                                                           True, False)
             
         # Save processed image.
         cv2.imwrite(f"{project_folder}/YOLO/Prediction/Dataset_v2_ALL/{image_name}.png", processed_image)
