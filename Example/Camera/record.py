@@ -7,7 +7,7 @@ if '../../' + 'src' not in sys.path:
 import cv2
 # Numpy (Array computing)
 import numpy as np
-# Custom Lib.:
+# Custom Library:
 #   ../Basler/Camera
 from Basler.Camera import Basler_Cls
 #   ../Calibration/Parameters

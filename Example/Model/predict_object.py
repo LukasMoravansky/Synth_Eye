@@ -30,7 +30,7 @@ Description:
 CONST_CONFIG_MODEL_OBJ = {'Model': 'yolov8m_object_detection', 'Color': [(255, 165, 0), (0, 165, 255)]}
 CONST_CONFIG_MODEL_DEFECT = {'Model': 'yolov8m_defect_detection', 'Color': [(80, 0, 255)]}
 # The boundaries of an object (bounding box) determined using gen_obj_boundaries.py script.
-CONST_OBJECT_BB_AREA = {'Min': 0.1, 'Max':0.15}
+CONST_OBJECT_BB_AREA = {'Min': 0.1, 'Max': 0.15}
 
 def main():
     """
@@ -95,7 +95,7 @@ def main():
 
             for _, (class_id_i, b_box_i, conf_i) in enumerate(zip(class_id, b_box, conf)):
                 # Get the area of the rectangle.
-                A = b_box_i[2] *  b_box_i[3]
+                A = b_box_i[2] * b_box_i[3]
 
                 # If the calculated area of the object's bounding box is outside the limits, do not predict 
                 # the object.
