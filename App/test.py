@@ -131,12 +131,12 @@ def main():
 
             # Create a bounding box from the label data.
             Bounding_Box_Properties = {'Name': f'{int(class_id_i)}', 'Precision': f'{str(conf_i)[0:5]}', 
-                                        'Data': {'x_c': b_box_i[0], 'y_c': b_box_i[1], 'width': b_box_i[2], 'height': b_box_i[3]}}
+                                       'Data': {'x_c': b_box_i[0], 'y_c': b_box_i[1], 'width': b_box_i[2], 'height': b_box_i[3]}}
             
             # Draw the bounding box of the object with additional dependencies (name, precision, etc.) in 
             # the raw image.
-            processed_image = Utilities.Image_Processing.Draw_Bounding_Box(img_undistorted, Bounding_Box_Properties, 'YOLO', CONST_CONFIG_MODEL_OBJ['Color'][int(class_id_i)], 
-                                                                          True, False)
+            processed_image = Utilities.Image_Processing.Draw_Bounding_Box(processed_image, Bounding_Box_Properties, 'YOLO', CONST_CONFIG_MODEL_OBJ['Color'][int(class_id_i)], 
+                                                                           True, False)
             # Determine resolution of the processed image.
             img_h, img_w = img_undistorted.shape[:2]
             Resolution = {'x': img_w, 'y': img_h}
@@ -188,17 +188,17 @@ def main():
                         # Draw the bounding box of the defect with additional dependencies (name, precision, etc.) in 
                         # the raw image.
                         processed_image = Utilities.Image_Processing.Draw_Bounding_Box(processed_image, Bounding_Box_Defect_Properties, 'YOLO', CONST_CONFIG_MODEL_DEFECT['Color'][int(class_id_i)], 
-                                                                                        True, False)
-            
-        # Save processed image.
-        cv2.imwrite(f"{project_folder}/App/Data/Test_Image_001.png", processed_image)
+                                                                                       True, False)
 
-        # Release the image.
-        del processed_image
+    # Save processed image.
+    cv2.imwrite(f"{project_folder}/App/Data/Test_Image_000.png", processed_image)
 
-        # Release the classes.
-        del Basler_Cam_Id_1; del Process_Image_Cls
+    # Release the image.
+    del processed_image
 
+    # Release the classes.
+    del Basler_Cam_Id_1; del Process_Image_Cls
+    
     elapsed_time = time.time() - start_time
     minutes, seconds = divmod(elapsed_time, 60)
 

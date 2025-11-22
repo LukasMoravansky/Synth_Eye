@@ -37,6 +37,11 @@ def main():
     # Initialize and configure the Basler camera.
     Basler_Cam_Id_1 = Basler_Cls(config=custom_cfg)
 
+    # Full screen window.
+    window_name = 'Captured Image'
+    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
     while True:
         # Capture a single image.
         img_raw = Basler_Cam_Id_1.Capture()

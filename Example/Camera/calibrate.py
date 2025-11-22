@@ -23,7 +23,7 @@ Description:
 """
 # The identification number of the iteration to save the image. It starts with the number 1.
 #   1 = 'Image_001', 2 = 'Image_002', etc.
-CONST_INIT_INDEX = 1
+CONST_INIT_INDEX = 2
 
 def main():
     """
@@ -85,7 +85,7 @@ def main():
     # Perform camera calibration using the provided checkerboard image.
     flag, x = Checkerboard_Calib_Cls.Solve(image_out, False, f'{project_folder}/Data/Camera/{Parameters.Scene.Basler_Cam_Str.Name}')
 
-    # Check whether calibration was successful
+    # Check whether calibration was successful.
     if flag == True:
         # Display the camera calibration results: intrinsic matrix, distortion coefficients, and scaling factor.
         print(f'[INFO] Intrinsic Matrix (K):\n{x.K}')
