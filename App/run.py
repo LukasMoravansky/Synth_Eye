@@ -1,367 +1,705 @@
+"""
+Synth.Eye - Vision-Based Industrial AI Application
+Main UI Application
+
+This application provides a user interface for camera-based industrial inspection.
+Layout is optimized for 4K monitors with 1920×1200px input image resolution.
+"""
+
 import sys
-import cv2
-import random
+import os
 from datetime import datetime
-from PyQt5.QtCore import Qt, QRectF, QTimer
-from PyQt5.QtGui import QImage, QPixmap, QPainter, QColor, QBrush, QFont, QPen, QLinearGradient, QTextCursor
+from PyQt5.QtCore import Qt, QTimer, QRectF, QSize
+from PyQt5.QtGui import QImage, QPixmap, QPainter, QColor, QFont, QPen, QBrush, QFontDatabase
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QLabel, QPushButton, QVBoxLayout,
-    QHBoxLayout, QTextEdit
+    QApplication, QMainWindow, QWidget, QLabel, QPushButton,
+    QVBoxLayout, QHBoxLayout, QTextEdit, QGraphicsView, QGraphicsScene, QSizePolicy
 )
 
-# ---------------- Modern Gauge with Safe Animation ----------------
-class ModernGauge(QWidget):
-    """Radial gauge starting from top (12 o'clock), clockwise, with gaps, up to max_value"""
-    def __init__(self, max_value=1000, color_start=QColor("#2ecc71"), color_end=QColor("#27ae60"), label="OK", parent=None):
+# ============================================================================
+# Color Constants
+# ============================================================================
+
+# Primary Colors
+COLOR_PRIMARY = "#533bff"  # Main brand color (buttons, logo, accents)
+
+# Text Colors
+COLOR_TEXT_DARK = "#333"    # Main text color
+COLOR_TEXT_MEDIUM = "#666"  # Secondary text color
+COLOR_TEXT_LIGHT = "#999"   # Tertiary text color
+
+# Background Colors
+COLOR_BG_WHITE = "#ffffff"      # White background
+COLOR_BG_LIGHT = "#f0f0f0"      # Light gray background
+COLOR_BG_DISABLED = "#e0e0e0"   # Disabled button background
+
+# Border Colors
+COLOR_BORDER_LIGHT = "#ddd"     # Light border
+COLOR_BORDER_MEDIUM = "#ccc"    # Medium border
+COLOR_BORDER_GRID = "#e0e0e0"   # Grid lines
+
+# Graph Colors
+COLOR_GRAPH_TOTAL = "#2ecc71"   # Green - Total line
+COLOR_GRAPH_OK = "#27ae60"      # Dark green - OK line
+COLOR_GRAPH_NOK = "#e74c3c"     # Red - NOK line
+
+# Status Colors
+COLOR_STATUS_SUCCESS_BG = "#e8f5e9"  # Light green background
+COLOR_STATUS_SUCCESS_TEXT = "#2e7d32" # Green text
+COLOR_STATUS_SUCCESS_BORDER = "#4caf50" # Green border
+
+# ============================================================================
+# Mock Camera Interface (for disabled camera option)
+# ============================================================================
+
+class MockCamera:
+    """Mock camera class for testing UI without physical camera"""
+
+    def __init__(self):
+        self.connected = False
+        self.resolution = None
+
+    def connect(self):
+        """Simulate camera connection"""
+        self.connected = True
+        self.resolution = (1920, 1200)
+        return True
+
+    def disconnect(self):
+        """Simulate camera disconnection"""
+        self.connected = False
+        self.resolution = None
+
+    def capture(self):
+        """Simulate image capture - returns None for now"""
+        if not self.connected:
+            return None
+        # Return a placeholder image (will be implemented later)
+        return None
+
+    def get_resolution(self):
+        """Get camera resolution"""
+        return self.resolution
+
+# ============================================================================
+# Aspect Ratio Label Widget
+# ============================================================================
+
+class AspectRatioLabel(QLabel):
+    """QLabel that maintains a fixed aspect ratio"""
+
+    def __init__(self, aspect_ratio=1.6, parent=None):  # 1920/1200 = 1.6
         super().__init__(parent)
-        self._value = 0
-        self._target_value = 0
-        self.max_value = max_value
-        self.color_start = color_start
-        self.color_end = color_end
-        self.label = label
-        self.setMinimumSize(100, 100)
+        self.aspect_ratio = aspect_ratio
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.timer = QTimer()
-        self.timer.setInterval(10)
-        self.timer.timeout.connect(self.update_animation)
+    def sizeHint(self):
+        """Return size hint that maintains aspect ratio"""
+        width = self.width() if self.width() > 0 else 400
+        height = int(width / self.aspect_ratio)
+        return QSize(width, height)
 
-        self.gap_angle = 2.0  # degrees gap between each segment
+    def resizeEvent(self, event):
+        """Maintain aspect ratio on resize"""
+        super().resizeEvent(event)
+        width = event.size().width()
+        height = int(width / self.aspect_ratio)
+        if self.height() != height:
+            self.setFixedHeight(height)
 
-    def set_value(self, value):
-        if value > self.max_value:
-            value = self.max_value
-        self._target_value = value
-        if not self.timer.isActive():
-            self.timer.start()
+# ============================================================================
+# Productivity Graph Widget
+# ============================================================================
 
-    def update_animation(self):
-        step = max(1, abs(self._target_value - self._value)//10)
-        if self._value < self._target_value:
-            self._value += step
-        elif self._value > self._target_value:
-            self._value -= step
+class ProductivityGraph(QWidget):
+    """Line graph widget showing Total, OK, and NOK counts over iterations"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # Use minimum size policy to allow responsive sizing
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setStyleSheet(f"background-color: {COLOR_BG_WHITE}; border: 1px solid {COLOR_BORDER_MEDIUM};")
+
+        # Data storage
+        self.iterations = []
+        self.total_data = []
+        self.ok_data = []
+        self.nok_data = []
+
+    def add_data_point(self, total, ok, nok):
+        """Add a new data point to the graph"""
+        iteration = len(self.iterations) + 1
+        self.iterations.append(iteration)
+        self.total_data.append(total)
+        self.ok_data.append(ok)
+        self.nok_data.append(nok)
+        self.update()  # Trigger repaint
+        self.repaint()  # Force immediate repaint
+
+    def clear_data(self):
+        """Clear all graph data"""
+        self.iterations = []
+        self.total_data = []
+        self.ok_data = []
+        self.nok_data = []
         self.update()
-        if self._value == self._target_value:
-            self.timer.stop()
 
     def paintEvent(self, event):
-        size = min(self.width(), self.height())
-        margin = 20
-        rect = QRectF(margin, margin, size - 2*margin, size - 2*margin)
+        """Draw the line graph"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        total_segments = self.max_value
-        angle_per_segment = 360 / total_segments
-
-        # Draw background segments
-        for i in range(total_segments):
-            start_angle = 90*16 - int(i * angle_per_segment * 16)  # start from top, clockwise
-            span_angle = -int((angle_per_segment - self.gap_angle) * 16)  # negative = clockwise
-            painter.setPen(QPen(QColor("#eee"), 2))
-            painter.drawArc(rect, start_angle, span_angle)
-
-        # Draw foreground segments for current value
-        for i in range(self._value):
-            start_angle = 90*16 - int(i * angle_per_segment * 16)
-            span_angle = -int((angle_per_segment - self.gap_angle) * 16)
-            gradient = QLinearGradient(0, 0, size, 0)
-            gradient.setColorAt(0, self.color_start)
-            gradient.setColorAt(1, self.color_end)
-            painter.setPen(QPen(QBrush(gradient), 2))
-            painter.drawArc(rect, start_angle, span_angle)
-
-        # Value in center
-        painter.setPen(QColor("#333"))
-        painter.setFont(QFont("Arial", 36, QFont.Bold))
-        painter.drawText(rect, Qt.AlignCenter, f"{self._value}")
-
-        # Label below
-        painter.setFont(QFont("Arial", 18))
-        painter.drawText(QRectF(0, size-100, self.width(), 20), Qt.AlignCenter, self.label)
-
-# ---------------- Toggle Switch ----------------
-class ToggleSwitch(QPushButton):
-    """Custom Toggle Switch with sliding circle"""
-    def __init__(self, width=150, height=40, parent=None):
-        super().__init__(parent)
-        self.setCheckable(True)
-        self.setMinimumSize(width, height)
-        self.setMaximumSize(width, height)
-        self._bg_color_off = QColor("#e74c3c")
-        self._bg_color_on = QColor("#2ecc71")
-        self._circle_color = QColor("#ffffff")
-        self._text_on = "Disconnect"
-        self._text_off = "Connect"
-        self._font = QFont("Arial", 14, QFont.Bold)
-        self._circle_position = 2
-        self.toggled.connect(self.animate)
-
-        # Timer-based circle animation
-        self.anim_timer = QTimer()
-        self.anim_timer.setInterval(10)
-        self.anim_timer.timeout.connect(self.update_circle)
-        self._anim_target = 2
-        self._anim_step = 0
-
-    def set_texts(self, on_text: str, off_text: str):
-        self._text_on = on_text
-        self._text_off = off_text
-        self.update()
-
-    def set_font(self, font: QFont):
-        self._font = font
-        self.update()
-
-    def animate(self, checked):
-        start = 2 if checked else self.width() - self.height() + 2
-        end = self.width() - self.height() + 2 if checked else 2
-        self._anim_target = end
-        distance = self._anim_target - self._circle_position
-        self._anim_step = max(1, abs(distance)//5) * (1 if distance > 0 else -1)
-        if not self.anim_timer.isActive():
-            self.anim_timer.start()
-
-    def update_circle(self):
-        if self._circle_position == self._anim_target:
-            self.anim_timer.stop()
-            return
-        if abs(self._circle_position - self._anim_target) <= abs(self._anim_step):
-            self._circle_position = self._anim_target
-        else:
-            self._circle_position += self._anim_step
-        self.update()
-
-    def paintEvent(self, event):
         width = self.width()
         height = self.height()
-        circle_radius = height - 4
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Increased margins for better label readability
+        left_margin = 60  # More space for Y-axis labels and tick values
+        right_margin = 30
+        top_margin = 30
+        bottom_margin = 50  # More space for X-axis label
+        
+        graph_width = width - left_margin - right_margin
+        graph_height = height - top_margin - bottom_margin
+        graph_x = left_margin
+        graph_y = top_margin
 
-        # Background
-        rect_color = self._bg_color_on if self.isChecked() else self._bg_color_off
-        painter.setBrush(QBrush(rect_color))
-        painter.setPen(Qt.NoPen)
-        painter.drawRoundedRect(0, 0, width, height, height/2, height/2)
+        # Draw background
+        painter.fillRect(self.rect(), QColor(COLOR_BG_WHITE))
 
-        # Circle
-        painter.setBrush(QBrush(self._circle_color))
-        painter.drawEllipse(self._circle_position, 2, circle_radius, circle_radius)
+        if not self.iterations:
+            # Draw placeholder text
+            painter.setPen(QColor(COLOR_TEXT_LIGHT))
+            # Use responsive font size based on widget height
+            font_size = max(12, int(self.height() * 0.04))
+            painter.setFont(QFont(SynthEyeApp.EUROSTYLE_FONT, font_size))
+            painter.drawText(self.rect(), Qt.AlignCenter, "No data available")
+            return
 
-        # Text
-        painter.setPen(Qt.white)
-        painter.setFont(self._font)
-        text = self._text_on if self.isChecked() else self._text_off
-        painter.drawText(self.rect(), Qt.AlignCenter, text)
-        painter.end()
+        # Find max value for scaling
+        max_val = max(max(self.total_data) if self.total_data else 1,
+                     max(self.ok_data) if self.ok_data else 1,
+                     max(self.nok_data) if self.nok_data else 1, 1)
 
-# ---------------- Camera GUI ----------------
-class CameraGUI(QWidget):
+        # Draw axes
+        painter.setPen(QPen(QColor(COLOR_TEXT_DARK), 2))
+        # X-axis
+        painter.drawLine(graph_x, height - bottom_margin, graph_x + graph_width, height - bottom_margin)
+        # Y-axis
+        painter.drawLine(graph_x, graph_y, graph_x, height - bottom_margin)
+
+        # Draw axis labels with larger, more readable font
+        axis_font_size = min(max(14, int(self.height() * 0.04)), 20)  # Limit max size to 28pt
+        label_font = QFont(SynthEyeApp.EUROSTYLE_FONT, axis_font_size, QFont.Bold)
+        painter.setFont(label_font)
+        painter.setPen(QColor(COLOR_TEXT_DARK))
+        
+        # X-axis label (larger and more space)
+        x_label_rect = QRectF(graph_x, height - bottom_margin + 10, graph_width, 30)
+        painter.drawText(x_label_rect, Qt.AlignCenter, "Iteration")
+        
+        # Y-axis label (larger and more space)
+        painter.save()
+        painter.translate(15, height / 2)
+        painter.rotate(-90)
+        y_label_rect = QRectF(-60, 0, 120, 30)
+        painter.drawText(y_label_rect, Qt.AlignCenter, "Count")
+        painter.restore()
+
+        # Draw grid lines
+        painter.setPen(QPen(QColor(COLOR_BORDER_GRID), 1))
+        for i in range(5):
+            y = graph_y + (graph_height * i / 4)
+            painter.drawLine(graph_x, y, graph_x + graph_width, y)
+
+        # Draw data lines and points
+        if len(self.iterations) >= 1:
+            # Draw lines if we have more than one point
+            if len(self.iterations) > 1:
+                # OK line (darker green)
+                painter.setPen(QPen(QColor(COLOR_GRAPH_OK), 2))
+                for i in range(len(self.iterations) - 1):
+                    x1 = graph_x + (graph_width * (self.iterations[i] - 1) / max(self.iterations))
+                    y1 = height - bottom_margin - (graph_height * self.ok_data[i] / max_val)
+                    x2 = graph_x + (graph_width * (self.iterations[i+1] - 1) / max(self.iterations))
+                    y2 = height - bottom_margin - (graph_height * self.ok_data[i+1] / max_val)
+                    painter.drawLine(x1, y1, x2, y2)
+
+                # NOK line (red)
+                painter.setPen(QPen(QColor(COLOR_GRAPH_NOK), 2))
+                for i in range(len(self.iterations) - 1):
+                    x1 = graph_x + (graph_width * (self.iterations[i] - 1) / max(self.iterations))
+                    y1 = height - bottom_margin - (graph_height * self.nok_data[i] / max_val)
+                    x2 = graph_x + (graph_width * (self.iterations[i+1] - 1) / max(self.iterations))
+                    y2 = height - bottom_margin - (graph_height * self.nok_data[i+1] / max_val)
+                    painter.drawLine(x1, y1, x2, y2)
+            
+            # Draw points for all data points (including single point)
+            point_radius = 4
+            # OK point (darker green)
+            for i in range(len(self.iterations)):
+                x = graph_x + (graph_width * (self.iterations[i] - 1) / max(self.iterations) if len(self.iterations) > 1 else 0)
+                y = height - bottom_margin - (graph_height * self.ok_data[i] / max_val)
+                painter.setPen(QPen(QColor(COLOR_GRAPH_OK), 2))
+                painter.setBrush(QBrush(QColor(COLOR_GRAPH_OK)))
+                painter.drawEllipse(x - point_radius, y - point_radius, point_radius * 2, point_radius * 2)
+            
+            # NOK point (red)
+            for i in range(len(self.iterations)):
+                x = graph_x + (graph_width * (self.iterations[i] - 1) / max(self.iterations) if len(self.iterations) > 1 else 0)
+                y = height - bottom_margin - (graph_height * self.nok_data[i] / max_val)
+                painter.setPen(QPen(QColor(COLOR_GRAPH_NOK), 2))
+                painter.setBrush(QBrush(QColor(COLOR_GRAPH_NOK)))
+                painter.drawEllipse(x - point_radius, y - point_radius, point_radius * 2, point_radius * 2)
+
+        # Draw legend - responsive font size (if needed in future)
+        legend_y = top_margin + 10
+        legend_x = width - right_margin - 150
+        legend_font_size = max(9, int(self.height() * 0.025))
+        painter.setFont(QFont(SynthEyeApp.EUROSTYLE_FONT, legend_font_size))
+
+
+# ============================================================================
+# Main Application Window
+# ============================================================================
+
+class SynthEyeApp(QMainWindow):
+    """Main application window for Synth.Eye"""
+
+    EUROSTYLE_FONT = "Arial"  # Default, will be set in main()
+
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Modern Camera GUI")
-        self.setMinimumSize(1350, 750)
-        self.setStyleSheet("background-color: white;")
+        self.setWindowTitle("Synth.Eye - Vision-Based Industrial AI")
 
-        self.analyzed_count = 0
+        # Camera state
+        self.camera = MockCamera()
+        self.captured_image = None
+        self.analysis_result = None
+
+        # Statistics
+        self.total_scans = 0
         self.ok_count = 0
         self.nok_count = 0
-        self.max_target = 50
 
-        self.cap = None
-        self.timer = None
+        # Store responsive font sizes for use in dynamic updates
+        self.title_font_size = None
+        self.body_font_size = None
 
+        # Setup UI
         self.init_ui()
+        self.update_button_states()
 
     def init_ui(self):
-        # Video Feed
-        self.video_label = QLabel("Camera Feed")
-        self.video_label.setAlignment(Qt.AlignCenter)
-        self.video_label.setStyleSheet("background-color:#f0f0f0; color:black; border:1px solid #ccc;")
-        self.video_label.setMinimumSize(600, 350)
+        """Initialize the user interface"""
+        # Set full-screen for 4K monitor
+        self.showFullScreen()
 
-        # Toggle
-        self.toggle_camera_btn = ToggleSwitch()
-        self.toggle_camera_btn.set_texts("Disconnect", "Connect")
-        self.toggle_camera_btn.set_font(QFont("Arial", 14, QFont.Bold))
-        self.toggle_camera_btn.toggled.connect(self.toggle_camera)
+        # Get screen size for responsive scaling
+        screen = QApplication.primaryScreen().geometry()
+        screen_width = screen.width()
+        screen_height = screen.height()
 
-        # Action Buttons
-        btn_height = 40
-        self.btn_scan = self.create_button("Scan", self.scan, btn_height)
-        self.btn_calibrate = self.create_button("Calibrate", self.calibrate, btn_height)
-        self.btn_analyze = self.create_button("Analyze", self.analyze, btn_height)
-        self.btn_clear = self.create_button("Clear", self.clear_data, btn_height)
+        # Calculate responsive sizes based on screen dimensions
+        # Use ~1% of screen width/height for margins and spacing
+        margin = max(10, int(screen_width * 0.01))
+        spacing = max(10, int(screen_width * 0.01))
 
-        button_row = QHBoxLayout()
-        button_row.setAlignment(Qt.AlignVCenter)
-        button_row.addWidget(QLabel("Camera:"))
-        button_row.addWidget(self.toggle_camera_btn)
-        button_row.addStretch()
-        for btn in [self.btn_scan, self.btn_calibrate, self.btn_analyze, self.btn_clear]:
-            button_row.addWidget(btn)
+        # Central widget
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        self.setStyleSheet("background-color: white;")
 
+        # Main layout
+        main_layout = QHBoxLayout(central_widget)
+        main_layout.setSpacing(spacing)
+        main_layout.setContentsMargins(margin, margin, margin, margin)
+
+        # Left side: Camera View and Controls
         left_layout = QVBoxLayout()
-        left_layout.addWidget(self.video_label, stretch=5)
-        left_layout.addLayout(button_row)
+        left_layout.setSpacing(spacing)
+
+        # Calculate responsive font sizes (base on screen height)
+        title_font_size = max(16, int(screen_height * 0.025))
+        body_font_size = max(12, int(screen_height * 0.010))
+        button_font_size = max(14, int(screen_height * 0.010))
+
+        # Store for use in dynamic updates
+        self.title_font_size = title_font_size
+        self.body_font_size = body_font_size
+
+        # Camera View
+        camera_label = QLabel("Camera View")
+        camera_label.setFont(QFont(SynthEyeApp.EUROSTYLE_FONT, title_font_size, QFont.Bold))
+        camera_label.setStyleSheet(f"color: {COLOR_TEXT_DARK};")
+        left_layout.addWidget(camera_label)
+
+        # Calculate camera view size based on screen width (smaller, ~40% of available width)
+        # Maintain 1920×1200 aspect ratio (1.6:1)
+        # camera_view_width = int(screen_width * 0.40)  # 40% of screen width
+        camera_view_width = int(screen_width * 0.8)
+        camera_view_height = int(camera_view_width / 1.6)  # Maintain 1920×1200 aspect ratio
+
+        self.camera_view = AspectRatioLabel(aspect_ratio=1.6)  # 1920/1200 = 1.6
+        self.camera_view.setText("Camera Feed")
+        self.camera_view.setAlignment(Qt.AlignCenter)
+        self.camera_view.setStyleSheet(f"""
+            background-color: {COLOR_BG_LIGHT};
+            color: {COLOR_TEXT_LIGHT};
+            border: 2px solid {COLOR_BORDER_LIGHT};
+            font-size: {body_font_size}pt;
+        """)
+        self.camera_view.setMaximumSize(camera_view_width, camera_view_height)
+        left_layout.addWidget(self.camera_view)
+
+        # Control Buttons
+        button_layout = QHBoxLayout()
+        button_layout.setSpacing(spacing)
+
+        self.btn_connect = self.create_button("CONNECT", self.on_connect_clicked, COLOR_PRIMARY, button_font_size, screen_height)
+        self.btn_capture = self.create_button("CAPTURE", self.on_capture_clicked, COLOR_PRIMARY, button_font_size, screen_height)
+        self.btn_analyze = self.create_button("ANALYZE", self.on_analyze_clicked, COLOR_PRIMARY, button_font_size, screen_height)
+        self.btn_clear = self.create_button("CLEAR", self.on_clear_clicked, COLOR_PRIMARY, button_font_size, screen_height)
+
+        button_layout.addWidget(self.btn_connect)
+        button_layout.addStretch()
+        button_layout.addWidget(self.btn_capture)
+        button_layout.addWidget(self.btn_analyze)
+        button_layout.addWidget(self.btn_clear)
+
+
+        left_layout.addLayout(button_layout)
+
         left_layout.addStretch()
 
-        # Info Box
-        self.info_box = QTextEdit()
-        self.info_box.setReadOnly(True)
-        self.info_box.setStyleSheet("""
-            background-color: #ffffff;
-            color: #000000;
-            border:1px solid #ccc;
-            font-size:14px;
-        """)
+        # Bottom section: Logo and Status side by side
+        bottom_layout = QHBoxLayout()
+        bottom_layout.setAlignment(Qt.AlignBottom)
 
-        # Gauges
-        self.gauge_ok = ModernGauge(max_value=self.max_target, color_start=QColor("#2ecc71"), color_end=QColor("#27ae60"), label="OK")
-        self.gauge_nok = ModernGauge(max_value=self.max_target, color_start=QColor("#e74c3c"), color_end=QColor("#c0392b"), label="NOK")
-        gauge_layout = QHBoxLayout()
-        gauge_layout.addWidget(self.gauge_ok)
-        gauge_layout.addWidget(self.gauge_nok)
+        # Branding section (left side)
+        branding_layout = QVBoxLayout()
+        branding_layout.setAlignment(Qt.AlignLeft | Qt.AlignBottom)
 
-        # Modern info label under gauges
-        self.gauge_info_label = QLabel()
-        self.gauge_info_label.setAlignment(Qt.AlignCenter)
-        self.gauge_info_label.setWordWrap(True)
-        self.gauge_info_label.setFont(QFont("Arial", 18))
-        self.gauge_info_label.setStyleSheet("color: #333;")
+        # Logo image
+        logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "images", "Logo.png")
+        logo_label = QLabel()
+        if os.path.exists(logo_path):
+            pixmap = QPixmap(logo_path)
+            # Scale logo responsively (max 10% of screen height, maintain aspect ratio)
+            max_logo_height = int(screen_height * 0.20)
+            if pixmap.height() > max_logo_height:
+                pixmap = pixmap.scaledToHeight(max_logo_height, Qt.SmoothTransformation)
+            logo_label.setPixmap(pixmap)
+        branding_layout.addWidget(logo_label)
 
+        bottom_layout.addLayout(branding_layout)
+        # bottom_layout.addStretch()
+
+        # Status section (right side)
+        status_layout = QVBoxLayout()
+        # status_layout.setAlignment(Qt.AlignLeft | Qt.AlignBottom)
+        status_layout.setAlignment(Qt.AlignLeft| Qt.AlignTop)
+
+        status_label = QLabel("Status")
+        status_label.setAlignment(Qt.AlignLeft)
+        status_label.setFont(QFont(SynthEyeApp.EUROSTYLE_FONT, title_font_size, QFont.Bold))
+        status_label.setStyleSheet(f"color: {COLOR_TEXT_DARK};")
+        status_layout.addWidget(status_label)
+
+        self.status_camera = QLabel("Camera: Disconnected")
+        self.status_camera.setAlignment(Qt.AlignLeft)
+        self.status_camera.setFont(QFont(SynthEyeApp.EUROSTYLE_FONT, body_font_size))
+        self.status_camera.setStyleSheet(f"color: {COLOR_TEXT_DARK};")
+        status_layout.addWidget(self.status_camera)
+
+        self.status_resolution = QLabel("Resolution: None")
+        self.status_resolution.setAlignment(Qt.AlignLeft)
+        self.status_resolution.setFont(QFont(SynthEyeApp.EUROSTYLE_FONT, body_font_size))
+        self.status_resolution.setStyleSheet(f"color: {COLOR_TEXT_DARK};")
+        status_layout.addWidget(self.status_resolution)
+
+        bottom_layout.addLayout(status_layout)
+        left_layout.addLayout(bottom_layout)
+
+        # Right side: Logger and Graph
         right_layout = QVBoxLayout()
-        right_layout.addWidget(self.info_box, stretch=2)
-        right_layout.addLayout(gauge_layout, stretch=3)
-        right_layout.addWidget(self.gauge_info_label)  # add info label
+        right_layout.setSpacing(spacing)
 
-        main_layout = QHBoxLayout()
-        main_layout.addLayout(left_layout, stretch=3)
-        main_layout.addLayout(right_layout, stretch=2)
-        self.setLayout(main_layout)
+        # System Logger
+        logger_label = QLabel("System Logger")
+        logger_label.setFont(QFont(SynthEyeApp.EUROSTYLE_FONT, title_font_size, QFont.Bold))
+        logger_label.setStyleSheet(f"color: {COLOR_TEXT_DARK};")
+        right_layout.addWidget(logger_label)
 
-        self.set_processing_buttons_enabled(False)
+        self.logger = QTextEdit()
+        self.logger.setReadOnly(True)
+        self.logger.setStyleSheet(f"""
+            background-color: {COLOR_BG_WHITE};
+            color: {COLOR_TEXT_DARK};
+            border: 2px solid {COLOR_BORDER_LIGHT};
+            font-size: {body_font_size}pt;
+            font-family: '{SynthEyeApp.EUROSTYLE_FONT}', monospace;
+        """)
+        right_layout.addWidget(self.logger, stretch=1)
 
-    # Button Creation
-    def create_button(self, text, callback, height=40):
+        # Productivity Graph
+        graph_label = QLabel("Productivity Graph")
+        graph_label.setFont(QFont(SynthEyeApp.EUROSTYLE_FONT, title_font_size, QFont.Bold))
+        graph_label.setStyleSheet(f"color: {COLOR_TEXT_DARK};")
+        right_layout.addWidget(graph_label)
+
+        self.productivity_graph = ProductivityGraph()
+        right_layout.addWidget(self.productivity_graph, stretch=1)
+
+        # Graph statistics text
+        self.graph_stats = QLabel()
+        self.graph_stats.setAlignment(Qt.AlignCenter)
+        self.graph_stats.setFont(QFont(SynthEyeApp.EUROSTYLE_FONT, body_font_size))
+        self.graph_stats.setStyleSheet(f"color: {COLOR_TEXT_DARK};")
+        self.update_graph_stats()
+        right_layout.addWidget(self.graph_stats)
+
+        right_layout.addStretch()
+
+        # Add layouts to main layout
+        main_layout.addLayout(left_layout, stretch=1)
+        main_layout.addLayout(right_layout, stretch=1)
+
+        # Log initial message
+        self.log("Application started")
+
+    def create_button(self, text, callback, color=COLOR_PRIMARY, font_size=18, screen_height=1080):
+        """Create a styled button"""
         btn = QPushButton(text)
-        btn.setFixedHeight(height)
-        btn.setStyleSheet("""
-            QPushButton {
-                background-color:#0078d4;
-                color:white;
-                padding:8px 15px;
-                border-radius:6px;
-                font-size:15px;
-                border:1px solid #ccc;
-            }
-            QPushButton:hover {background-color:#005a9e;}
-            QPushButton:disabled {background:#f0f0f0; color:#888;}
+        # Calculate responsive button height (about 6% of screen height, min 50px)
+        btn_height = max(50, int(screen_height * 0.06))
+        # Calculate responsive padding
+        padding_v = max(10, int(screen_height * 0.015))
+        padding_h = max(20, int(screen_height * 0.02))
+
+        btn.setFont(QFont(SynthEyeApp.EUROSTYLE_FONT, font_size, QFont.Bold))
+        btn.setMinimumHeight(btn_height)
+        btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {color};
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: {padding_v}px {padding_h}px;
+                font-size: {font_size}pt;
+            }}
+            QPushButton:hover {{
+                background-color: {self.darken_color(color)};
+            }}
+            QPushButton:disabled {{
+                background-color: {COLOR_BG_DISABLED};
+                color: {COLOR_TEXT_LIGHT};
+                opacity: 0.1;
+            }}
         """)
         btn.clicked.connect(callback)
         return btn
 
-    # Camera Toggle
-    def toggle_camera(self, state):
-        if state:
-            self.cap = cv2.VideoCapture(0)
-            if not self.cap.isOpened():
-                self.log("Failed to open webcam.")
-                self.toggle_camera_btn.setChecked(False)
-                return
-            self.timer = QTimer()
-            self.timer.timeout.connect(self.update_frame)
-            self.timer.start(30)
-            self.log("Camera connected.")
-            self.set_processing_buttons_enabled(True)
+    def darken_color(self, color):
+        """Darken a hex color for hover effect"""
+        # Simple darkening - convert hex to RGB, reduce values
+        color = color.lstrip('#')
+        r, g, b = int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)
+        r, g, b = max(0, r - 30), max(0, g - 30), max(0, b - 30)
+        return f"#{r:02x}{g:02x}{b:02x}"
+
+    def update_button_states(self):
+        """Update button enabled/disabled states based on camera connection"""
+        if not self.camera.connected:
+            # Disconnected: only CONNECT enabled
+            self.btn_connect.setEnabled(True)
+            self.btn_capture.setEnabled(False)
+            self.btn_analyze.setEnabled(False)
+            self.btn_clear.setEnabled(False)
         else:
-            if self.timer:
-                self.timer.stop()
-            if self.cap:
-                self.cap.release()
-            self.video_label.setText("Camera Feed")
-            self.log("Camera disconnected.")
-            self.set_processing_buttons_enabled(False)
+            # Connected: CONNECT becomes DISCONNECT, CAPTURE and CLEAR enabled
+            self.btn_connect.setEnabled(True)
+            self.btn_capture.setEnabled(True)
+            self.btn_analyze.setEnabled(False)  # Only enabled after capture
+            self.btn_clear.setEnabled(True)
 
-    def update_frame(self):
-        ret, frame = self.cap.read()
-        if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            label_width = self.video_label.width()
-            label_height = self.video_label.height()
-            img_height, img_width, _ = frame.shape
-            scale = min(label_width/img_width, label_height/img_height)
-            new_w, new_h = int(img_width*scale), int(img_height*scale)
-            resized = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_AREA)
-            qimg = QImage(resized.data, new_w, new_h, new_w*3, QImage.Format_RGB888)
-            pixmap = QPixmap.fromImage(qimg)
-            final_pixmap = QPixmap(label_width, label_height)
-            final_pixmap.fill(Qt.white)
-            painter = QPainter(final_pixmap)
-            painter.drawPixmap((label_width-new_w)//2, (label_height-new_h)//2, pixmap)
-            painter.end()
-            self.video_label.setPixmap(final_pixmap)
-
-    # Actions
-    def scan(self): self.log("Scanning object...")
-    def calibrate(self): self.log("Calibrating camera...")
-
-    def analyze(self):
-        self.log("Analyzing image...")
-        self.set_processing_buttons_enabled(False)
-        QTimer.singleShot(300, self.finish_analysis)
-
-    def finish_analysis(self):
-        try:
-            result = random.choice(["OK", "NOK"])
-            self.analyzed_count += 1
-            if result=="OK":
-                self.ok_count +=1
+    def on_connect_clicked(self):
+        """Handle CONNECT/DISCONNECT button click"""
+        if not self.camera.connected:
+            # Connect
+            if self.camera.connect():
+                self.btn_connect.setText("DISCONNECT")
+                self.log("Camera connected")
+                self.update_status()
+                self.update_button_states()
             else:
-                self.nok_count +=1
-            self.log(f"Result: {result}")
-            self.update_gauges()
-        except Exception as e:
-            self.log(f"Error during analysis: {e}")
-        finally:
-            self.set_processing_buttons_enabled(True)
+                self.log("Failed to connect to camera")
+        else:
+            # Disconnect
+            self.camera.disconnect()
+            self.btn_connect.setText("CONNECT")
+            self.captured_image = None
+            self.analysis_result = None
+            self.camera_view.setText("Camera Feed")
+            font_size = self.body_font_size if self.body_font_size else 16
+            self.camera_view.setStyleSheet(f"""
+                background-color: {COLOR_BG_LIGHT};
+                color: {COLOR_TEXT_LIGHT};
+                border: 2px solid {COLOR_BORDER_LIGHT};
+                font-size: {font_size}pt;
+            """)
+            self.log("Camera disconnected")
+            self.update_status()
+            self.update_button_states()
 
-    def clear_data(self):
-        self.analyzed_count = self.ok_count = self.nok_count = 0
-        self.info_box.clear()
-        self.update_gauges()
-        self.log("Data cleared.")
+    def on_capture_clicked(self):
+        """Handle CAPTURE button click"""
+        if not self.camera.connected:
+            return
 
-    # Update Gauges
-    def update_gauges(self):
-        self.gauge_ok.set_value(self.ok_count)
-        self.gauge_nok.set_value(self.nok_count)
+        self.log("Capture button pressed - performing scan")
+        # Simulate capture (will be replaced with actual camera capture)
+        self.captured_image = None  # Placeholder for actual image
 
-        # Multi-line modern info text under gauges
-        total = self.analyzed_count
-        ok = self.ok_count
-        nok = self.nok_count
-        self.gauge_info_label.setText(
-            f'The total number of images analyzed is <b>{total}</b>, '
-            f'of which <span style="color:green">{ok}</span> were found to be OK '
-            f'and <span style="color:red">{nok}</span> were found to be NOK.'
+        # For now, show a placeholder
+        self.camera_view.setText("Image Captured")
+        font_size = self.body_font_size if self.body_font_size else 16
+        self.camera_view.setStyleSheet(f"""
+            background-color: {COLOR_STATUS_SUCCESS_BG};
+            color: {COLOR_STATUS_SUCCESS_TEXT};
+            border: 2px solid {COLOR_STATUS_SUCCESS_BORDER};
+            font-size: {font_size}pt;
+        """)
+
+        # Enable ANALYZE button
+        self.btn_analyze.setEnabled(True)
+        self.log("Image captured successfully")
+
+    def on_analyze_clicked(self):
+        """Handle ANALYZE button click"""
+        # if self.captured_image is None:
+        #     return
+
+        self.log("Analyze button pressed - analyzing image")
+        self.btn_analyze.setEnabled(False)
+
+        # Simulate analysis with realistic results (90% OK rate, 10% NOK rate)
+        import random
+        # 90% chance of OK, 10% chance of NOK (realistic production scenario)
+        result = "OK" if random.random() < 0.90 else "NOK"
+        self.analysis_result = result
+
+        # Update statistics
+        self.total_scans += 1
+        if result == "OK":
+            self.ok_count += 1
+        else:
+            self.nok_count += 1
+
+        self.log(f"Analysis result: {result}")
+
+        # Update graph
+        self.productivity_graph.add_data_point(
+            self.total_scans, self.ok_count, self.nok_count
         )
+        self.update_graph_stats()
 
-    # Logging
+
+    def on_clear_clicked(self):
+        """Handle CLEAR button click"""
+        self.log("Clear button pressed - clearing all data")
+
+        # Clear graph data
+        self.productivity_graph.clear_data()
+
+        # Clear logger
+        self.logger.clear()
+
+        # Reset statistics
+        self.total_scans = 0
+        self.ok_count = 0
+        self.nok_count = 0
+
+        # Update display
+        self.update_graph_stats()
+        self.log("All data cleared")
+
+    def update_status(self):
+        """Update status display"""
+        if self.camera.connected:
+            resolution = self.camera.get_resolution()
+            if resolution:
+                self.status_camera.setText("Camera: Connected")
+                self.status_resolution.setText(f"Resolution: {resolution[0]}x{resolution[1]}")
+            else:
+                self.status_camera.setText("Camera: Connected")
+                self.status_resolution.setText("Resolution: None")
+        else:
+            self.status_camera.setText("Camera: Disconnected")
+            self.status_resolution.setText("Resolution: None")
+
+    def update_graph_stats(self):
+        """Update the statistics text below the graph"""
+        text = (
+            f"The total number of images analyzed is <b>{self.total_scans}</b>, "
+            f"of which <span style='color: green;'>{self.ok_count}</span> were found to be OK "
+            f"and <span style='color: red;'>{self.nok_count}</span> were found to be NOK."
+        )
+        self.graph_stats.setText(text)
+
     def log(self, message):
+        """Add a log entry with timestamp"""
         timestamp = datetime.now().strftime("[%H:%M:%S]")
-        self.info_box.append(f"{timestamp} {message}")
-        self.info_box.moveCursor(QTextCursor.End)
+        self.logger.append(f"{timestamp} – {message}")
 
-    def set_processing_buttons_enabled(self, enabled):
-        for btn in [self.btn_scan, self.btn_calibrate, self.btn_analyze, self.btn_clear]:
-            btn.setDisabled(not enabled)
+# ============================================================================
+# Font Loading
+# ============================================================================
 
-# ---------------- Run App ----------------
-if __name__ == "__main__":
+def load_eurostyle_font():
+    """Load Eurostyle font from App/fonts directory"""
+    font_dir = os.path.join(os.path.dirname(__file__), "fonts")
+
+    # Try to load EuroStyle Normal.ttf first, then eurostile.TTF
+    font_files = [
+        os.path.join(font_dir, "EuroStyle Normal.ttf"),
+        os.path.join(font_dir, "eurostile.TTF")
+    ]
+
+    font_family = None
+    for font_file in font_files:
+        if os.path.exists(font_file):
+            font_id = QFontDatabase.addApplicationFont(font_file)
+            if font_id != -1:
+                font_families = QFontDatabase.applicationFontFamilies(font_id)
+                if font_families:
+                    font_family = font_families[0]
+                    print(f"[INFO] Loaded font: {font_family} from {font_file}")
+                    break
+
+    if font_family is None:
+        print("[WARNING] Could not load Eurostyle font, using default font")
+        return "Arial"
+
+    return font_family
+
+# ============================================================================
+# Main Entry Point
+# ============================================================================
+
+def main():
+    """Main entry point for the application"""
     app = QApplication(sys.argv)
-    gui = CameraGUI()
-    gui.show()
+
+    # Load Eurostyle font
+    eurostyle_font = load_eurostyle_font()
+
+    # Store font name globally for use in the application
+    SynthEyeApp.EUROSTYLE_FONT = eurostyle_font
+
+    window = SynthEyeApp()
+    window.show()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
+
