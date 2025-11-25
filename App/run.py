@@ -520,7 +520,7 @@ class SynthEyeApp(QMainWindow):
         main_layout.addLayout(right_layout, stretch=1)
 
         # Log initial message
-        self.log("Application started")
+        self.log('Application Synt.Eye successfully started without any errors.')
 
     def create_button(self, text, callback, color=COLOR_PRIMARY, font_size=18, screen_height=1080):
         """Create a styled button"""
@@ -582,16 +582,22 @@ class SynthEyeApp(QMainWindow):
         if not self.camera.connected:
             # Connect
             if self.camera.connect():
+                self.log(f'Scanning for available camera devices...')
+
                 # Initialize and configure the Basler camera.
                 self.Basler_Cam_Id_1 = Basler_Cls(config=custom_cfg)
 
-                self.btn_connect.setText("DISCONNECT")
-                self.log("Camera connected")
-                self.update_status()
-                self.update_button_states()
-            else:
-                self.log("Failed to connect to camera")
+                if self.Basler_Cam_Id_1.camera == None:
+                    self.log('Failed to connect to camera. No device detected or connection attempt unsuccessful.')
+                else:
+                    self.btn_connect.setText("DISCONNECT")
+                    self.log(f'Camera {self.Basler_Cam_Id_1.camera.GetDeviceInfo().GetModelName()} detected and connected at IP {self.Basler_Cam_Id_1.camera.GetDeviceInfo().GetIpAddress()}.')
+
+                    self.update_status()
+                    self.update_button_states()
         else:
+            self.log(f'Disconnecting camera at IP <DETECTED_IP>...')
+
             # Release the classes.
             del self.Basler_Cam_Id_1
 
@@ -608,7 +614,7 @@ class SynthEyeApp(QMainWindow):
                 border: 2px solid {COLOR_BORDER_LIGHT};
                 font-size: {font_size}pt;
             """)
-            self.log("Camera disconnected")
+            self.log(f'Camera {self.Basler_Cam_Id_1.camera.GetDeviceInfo().GetModelName()} at IP {self.Basler_Cam_Id_1.camera.GetDeviceInfo().GetIpAddress()} has been successfully disconnected.')
             self.update_status()
             self.update_button_states()
 
@@ -635,7 +641,7 @@ class SynthEyeApp(QMainWindow):
         img_undistorted = cv2.undistort(img_raw_processed, Basler_Calib_Param_Str.K, np.array(list(Basler_Calib_Param_Str.Coefficients.values()), dtype=np.float64), 
                                         None, new_camera_matrix)
     
-        self.log("Capture button pressed - performing scan")
+        self.log('Capture button pressed. Performing camera scan...')
         self.captured_image = img_undistorted.copy()
 
         # Convert the image to QImage format
@@ -652,12 +658,14 @@ class SynthEyeApp(QMainWindow):
 
         # Enable ANALYZE button
         self.btn_analyze.setEnabled(True)
-        self.log("Image captured successfully")
+        self.log('Image successfully captured with resolution 1920x1200 in RGB format.')
 
     def on_analyze_clicked(self):
         """Handle ANALYZE button click"""
         if self.captured_image is None:
              return
+
+        self.log('Analyze button pressed. Performing Synth.Eye AI analysis of the RGB image...')
 
         # Perform prediction of the object on the test image set.
         results_object = model_object.predict(source=self.captured_image, device=device_id, imgsz=meta_args['imgsz'], conf=0.25, iou=0.5)
@@ -687,7 +695,7 @@ class SynthEyeApp(QMainWindow):
 
                 # Create a bounding box from the label data.
                 Bounding_Box_Properties = {'Name': f'{int(class_id_i)}', 'Precision': f'{str(conf_i)[0:5]}', 
-                                        'Data': {'x_c': b_box_i[0], 'y_c': b_box_i[1], 'width': b_box_i[2], 'height': b_box_i[3]}}
+                                           'Data': {'x_c': b_box_i[0], 'y_c': b_box_i[1], 'width': b_box_i[2], 'height': b_box_i[3]}}
                 
                 # Draw the bounding box of the object with additional dependencies (name, precision, etc.) in 
                 # the raw image.
@@ -711,6 +719,13 @@ class SynthEyeApp(QMainWindow):
                 # Crop the object region from the original image.
                 cropped_image = self.captured_image[obj_top:obj_bottom, obj_left:obj_right]
 
+                self.analysis_result = 'OK'
+
+                if class_id_i == 0:
+                    self.log(f'Detected front side of the metallic object on the image. Confidence: {str(conf_i)[0:5]} %.')
+                else:
+                    self.log(f'Detected back side of the metallic object on the image. Confidence: {str(conf_i)[0:5]} %.')
+
                 # Perform defect detection only on specific object classes.
                 #   Class ID (0) - Front side of the metalic object.
                 if class_id_i == 0:
@@ -725,10 +740,11 @@ class SynthEyeApp(QMainWindow):
                             # If the confidence of the prediction is less than 80%, do not predict the object.
                             if d_conf_i < 0.8:
                                 continue
+                            self.analysis_result = 'NOK'
 
                             # Convert bounding box of the defect to absolute coordinates within cropped object.
                             abs_coordinates_defect = Utilities.General.YOLO_To_Absolute_Coordinates({'x_c': d_b_box_i[0], 'y_c': d_b_box_i[1], 
-                                                                                                        'width': d_b_box_i[2], 'height': d_b_box_i[3]}, 
+                                                                                                     'width': d_b_box_i[2], 'height': d_b_box_i[3]}, 
                                                                                                     {'x': cropped_image.shape[1], 'y': cropped_image.shape[0]})
 
                             # Shift to original image.
@@ -745,8 +761,22 @@ class SynthEyeApp(QMainWindow):
                             # the raw image.
                             processed_image = Utilities.Image_Processing.Draw_Bounding_Box(processed_image, Bounding_Box_Defect_Properties, 'YOLO', CONST_CONFIG_MODEL_DEFECT['Color'][int(class_id_i)], 
                                                                                         True, False)
-                        
+                            
+                            self.log(f'Detected defect in the form of fingerprint on the front side of the metalic object. Confidence: {str(d_conf_i)[0:5]} %.')
+
+                if self.analysis_result == 'OK':
+                    self.ok_count += 1
+                    self.log(f'The result of the Synth.Eye AI analysis is {self.analysis_result}.')
+                else:
+                    self.nok_count += 1
+                    self.log(f'The result of the Synth.Eye AI analysis is {self.analysis_result}. A defect has been detected.')  
+
+        print(self.ok_count, self.nok_count)
+
+        self.log(f'Synth.Eye AI analysis completed.')
+
         self.captured_image = processed_image
+        self.total_scans += 1
 
         # Convert to QImage and display in QLabel
         if len(self.captured_image.shape) == 2:  # grayscale
@@ -759,35 +789,18 @@ class SynthEyeApp(QMainWindow):
         self.camera_view.setPixmap(pixmap)
         self.camera_view.setScaledContents(True)
 
-        self.log("Analyze button pressed - analyzing image")
         self.btn_analyze.setEnabled(False)
-
-        """
-        # Simulate analysis with realistic results (90% OK rate, 10% NOK rate)
-        import random
-        # 90% chance of OK, 10% chance of NOK (realistic production scenario)
-        result = "OK" if random.random() < 0.90 else "NOK"
-        self.analysis_result = result
-
-        # Update statistics
-        self.total_scans += 1
-        if result == "OK":
-            self.ok_count += 1
-        else:
-            self.nok_count += 1
-
-        self.log(f"Analysis result: {result}")
 
         # Update graph
         self.productivity_graph.add_data_point(
             self.total_scans, self.ok_count, self.nok_count
         )
+
         self.update_graph_stats()
-        """
 
     def on_clear_clicked(self):
         """Handle CLEAR button click"""
-        self.log("Clear button pressed - clearing all data")
+        self.log('Clear button pressed. Performing clear of all data...')
 
         # Clear graph data
         self.productivity_graph.clear_data()
@@ -802,7 +815,7 @@ class SynthEyeApp(QMainWindow):
 
         # Update display
         self.update_graph_stats()
-        self.log("All data cleared")
+        self.log('All data successfully cleared.')
 
     def update_status(self):
         """Update status display"""
