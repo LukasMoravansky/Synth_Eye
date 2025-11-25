@@ -255,7 +255,7 @@ class ProductivityGraph(QWidget):
         painter.translate(15, height / 2)
         painter.rotate(-90)
         y_label_rect = QRectF(-60, 0, 120, 30)
-        painter.drawText(y_label_rect, Qt.AlignCenter, "Count")
+        painter.drawText(y_label_rect, Qt.AlignCenter, "Total")
         painter.restore()
 
         # Draw grid lines
@@ -596,10 +596,7 @@ class SynthEyeApp(QMainWindow):
                     self.update_status()
                     self.update_button_states()
         else:
-            self.log(f'Disconnecting camera at IP <DETECTED_IP>...')
-
-            # Release the classes.
-            del self.Basler_Cam_Id_1
+            self.log(f'Disconnecting camera at IP {self.Basler_Cam_Id_1.camera.GetDeviceInfo().GetIpAddress()}...')
 
             # Disconnect
             self.camera.disconnect()
@@ -615,6 +612,10 @@ class SynthEyeApp(QMainWindow):
                 font-size: {font_size}pt;
             """)
             self.log(f'Camera {self.Basler_Cam_Id_1.camera.GetDeviceInfo().GetModelName()} at IP {self.Basler_Cam_Id_1.camera.GetDeviceInfo().GetIpAddress()} has been successfully disconnected.')
+
+            # Release the classes.
+            del self.Basler_Cam_Id_1
+
             self.update_status()
             self.update_button_states()
 
@@ -664,6 +665,8 @@ class SynthEyeApp(QMainWindow):
         """Handle ANALYZE button click"""
         if self.captured_image is None:
              return
+        
+        count = self.ok_count + self.nok_count
 
         self.log('Analyze button pressed. Performing Synth.Eye AI analysis of the RGB image...')
 
@@ -771,15 +774,20 @@ class SynthEyeApp(QMainWindow):
                     self.nok_count += 1
                     self.log(f'The result of the Synth.Eye AI analysis is {self.analysis_result}. A defect has been detected.')  
 
-        print(self.ok_count, self.nok_count)
+        if count == (self.ok_count + self.nok_count):
+            # Determine resolution of the processed image.
+            img_h, img_w = self.captured_image.shape[:2]
+            Resolution = {'x': img_w, 'y': img_h}
 
-        self.log(f'Synth.Eye AI analysis completed.')
+            self.log(f'The Synth.Eye AI analysis has been completed, but no object matching the rules was detected.')
+        else:
+            self.log(f'The Synth.Eye AI analysis has been completed.')
 
-        self.captured_image = processed_image
+        self.captured_image = processed_image.copy()
         self.total_scans += 1
 
         # Convert to QImage and display in QLabel
-        if len(self.captured_image.shape) == 2:  # grayscale
+        if len(self.captured_image.shape) == 2:
             qimg = QImage(self.captured_image.data, img_w, img_h, img_w, QImage.Format.Format_Grayscale8)
         else:  # color
             img_rgb = cv2.cvtColor(self.captured_image, cv2.COLOR_BGR2RGB)
@@ -896,4 +904,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
