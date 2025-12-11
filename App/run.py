@@ -725,9 +725,9 @@ class SynthEyeApp(QMainWindow):
                 self.analysis_result = 'OK'
 
                 if class_id_i == 0:
-                    self.log(f'Detected front side of the metallic object on the image. Confidence: {str(conf_i)[0:5]} %.')
+                    self.log(f'Detected front side of the metallic object on the image. Confidence: {str(conf_i*100.0)[0:5]} %.')
                 else:
-                    self.log(f'Detected back side of the metallic object on the image. Confidence: {str(conf_i)[0:5]} %.')
+                    self.log(f'Detected back side of the metallic object on the image. Confidence: {str(conf_i*100.0)[0:5]} %.')
 
                 # Perform defect detection only on specific object classes.
                 #   Class ID (0) - Front side of the metalic object.
@@ -765,7 +765,7 @@ class SynthEyeApp(QMainWindow):
                             processed_image = Utilities.Image_Processing.Draw_Bounding_Box(processed_image, Bounding_Box_Defect_Properties, 'YOLO', CONST_CONFIG_MODEL_DEFECT['Color'][int(class_id_i)], 
                                                                                         True, False)
                             
-                            self.log(f'Detected defect in the form of fingerprint on the front side of the metalic object. Confidence: {str(d_conf_i)[0:5]} %.')
+                            self.log(f'Detected defect in the form of fingerprint on the front side of the metalic object. Confidence: {str(d_conf_i*100.0)[0:5]} %.')
 
                 if self.analysis_result == 'OK':
                     self.ok_count += 1
