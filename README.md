@@ -4,6 +4,8 @@
   <img src=https://github.com/rparak/Synth_Eye/blob/main/images/Logo_White.png width="800" height="400">
 </p>
 
+A modular platform designed to generate high-quality, photorealistic synthetic data that accurately replicates real-world environments, objects, and conditions, thereby enhancing the efficiency and performance of neural network training in the manufacturing sector.
+
 # TODO
 - improvements of the light configuration to be rectangle friendly
 - add dataset template structure to the main tree of the repo.
