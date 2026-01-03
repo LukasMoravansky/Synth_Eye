@@ -43,6 +43,16 @@ The project was developed as part of **internal research activities at the Resea
 - Compatibility with object detection and vision-based machine learning pipelines.
 - Optimized for efficient dataset generation and experimental workflows.
 
+## Usage
+
+This section provides an overview of how to use **Synth.Eye** for synthetic data generation, dataset preparation, and model training. The platform is designed to support experimentation with vision-based AI pipelines, particularly for **visual inspection and quality control** tasks.
+
+Detailed usage instructions, examples, and dataset generation commands are provided below.
+
+### In progress...
+
+> ⚠️ **Note:** The project is under active development. Interfaces, scripts, and workflows may change as the platform evolves.
+
 ## Installation
 
 This project relies on a dedicated **Conda environment** to ensure a reproducible, isolated, and stable setup across platforms. Automated installation scripts are provided for both **Linux/macOS** and **Windows**.
