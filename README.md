@@ -6,11 +6,15 @@
 
 A modular platform designed to generate high-quality, photorealistic synthetic data that accurately replicates real-world environments, objects, and conditions, thereby enhancing the efficiency and performance of neural network training in the manufacturing sector.
 
-# TODO
-- improvements of the light configuration to be rectangle friendly
-- add dataset template structure to the main tree of the repo.
-- gen_synthetic_data.py - remove time.sleep(10)
-- delete/rewrite the .txt label file if, according to the index, the file already exists (currently, bb is written on the next line and the old label remains in the file)
+The platform was developed as part of internal research activities at the Research and Innovation Center INTEMAC.
+
+## TODO
+
+- Improve the light configuration to better support rectangular objects.
+- Add a standardized dataset template structure to the root of the repository.
+- Remove the `time.sleep(10)` delay from `gen_synthetic_data.py`.
+- Ensure proper handling of label `.txt` files:
+  - If a label file already exists for a given index, delete or overwrite it instead of appending new bounding boxes to the existing file.
 
 ## Contributors
 
