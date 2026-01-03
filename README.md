@@ -12,20 +12,6 @@ The platform is specifically designed to support **visual inspection and automat
 
 The project was developed as part of **internal research activities at the Research and Innovation Center INTEMAC**.
 
-### What Is Synthetic Data?
-
-**Synthetic data** refers to high-quality, artificially generated data that replicates real-world environments, objects, and operating conditions. It is used to enhance the efficiency, robustness, and performance of neural network learning, particularly in cases where collecting, labeling, or scaling real-world data is challenging or impractical.
-
-#### Key Benefits
-
-- Automatic generation of high-quality synthetic data.
-- Significant reductions in time and cost compared to real data acquisition.
-- Elimination of manual data annotation through automated labeling.
-- Support for rare events and edge-case scenarios that are difficult to capture in real-world settings.
-- Improved model generalization and robustness through increased data diversity.
-- Enables AI development in data-constrained or low-data domains.
-- Mitigates privacy, security, and regulatory compliance risks associated with real data usage.
-
 ### Features
 
 - High-quality, photorealistic synthetic data generation.
