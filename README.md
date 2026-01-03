@@ -11,3 +11,10 @@ A modular platform designed to generate high-quality, photorealistic synthetic d
 - add dataset template structure to the main tree of the repo.
 - gen_synthetic_data.py - remove time.sleep(10)
 - delete/rewrite the .txt label file if, according to the index, the file already exists (currently, bb is written on the next line and the old label remains in the file)
+
+## Contributors
+
+<table> <tr> <td align="center"> <a href="https://github.com/parak"> <img src="https://avatars.githubusercontent.com/parak" width="120px;" alt="Roman Parak"/><br /> <strong>Roman Parak</strong> </a><br /> <a href="mailto:parak@intemac.cz">parak@intemac.cz</a> </td> <td align="center"> <a href="https://github.com/moravansky"> <img src="https://avatars.githubusercontent.com/moravansky" width="120px;" alt="Lukas Moravansky"/><br /> <strong>Lukas Moravansky</strong> </a><br /> <a href="mailto:moravansky@intemac.cz">moravansky@intemac.cz</a> </td> </tr> </table>
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
