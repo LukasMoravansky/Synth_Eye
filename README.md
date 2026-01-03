@@ -4,8 +4,6 @@
   <img src=https://github.com/rparak/Synth_Eye/blob/main/images/Logo_White.png width="800" height="400">
 </p>
 
-## Project Overview
-
 ## Project Description
 
 **Synth.Eye** is an industrial-grade synthetic data generation platform developed to support **vision-based artificial intelligence systems** in manufacturing environments. The platform enables the creation of **highly realistic, physically based synthetic datasets** that closely replicate real-world production conditions, components, and defects, with a strong emphasis on **visual inspection and quality control**.
