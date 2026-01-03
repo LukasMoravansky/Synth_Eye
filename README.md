@@ -10,6 +10,10 @@
 
 The system virtualizes key elements of an industrial vision setup, including **cameras, lenses, lighting, materials, and surface characteristics**, allowing realistic simulation of manufacturing scenarios such as flexible, small-batch production with high product variability. By leveraging physically based rendering (PBR), sensor simulation, and camera modeling, Synth.Eye bridges the gap between raw CAD geometry and photorealistic image data suitable for training deep learning models.
 
+<p align="center">
+  <img src=https://github.com/rparak/Synth_Eye/blob/main/images/Image_1.png width="800" height="400">
+</p>
+
 Synth.Eye supports the procedural generation of surface imperfections commonly encountered in manufacturing environments, including fingerprints and sweat residues, machining-related surface defects, oil stains and contamination, abrasion marks and wear, as well as surface grooves and indentations. These imperfections are seamlessly integrated into the rendering pipeline, enabling large-scale generation of accurately labeled datasets without the need for manual annotation.
 
 The platform follows a data-centric workflow in which synthetic data is used for training, while testing is performed on real-world images. Experimental results demonstrate strong transferability from synthetic to real data, achieving **over 99% accuracy in object classification** and **over 95% accuracy in surface defect detection** using real inspection images.
