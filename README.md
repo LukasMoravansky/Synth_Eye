@@ -6,17 +6,21 @@
 
 ## Project Overview
 
-**Synth Eye** is a modular platform designed to generate **high-quality, photorealistic synthetic data** that accurately replicates real-world environments, objects, and operating conditions. The generated data is intended to improve the efficiency, robustness, and overall performance of neural network training, particularly for **computer vision applications in the manufacturing sector**.
+**Synth Eye** is a modular platform for generating **high-quality, photorealistic synthetic data** that faithfully replicates real-world environments, objects, and operating conditions. The generated datasets are intended to improve the efficiency, robustness, and overall performance of neural network training, with a primary focus on **computer vision applications in industrial manufacturing**.
 
-The platform was developed as part of **internal research activities at the Research and Innovation Center INTEMAC**.
+The platform is specifically designed to support **visual inspection and automated quality control tasks**, enabling the development and validation of machine vision systems in scenarios where real data acquisition is costly, time-consuming, or limited.
 
-### Features
+The project was developed as part of **internal research activities at the Research and Innovation Center INTEMAC**.
 
-- Photorealistic synthetic data generation.
-- Focus on industrial and manufacturing scenarios.
-- Modular and extensible architecture.
-- Support for object detection and vision-based learning pipelines.
-- Designed for efficient dataset generation and experimentation.
+## Features
+
+- High-quality, photorealistic synthetic data generation.
+- Synthetic data tailored for **visual inspection and quality control** applications.
+- Targeted support for industrial and manufacturing use cases.
+- Modular and easily extensible system architecture.
+- Compatibility with object detection and vision-based machine learning pipelines.
+- Optimized for efficient dataset generation and experimental workflows.
+
 
 ## Installation
 
