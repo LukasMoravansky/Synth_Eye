@@ -6,11 +6,19 @@
 
 ## Project Overview
 
-**Synth Eye** is a modular platform for generating **high-quality, photorealistic synthetic data** that faithfully replicates real-world environments, objects, and operating conditions. The generated datasets are intended to improve the efficiency, robustness, and overall performance of neural network training, with a primary focus on **computer vision applications in industrial manufacturing**.
+## Project Description
 
-The platform is specifically designed to support **visual inspection and automated quality control tasks**, enabling the development and validation of machine vision systems in scenarios where real data acquisition is costly, time-consuming, or limited.
+**Synth.Eye** is an industrial-grade synthetic data generation platform developed to support **vision-based artificial intelligence systems** in manufacturing environments. The platform enables the creation of **highly realistic, physically based synthetic datasets** that closely replicate real-world production conditions, components, and defects, with a strong emphasis on **visual inspection and quality control**.
 
-The project was developed as part of **internal research activities at the Research and Innovation Center INTEMAC**.
+The system virtualizes key elements of an industrial vision setup, including **cameras, lenses, lighting, materials, and surface characteristics**, allowing realistic simulation of manufacturing scenarios such as flexible, small-batch production with high product variability. By leveraging physically based rendering (PBR), sensor simulation, and camera modeling, Synth.Eye bridges the gap between raw CAD geometry and photorealistic image data suitable for training deep learning models.
+
+Synth.Eye supports the procedural generation of surface imperfections commonly encountered in manufacturing environments, including fingerprints and sweat residues, machining-related surface defects, oil stains and contamination, abrasion marks and wear, as well as surface grooves and indentations. These imperfections are seamlessly integrated into the rendering pipeline, enabling large-scale generation of accurately labeled datasets without the need for manual annotation.
+
+The platform follows a data-centric workflow in which synthetic data is used for training, while testing is performed on real-world images. Experimental results demonstrate strong transferability from synthetic to real data, achieving **over 99% accuracy in object classification** and **over 95% accuracy in surface defect detection** using real inspection images.
+
+By enabling controllable data randomization, rare and edge-case scenario generation, and automated labeling, Synth.Eye significantly reduces the time, cost, and risk associated with real data acquisition. It also mitigates privacy and compliance concerns, making it particularly suitable for industrial AI development in data-constrained environments.
+
+The project was developed as part of **internal research activities at the Research and Innovation Center INTEMAC**, with the goal of empowering next-generation machine vision systems through scalable and realistic synthetic data generation.
 
 ### Features
 
@@ -20,7 +28,6 @@ The project was developed as part of **internal research activities at the Resea
 - Modular and easily extensible system architecture.
 - Compatibility with object detection and vision-based machine learning pipelines.
 - Optimized for efficient dataset generation and experimental workflows.
-
 
 ## Installation
 
