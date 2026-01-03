@@ -22,8 +22,6 @@ The platform was developed as part of **internal research activities at the Rese
 
 This project relies on a dedicated **Conda environment** to ensure a reproducible, isolated, and stable setup across platforms. Automated installation scripts are provided for both **Linux/macOS** and **Windows**.
 
----
-
 ### Prerequisites
 
 Before proceeding, ensure the following requirements are met:
@@ -48,8 +46,46 @@ git clone https://github.com/rparak/Synth_Eye.git
 cd Synth_Eye
 ```
 
-#### 2.0 Platform-Specific Installation
+#### 2. Platform-Specific Installation
+#### 2.1 Linux / macOS
 
+Make the installation script executable:
+
+```bash
+chmod +x install.sh
+```
+
+Run the installation script:
+
+```bash
+./install.sh
+```
+
+#### 2.2 Windows
+
+Open Command Prompt and navigate to the project directory:
+
+```bash
+cd path\to\Synth_Eye
+```
+
+Run the installation script:
+
+```bash
+install.bat
+```
+
+#### 3. Verification
+
+If the installation completes successfully, the Conda environment is fully configured and verified.
+
+Activate the environment manually:
+
+```bash
+conda activate env_synth_eye
+```
+
+The system is now ready for synthetic data generation, experimentation, and model training.
 
 ## TODO
 
