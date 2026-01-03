@@ -27,6 +27,7 @@ Synth.Eye supports the procedural generation of surface imperfections commonly e
 The platform follows a data-centric workflow in which synthetic data is used for training, while testing is performed on real-world images. Experimental results demonstrate strong transferability from synthetic to real data, achieving **over 99% accuracy in object classification** and **over 95% accuracy in surface defect detection** using real inspection images.
 
 <p align="center">
+  <img src=https://github.com/rparak/Synth_Eye/blob/main/images/Image_0.svg width="1200">
   <img src=https://github.com/rparak/Synth_Eye/blob/main/images/Image_4.svg width="1200">
 </p>
 
