@@ -54,6 +54,120 @@ Detailed usage instructions, examples, and dataset generation commands are provi
 
 > ⚠️ **Note:** The project is under active development. Interfaces, scripts, and workflows may change as the platform evolves.
 
+### How to run the application – UI
+
+1. Activate the project environment:
+   ```bash
+   conda activate env_synth_eye
+   ```
+2. Start the PyQt5 application:
+   ```bash
+   python App/run.py
+   ```
+3. Connect the Basler a2A1920-51gcPRO camera (or another Basler model) before launching. The UI expects a 1920×1200 feed and loads the YOLO models from `YOLO/Model/Dataset_v2` and `YOLO/Model/Dataset_v3`. Keep the `App/fonts` directory intact so the Eurostyle font loads correctly.
+
+<p align="center">
+  <img src=https://github.com/rparak/Synth_Eye/blob/main/images/Image_5.png width="1200">
+</p>
+
+#### User Interface Description
+
+The Synth.Eye application provides a full-screen user interface optimized for 4K monitors, designed for real-time industrial vision inspection. The interface is divided into two main sections:
+
+**Left Section – Camera View and Controls:**
+
+- **Camera View:** Displays the live camera feed or captured images. After analysis, detected objects and defects are overlaid with colored bounding boxes:
+  - Object detection bounding boxes (orange/cyan) show detected metallic objects (front/back sides)
+  - Defect detection bounding boxes (purple) highlight surface defects such as fingerprints
+  - The view maintains a 16:10 aspect ratio (1920×1200) to match the camera resolution
+
+- **Control Buttons:**
+  - **CONNECT/DISCONNECT:** Establishes or terminates the connection to the Basler camera. When clicked, the application scans for available camera devices and displays connection status in the logger. The button text changes to "DISCONNECT" when connected.
+  - **CAPTURE:** Captures a single image from the connected camera. The image is processed (undistorted using calibration parameters) and displayed in the Camera View. This button is only enabled when the camera is connected.
+  - **ANALYZE:** Performs AI-based object and defect detection on the captured image using pre-trained YOLOv8 models. The analysis process:
+    1. Detects metallic objects (front/back sides) with confidence threshold ≥90%
+    2. Validates object bounding box area (must be between 10% and 15% of image area)
+    3. For front-side objects, performs additional defect detection (confidence threshold ≥80%)
+    4. Draws bounding boxes and updates statistics (OK/NOK counts)
+    5. Updates the productivity graph with new data points
+  - **CLEAR:** Resets all application data, including:
+    - Productivity graph (removes all data points)
+    - System logger (clears all log messages)
+    - Statistics counters (total scans, OK count, NOK count)
+
+- **Status Panel:** Displays real-time camera connection status and resolution information:
+  - **Camera:** Shows "Connected" or "Disconnected" status
+  - **Resolution:** Displays the current camera resolution (e.g., "1920x1200")
+
+- **Logo:** The Synth.Eye branding logo is displayed at the bottom-left of the interface.
+
+**Right Section – Monitoring and Logging:**
+
+- **System Logger:** A read-only text area that displays timestamped log messages for all application operations. Each log entry includes:
+  - Timestamp in `[HH:MM:SS]` format
+  - Descriptive message about the operation (camera connection, image capture, analysis results, errors, etc.)
+  - The logger automatically scrolls to show the most recent messages
+
+- **Productivity Graph:** A line graph that visualizes inspection statistics over time:
+  - **X-axis:** Iteration number (sequential scan number)
+  - **Y-axis:** Total count of analyzed images
+  - **Green line (OK):** Represents the cumulative count of images classified as "OK" (no defects detected)
+  - **Red line (NOK):** Represents the cumulative count of images classified as "NOK" (defects detected)
+  - The graph includes grid lines, axis labels, and automatically scales to accommodate the data range
+  - When no data is available, displays "No data available" placeholder text
+
+- **Graph Statistics:** Text summary displayed below the graph showing:
+  - Total number of images analyzed
+  - Number of OK classifications (displayed in green)
+  - Number of NOK classifications (displayed in red)
+
+**Workflow:**
+
+1. Click **CONNECT** to establish camera connection
+2. Click **CAPTURE** to capture an image from the camera
+3. Click **ANALYZE** to run AI detection and view results with bounding boxes
+4. Review statistics in the productivity graph and logger
+5. Repeat steps 2-4 for additional inspections
+6. Use **CLEAR** to reset all data when starting a new inspection session
+7. Click **DISCONNECT** when finished to release the camera
+
+### How to start training
+
+1. Prepare your dataset and update the dataset path inside `YOLO/Configuration/Cfg_Model_1.yaml` (and the hyperparameters in `Training/Args_Model_1.yaml` if needed).
+2. Activate the environment and launch training:
+   ```bash
+   conda activate env_synth_eye
+   cd Training
+   python train.py
+   ```
+3. The script auto-selects GPU if available, writes results to `YOLO/Results/<dataset>/train_fb_<freeze_flag>`, and removes any stale base model (`yolov8m.pt`) before training. Adjust `CONST_YOLO_SIZE` and `CONST_CONFIGURATION_ID` in `Training/train.py` to switch model size or config.
+
+### How to run the example
+
+- **Camera-based test (single capture):**
+  ```bash
+  conda activate env_synth_eye
+  cd App
+  python test.py
+  ```
+  Captures one frame from the Basler camera, runs object/defect detection, and writes annotated images next to the source.
+
+- **Offline prediction on test images:**
+  ```bash
+  conda activate env_synth_eye
+  cd Example/Model
+  python predict_object.py
+  ```
+  Expects test images under `Data/Dataset_v2/images/test` (update paths in the script if your dataset differs). Annotated outputs are saved alongside the inputs.
+
+- **Synthetic data generation (Blender):**
+  ```bash
+  conda activate env_synth_eye
+  cd Example/Blender
+  python gen_synthetic_data.py
+  ```
+  Requires Blender installed and accessible from the CLI. Generated images and labels follow the paths set inside the script; adjust output directories before running to match your storage layout.
+
 ## Installation
 
 This project relies on a dedicated **Conda environment** to ensure a reproducible, isolated, and stable setup across platforms. Automated installation scripts are provided for both **Linux/macOS** and **Windows**.
