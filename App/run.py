@@ -141,14 +141,20 @@ class MockCamera:
 class AspectRatioLabel(QLabel):
     """QLabel that maintains a fixed aspect ratio"""
 
-    def __init__(self, aspect_ratio=1.6, parent=None):  # 1920/1200 = 1.6
+    def __init__(self, aspect_ratio=1.6, preferred_width=None, parent=None):  # 1920/1200 = 1.6
         super().__init__(parent)
         self.aspect_ratio = aspect_ratio
+        self.preferred_width = preferred_width
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def sizeHint(self):
         """Return size hint that maintains aspect ratio"""
-        width = self.width() if self.width() > 0 else 400
+        if self.width() > 0:
+            width = self.width()
+        elif self.preferred_width is not None:
+            width = self.preferred_width
+        else:
+            width = 400  # Default fallback
         height = int(width / self.aspect_ratio)
         return QSize(width, height)
 
@@ -204,13 +210,13 @@ class ProductivityGraph(QWidget):
 
         width = self.width()
         height = self.height()
-        
+
         # Increased margins for better label readability
         left_margin = 60  # More space for Y-axis labels and tick values
         right_margin = 30
         top_margin = 30
         bottom_margin = 50  # More space for X-axis label
-        
+
         graph_width = width - left_margin - right_margin
         graph_height = height - top_margin - bottom_margin
         graph_x = left_margin
@@ -245,11 +251,11 @@ class ProductivityGraph(QWidget):
         label_font = QFont(SynthEyeApp.EUROSTYLE_FONT, axis_font_size, QFont.Bold)
         painter.setFont(label_font)
         painter.setPen(QColor(COLOR_TEXT_DARK))
-        
+
         # X-axis label (larger and more space)
         x_label_rect = QRectF(graph_x, height - bottom_margin + 10, graph_width, 30)
         painter.drawText(x_label_rect, Qt.AlignCenter, "Iteration")
-        
+
         # Y-axis label (larger and more space)
         painter.save()
         painter.translate(15, height / 2)
@@ -285,7 +291,7 @@ class ProductivityGraph(QWidget):
                     x2 = graph_x + (graph_width * (self.iterations[i+1] - 1) / max(self.iterations))
                     y2 = height - bottom_margin - (graph_height * self.nok_data[i+1] / max_val)
                     painter.drawLine(x1, y1, x2, y2)
-            
+
             # Draw points for all data points (including single point)
             point_radius = 4
             # OK point (darker green)
@@ -295,7 +301,7 @@ class ProductivityGraph(QWidget):
                 painter.setPen(QPen(QColor(COLOR_GRAPH_OK), 2))
                 painter.setBrush(QBrush(QColor(COLOR_GRAPH_OK)))
                 painter.drawEllipse(x - point_radius, y - point_radius, point_radius * 2, point_radius * 2)
-            
+
             # NOK point (red)
             for i in range(len(self.iterations)):
                 x = graph_x + (graph_width * (self.iterations[i] - 1) / max(self.iterations) if len(self.iterations) > 1 else 0)
@@ -390,11 +396,15 @@ class SynthEyeApp(QMainWindow):
 
         # Calculate camera view size based on screen width (smaller, ~40% of available width)
         # Maintain 1920×1200 aspect ratio (1.6:1)
-        # camera_view_width = int(screen_width * 0.40)  # 40% of screen width
-        camera_view_width = int(screen_width * 0.8)
+        camera_view_width = int(screen_width * 0.49)  # 40% of screen width
+
+        # camera_view_width = int(screen_width * 0.8)
         camera_view_height = int(camera_view_width / 1.6)  # Maintain 1920×1200 aspect ratio
 
-        self.camera_view = AspectRatioLabel(aspect_ratio=1.6)  # 1920/1200 = 1.6
+        # Store camera view dimensions for image resizing
+        self.camera_view_width = camera_view_width
+        self.camera_view_height = camera_view_height
+        self.camera_view = AspectRatioLabel(aspect_ratio=1.6, preferred_width=camera_view_width)  # 1920/1200 = 1.6
         self.camera_view.setText("Camera Feed")
         self.camera_view.setAlignment(Qt.AlignCenter)
         self.camera_view.setStyleSheet(f"""
@@ -628,34 +638,41 @@ class SynthEyeApp(QMainWindow):
         img_raw = self.Basler_Cam_Id_1.Capture()
         if img_raw is None:
             raise ValueError('[ERROR] No image captured!')
-        
+
         # Initialize the class for custom image processing.
         Process_Image_Cls = Utilities.Image_Processing.Process_Image_Cls('real')
 
         # Apply the image processing pipeline.
         img_raw_processed = Process_Image_Cls.Apply(img_raw)
-        
+
         # Undistort the image using camera calibration parameters.
         h, w = img_raw_processed.shape[:2]
-        new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(Basler_Calib_Param_Str.K, np.array(list(Basler_Calib_Param_Str.Coefficients.values()), dtype=np.float64), 
+        new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(Basler_Calib_Param_Str.K, np.array(list(Basler_Calib_Param_Str.Coefficients.values()), dtype=np.float64),
                                                              (w, h), 1, (w, h))
-        img_undistorted = cv2.undistort(img_raw_processed, Basler_Calib_Param_Str.K, np.array(list(Basler_Calib_Param_Str.Coefficients.values()), dtype=np.float64), 
+        img_undistorted = cv2.undistort(img_raw_processed, Basler_Calib_Param_Str.K, np.array(list(Basler_Calib_Param_Str.Coefficients.values()), dtype=np.float64),
                                         None, new_camera_matrix)
-    
+
         self.log('Capture button pressed. Performing camera scan...')
         self.captured_image = img_undistorted.copy()
 
-        # Convert the image to QImage format
-        if len(self.captured_image.shape) == 2:  # grayscale
-            qimg = QImage(self.captured_image.data, w, h, w, QImage.Format.Format_Grayscale8)
+        # Get actual QLabel size and resize image to match
+        label_width = self.camera_view.width()
+        label_height = self.camera_view.height()
+        
+        # Resize image to match actual QLabel size
+        img_resized = cv2.resize(self.captured_image, (label_width, label_height), interpolation=cv2.INTER_LINEAR)
+
+        # Convert the resized image to QImage format
+        if len(img_resized.shape) == 2:  # grayscale
+            qimg = QImage(img_resized.data, label_width, label_height, label_width, QImage.Format.Format_Grayscale8)
         else:  # color image
-            img_rgb = cv2.cvtColor(self.captured_image, cv2.COLOR_BGR2RGB)
-            qimg = QImage(img_rgb.data, w, h, 3 * w, QImage.Format.Format_RGB888)
+            img_rgb = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
+            qimg = QImage(img_rgb.data, label_width, label_height, 3 * label_width, QImage.Format.Format_RGB888)
 
         # Display the image in the QLabel
         pixmap = QPixmap.fromImage(qimg)
         self.camera_view.setPixmap(pixmap)
-        self.camera_view.setScaledContents(True)  # scale the image to fit the label
+        self.camera_view.setScaledContents(False)  # Don't scale - image is already at correct size
 
         # Enable ANALYZE button
         self.btn_analyze.setEnabled(True)
@@ -665,7 +682,7 @@ class SynthEyeApp(QMainWindow):
         """Handle ANALYZE button click"""
         if self.captured_image is None:
              return
-        
+
         count = self.ok_count + self.nok_count
 
         self.log('Analyze button pressed. Performing Synth.Eye AI analysis of the RGB image...')
@@ -687,7 +704,7 @@ class SynthEyeApp(QMainWindow):
                 # Get the area of the rectangle.
                 A = b_box_i[2] * b_box_i[3]
 
-                # If the calculated area of the object's bounding box is outside the limits, do not predict 
+                # If the calculated area of the object's bounding box is outside the limits, do not predict
                 # the object.
                 if A < CONST_OBJECT_BB_AREA['Min'] or A > CONST_OBJECT_BB_AREA['Max']:
                     continue
@@ -697,22 +714,22 @@ class SynthEyeApp(QMainWindow):
                     continue
 
                 # Create a bounding box from the label data.
-                Bounding_Box_Properties = {'Name': f'{int(class_id_i)}', 'Precision': f'{str(conf_i)[0:5]}', 
+                Bounding_Box_Properties = {'Name': f'{int(class_id_i)}', 'Precision': f'{str(conf_i)[0:5]}',
                                            'Data': {'x_c': b_box_i[0], 'y_c': b_box_i[1], 'width': b_box_i[2], 'height': b_box_i[3]}}
-                
-                # Draw the bounding box of the object with additional dependencies (name, precision, etc.) in 
+
+                # Draw the bounding box of the object with additional dependencies (name, precision, etc.) in
                 # the raw image.
-                processed_image = Utilities.Image_Processing.Draw_Bounding_Box(processed_image, Bounding_Box_Properties, 'YOLO', CONST_CONFIG_MODEL_OBJ['Color'][int(class_id_i)], 
+                processed_image = Utilities.Image_Processing.Draw_Bounding_Box(processed_image, Bounding_Box_Properties, 'YOLO', CONST_CONFIG_MODEL_OBJ['Color'][int(class_id_i)],
                                                                             True, False)
                 # Determine resolution of the processed image.
                 img_h, img_w = self.captured_image.shape[:2]
                 Resolution = {'x': img_w, 'y': img_h}
 
                 # Converts bounding box coordinates from YOLO format to absolute pixel coordinates.
-                abs_coordinates_obj = Utilities.General.YOLO_To_Absolute_Coordinates({'x_c': b_box_i[0], 'y_c': b_box_i[1], 
-                                                                                    'width': b_box_i[2], 'height': b_box_i[3]}, 
+                abs_coordinates_obj = Utilities.General.YOLO_To_Absolute_Coordinates({'x_c': b_box_i[0], 'y_c': b_box_i[1],
+                                                                                    'width': b_box_i[2], 'height': b_box_i[3]},
                                                                                     Resolution)
-                    
+
                 # Calculate object bounding box edges from center-based coordinates.
                 obj_left = int(abs_coordinates_obj['x'] - abs_coordinates_obj['width'] / 2)
                 obj_top = int(abs_coordinates_obj['y'] - abs_coordinates_obj['height'] / 2)
@@ -746,8 +763,8 @@ class SynthEyeApp(QMainWindow):
                             self.analysis_result = 'NOK'
 
                             # Convert bounding box of the defect to absolute coordinates within cropped object.
-                            abs_coordinates_defect = Utilities.General.YOLO_To_Absolute_Coordinates({'x_c': d_b_box_i[0], 'y_c': d_b_box_i[1], 
-                                                                                                     'width': d_b_box_i[2], 'height': d_b_box_i[3]}, 
+                            abs_coordinates_defect = Utilities.General.YOLO_To_Absolute_Coordinates({'x_c': d_b_box_i[0], 'y_c': d_b_box_i[1],
+                                                                                                     'width': d_b_box_i[2], 'height': d_b_box_i[3]},
                                                                                                     {'x': cropped_image.shape[1], 'y': cropped_image.shape[0]})
 
                             # Shift to original image.
@@ -757,14 +774,14 @@ class SynthEyeApp(QMainWindow):
                             yolo_coordinates_defect = Utilities.General.Absolute_Coordinates_To_YOLO(abs_coordinates_defect, Resolution)
 
                             # Create a bounding box from the label data of the defect.
-                            Bounding_Box_Defect_Properties = {'Name': f'{int(d_class_i)}', 'Precision': f'{str(d_conf_i)[0:5]}', 
+                            Bounding_Box_Defect_Properties = {'Name': f'{int(d_class_i)}', 'Precision': f'{str(d_conf_i)[0:5]}',
                                                                 'Data': yolo_coordinates_defect}
-                            
-                            # Draw the bounding box of the defect with additional dependencies (name, precision, etc.) in 
+
+                            # Draw the bounding box of the defect with additional dependencies (name, precision, etc.) in
                             # the raw image.
-                            processed_image = Utilities.Image_Processing.Draw_Bounding_Box(processed_image, Bounding_Box_Defect_Properties, 'YOLO', CONST_CONFIG_MODEL_DEFECT['Color'][int(class_id_i)], 
+                            processed_image = Utilities.Image_Processing.Draw_Bounding_Box(processed_image, Bounding_Box_Defect_Properties, 'YOLO', CONST_CONFIG_MODEL_DEFECT['Color'][int(class_id_i)],
                                                                                         True, False)
-                            
+
                             self.log(f'Detected defect in the form of fingerprint on the front side of the metalic object. Confidence: {str(d_conf_i*100.0)[0:5]} %.')
 
                 if self.analysis_result == 'OK':
@@ -772,7 +789,7 @@ class SynthEyeApp(QMainWindow):
                     self.log(f'The result of the Synth.Eye AI analysis is {self.analysis_result}.')
                 else:
                     self.nok_count += 1
-                    self.log(f'The result of the Synth.Eye AI analysis is {self.analysis_result}. A defect has been detected.')  
+                    self.log(f'The result of the Synth.Eye AI analysis is {self.analysis_result}. A defect has been detected.')
 
         if count == (self.ok_count + self.nok_count):
             # Determine resolution of the processed image.
@@ -786,16 +803,23 @@ class SynthEyeApp(QMainWindow):
         self.captured_image = processed_image.copy()
         self.total_scans += 1
 
+        # Get actual QLabel size and resize image to match
+        label_width = self.camera_view.width()
+        label_height = self.camera_view.height()
+        
+        # Resize image to match actual QLabel size
+        img_resized = cv2.resize(self.captured_image, (label_width, label_height), interpolation=cv2.INTER_LINEAR)
+
         # Convert to QImage and display in QLabel
-        if len(self.captured_image.shape) == 2:
-            qimg = QImage(self.captured_image.data, img_w, img_h, img_w, QImage.Format.Format_Grayscale8)
+        if len(img_resized.shape) == 2:
+            qimg = QImage(img_resized.data, label_width, label_height, label_width, QImage.Format.Format_Grayscale8)
         else:  # color
-            img_rgb = cv2.cvtColor(self.captured_image, cv2.COLOR_BGR2RGB)
-            qimg = QImage(img_rgb.data, img_w, img_h, 3 * img_w, QImage.Format.Format_RGB888)
+            img_rgb = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
+            qimg = QImage(img_rgb.data, label_width, label_height, 3 * label_width, QImage.Format.Format_RGB888)
 
         pixmap = QPixmap.fromImage(qimg)
         self.camera_view.setPixmap(pixmap)
-        self.camera_view.setScaledContents(True)
+        self.camera_view.setScaledContents(False)  # Don't scale - image is already at correct size
 
         self.btn_analyze.setEnabled(False)
 
