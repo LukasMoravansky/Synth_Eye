@@ -50,8 +50,6 @@ This section provides an overview of how to use **Synth.Eye** for synthetic data
 
 Detailed usage instructions, examples, and dataset generation commands are provided below.
 
-### In progress...
-
 > ⚠️ **Note:** The project is under active development. Interfaces, scripts, and workflows may change as the platform evolves.
 
 ### How to run the application – UI
