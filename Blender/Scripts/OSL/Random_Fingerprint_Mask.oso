@@ -1,332 +1,346 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.13.7.0
-# options: -o /var/folders/m0/9483mct508b7g5yhjpwllmxc0000gn/T/tmplubis2j6.oso -I/Applications/Blender.app/Contents/Resources/4.2/scripts/addons_core/cycles/shader
+# Compiled by oslc 1.14.4.0dev
+# options: -o C:\Users\MORAVA~1\AppData\Local\Temp\tmpqf9yq55e.oso -IC:\Program Files\Blender Foundation\Blender 4.5\4.5\scripts\addons_core\cycles\shader
 shader Random_Fingerprint_Mask
-param	point	Pos	0 0 0		%read{16,20} %write{2147483647,-1}
-param	float	seed	0		%read{24,105} %write{2147483647,-1}
+param	point	Pos	0 0 0		%read{32,36} %write{2147483647,-1}
+param	float	seed	0		%read{16,110} %write{2147483647,-1}
 param	int	enable_mask	1		%read{10,10} %write{2147483647,-1}
-oparam	float	mask	0		%read{2147483647,-1} %write{14,88}
-oparam	float	mask_rectangle	0		%read{14,120} %write{13,99}
-oparam	float	mask_fingerprint	0		%read{13,13} %write{12,120}
-local	float	WIDTH_MIN	%read{42,44} %write{0,0}
-local	float	WIDTH_MAX	%read{42,42} %write{1,1}
-local	float	HEIGHT_MIN	%read{47,49} %write{2,2}
-local	float	HEIGHT_MAX	%read{47,47} %write{3,3}
-local	float	BLUR_INTENSITY	%read{81,81} %write{4,4}
-local	float	WAVE_SCALE	%read{116,116} %write{5,5}
-local	float	CENTER_X_MIN	%read{32,34} %write{6,6}
-local	float	CENTER_X_MAX	%read{32,32} %write{7,7}
-local	float	CENTER_Y_MIN	%read{37,39} %write{8,8}
-local	float	CENTER_Y_MAX	%read{37,37} %write{9,9}
-local	float	uv_x	%read{56,110} %write{19,19}
-local	float	uv_y	%read{58,111} %write{23,23}
-local	float	seed_offset	%read{30,50} %write{29,29}
-local	float	center_x	%read{56,104} %write{34,34}
-local	float	center_y	%read{58,109} %write{39,39}
-local	float	width	%read{66,103} %write{44,44}
-local	float	height	%read{67,108} %write{49,49}
-local	float	rotation_z	%read{54,55} %write{53,53}
-local	float	cos_a	%read{57,64} %write{54,54}
-local	float	sin_a	%read{59,62} %write{55,55}
-local	float	x_rot	%read{68,89} %write{60,60}
-local	float	y_rot	%read{71,93} %write{65,65}
-local	float	a	%read{69,90} %write{66,66}
-local	float	b	%read{72,94} %write{67,67}
-local	float	ellipse_eq	%read{83,86} %write{74,74}
-local	float	edge_noise	%read{82,85} %write{81,81}
-local	float	fp_center_x	%read{110,110} %write{104,104}
-local	float	fp_center_y	%read{111,111} %write{109,109}
-local	float	dx	%read{112,112} %write{110,110}
-local	float	dy	%read{113,113} %write{111,111}
-local	float	dist	%read{116,116} %write{115,115}
-const	float	$const1	0.200000003		%read{0,4} %write{2147483647,-1}
-const	float	$const2	0.5		%read{1,119} %write{2147483647,-1}
-const	float	$const3	30		%read{5,5} %write{2147483647,-1}
-const	float	$const4	0		%read{6,99} %write{2147483647,-1}
-const	float	$const5	0.649999976		%read{7,7} %write{2147483647,-1}
-const	float	$const6	1		%read{9,98} %write{2147483647,-1}
-const	int	$const7	0		%read{10,95} %write{2147483647,-1}
+oparam	float	mask	0		%read{2147483647,-1} %write{14,93}
+oparam	float	mask_rectangle	0		%read{14,125} %write{13,104}
+oparam	float	mask_fingerprint	0		%read{13,13} %write{12,125}
+local	float	WIDTH_MIN	%read{48,50} %write{0,0}
+local	float	WIDTH_MAX	%read{48,48} %write{1,1}
+local	float	HEIGHT_MIN	%read{53,55} %write{2,2}
+local	float	HEIGHT_MAX	%read{53,53} %write{3,3}
+local	float	BLUR_INTENSITY	%read{86,86} %write{4,4}
+local	float	WAVE_SCALE	%read{121,121} %write{5,5}
+local	float	CENTER_X_MIN	%read{40,42} %write{6,6}
+local	float	CENTER_X_MAX	%read{40,46} %write{7,7}
+local	float	CENTER_Y_MIN	%read{43,45} %write{8,8}
+local	float	CENTER_Y_MAX	%read{43,51} %write{9,9}
+local	float	seed_offset_x	%read{41,56} %write{23,23}
+local	float	seed_offset_y	%read{44,44} %write{31,31}
+local	float	uv_x	%read{61,115} %write{35,35}
+local	float	uv_y	%read{63,116} %write{39,39}
+local	float	center_x	%read{61,109} %write{42,42}
+local	float	center_y	%read{63,114} %write{45,45}
+local	float	width	%read{71,108} %write{50,50}
+local	float	height	%read{72,113} %write{55,55}
+local	float	rotation_z	%read{59,60} %write{58,58}
+local	float	cos_a	%read{62,69} %write{59,59}
+local	float	sin_a	%read{64,67} %write{60,60}
+local	float	x_rot	%read{73,94} %write{65,65}
+local	float	y_rot	%read{76,98} %write{70,70}
+local	float	a	%read{74,95} %write{71,71}
+local	float	b	%read{77,99} %write{72,72}
+local	float	ellipse_eq	%read{88,91} %write{79,79}
+local	float	edge_noise	%read{87,90} %write{86,86}
+local	float	fp_center_x	%read{115,115} %write{109,109}
+local	float	fp_center_y	%read{116,116} %write{114,114}
+local	float	dx	%read{117,117} %write{115,115}
+local	float	dy	%read{118,118} %write{116,116}
+local	float	dist	%read{121,121} %write{120,120}
+const	float	$const1	0.300000012		%read{0,0} %write{2147483647,-1}
+const	float	$const2	0.400000006		%read{1,4} %write{2147483647,-1}
+const	float	$const3	0.699999988		%read{3,3} %write{2147483647,-1}
+const	float	$const4	1000		%read{5,5} %write{2147483647,-1}
+const	float	$const5	0		%read{6,104} %write{2147483647,-1}
+const	float	$const6	0.649999976		%read{7,7} %write{2147483647,-1}
+const	float	$const7	1		%read{9,103} %write{2147483647,-1}
+const	int	$const8	0		%read{10,100} %write{2147483647,-1}
 temp	int	$tmp1	%read{11,11} %write{10,10}
-temp	float	$tmp2	%read{18,18} %write{16,16}
-const	string	$const8	"clamp"		%read{17,21} %write{2147483647,-1}
-temp	float	$tmp3	%read{19,19} %write{18,18}
-const	int	$const9	1		%read{20,20} %write{2147483647,-1}
-temp	float	$tmp4	%read{22,22} %write{20,20}
-temp	float	$tmp5	%read{23,23} %write{22,22}
-temp	float	$tmp6	%read{29,29} %write{28,28}
-const	float	$const10	1345.33997		%read{24,24} %write{2147483647,-1}
+const	float	$const9	17		%read{16,16} %write{2147483647,-1}
+temp	float	$tmp2	%read{17,17} %write{16,16}
+const	float	$const10	3.0999999		%read{17,17} %write{2147483647,-1}
+temp	float	$tmp3	%read{19,19} %write{17,17}
+const	string	$const11	"hash"		%read{18,26} %write{2147483647,-1}
+temp	float	$tmp4	%read{20,20} %write{19,19}
+const	float	$const12	43758.5469		%read{20,28} %write{2147483647,-1}
+temp	float	$tmp5	%read{22,23} %write{20,20}
+const	string	$const13	"fract"		%read{21,29} %write{2147483647,-1}
+temp	float	$tmp6	%read{23,23} %write{22,22}
+const	float	$const14	29		%read{24,24} %write{2147483647,-1}
 temp	float	$tmp7	%read{25,25} %write{24,24}
-const	float	$const11	787.890015		%read{25,25} %write{2147483647,-1}
-temp	float	$tmp8	%read{27,28} %write{25,25}
-const	string	$const12	"fract"		%read{26,26} %write{2147483647,-1}
+const	float	$const15	7.69999981		%read{25,25} %write{2147483647,-1}
+temp	float	$tmp8	%read{27,27} %write{25,25}
 temp	float	$tmp9	%read{28,28} %write{27,27}
-const	float	$const13	1000		%read{29,29} %write{2147483647,-1}
-temp	float	$tmp10	%read{33,33} %write{31,31}
-const	string	$const14	"cell"		%read{31,36} %write{2147483647,-1}
-const	float	$const15	0.100000001		%read{30,30} %write{2147483647,-1}
+temp	float	$tmp10	%read{30,31} %write{28,28}
 temp	float	$tmp11	%read{31,31} %write{30,30}
-temp	float	$tmp12	%read{33,33} %write{32,32}
-temp	float	$tmp13	%read{34,34} %write{33,33}
+temp	float	$tmp12	%read{34,34} %write{32,32}
+const	string	$const16	"clamp"		%read{33,37} %write{2147483647,-1}
+temp	float	$tmp13	%read{35,35} %write{34,34}
+const	int	$const17	1		%read{36,36} %write{2147483647,-1}
 temp	float	$tmp14	%read{38,38} %write{36,36}
-const	float	$const16	1.10000002		%read{35,35} %write{2147483647,-1}
-temp	float	$tmp15	%read{36,36} %write{35,35}
-temp	float	$tmp16	%read{38,38} %write{37,37}
-temp	float	$tmp17	%read{39,39} %write{38,38}
-temp	float	$tmp18	%read{43,43} %write{41,41}
-const	string	$const17	"simplex"		%read{41,46} %write{2147483647,-1}
-const	float	$const18	2.20000005		%read{40,40} %write{2147483647,-1}
-temp	float	$tmp19	%read{41,41} %write{40,40}
-temp	float	$tmp20	%read{43,43} %write{42,42}
-temp	float	$tmp21	%read{44,44} %write{43,43}
-temp	float	$tmp22	%read{48,48} %write{46,46}
-const	float	$const19	3.29999995		%read{45,45} %write{2147483647,-1}
-temp	float	$tmp23	%read{46,46} %write{45,45}
-temp	float	$tmp24	%read{48,48} %write{47,47}
-temp	float	$tmp25	%read{49,49} %write{48,48}
-temp	float	$tmp26	%read{52,52} %write{51,51}
-const	string	$const20	"perlin"		%read{51,106} %write{2147483647,-1}
-const	float	$const21	4		%read{50,50} %write{2147483647,-1}
-temp	float	$tmp27	%read{51,51} %write{50,50}
-const	float	$const22	2		%read{52,52} %write{2147483647,-1}
-temp	float	$tmp28	%read{53,53} %write{52,52}
-const	float	$const23	3.14159274		%read{53,53} %write{2147483647,-1}
+temp	float	$tmp15	%read{39,39} %write{38,38}
+temp	float	$tmp16	%read{41,41} %write{40,40}
+temp	float	$tmp17	%read{42,42} %write{41,41}
+temp	float	$tmp18	%read{44,44} %write{43,43}
+temp	float	$tmp19	%read{45,45} %write{44,44}
+temp	float	$tmp20	%read{49,49} %write{47,47}
+const	string	$const18	"simplex"		%read{47,52} %write{2147483647,-1}
+const	float	$const19	2.20000005		%read{46,46} %write{2147483647,-1}
+temp	float	$tmp21	%read{47,47} %write{46,46}
+temp	float	$tmp22	%read{49,49} %write{48,48}
+temp	float	$tmp23	%read{50,50} %write{49,49}
+temp	float	$tmp24	%read{54,54} %write{52,52}
+const	float	$const20	3.29999995		%read{51,51} %write{2147483647,-1}
+temp	float	$tmp25	%read{52,52} %write{51,51}
+temp	float	$tmp26	%read{54,54} %write{53,53}
+temp	float	$tmp27	%read{55,55} %write{54,54}
+temp	float	$tmp28	%read{58,58} %write{57,57}
+const	string	$const21	"perlin"		%read{57,111} %write{2147483647,-1}
+const	float	$const22	4		%read{56,56} %write{2147483647,-1}
 temp	float	$tmp29	%read{57,57} %write{56,56}
-temp	float	$tmp30	%read{60,60} %write{57,57}
-temp	float	$tmp31	%read{59,59} %write{58,58}
-temp	float	$tmp32	%read{60,60} %write{59,59}
-temp	float	$tmp33	%read{62,62} %write{61,61}
-temp	float	$tmp34	%read{65,65} %write{62,62}
-temp	float	$tmp35	%read{64,64} %write{63,63}
-temp	float	$tmp36	%read{65,65} %write{64,64}
-temp	float	$tmp37	%read{70,70} %write{68,68}
-temp	float	$tmp38	%read{70,70} %write{69,69}
-temp	float	$tmp39	%read{74,74} %write{70,70}
-temp	float	$tmp40	%read{73,73} %write{71,71}
-temp	float	$tmp41	%read{73,73} %write{72,72}
-temp	float	$tmp42	%read{74,74} %write{73,73}
-temp	float	$tmp43	%read{81,81} %write{80,80}
-const	float	$const24	10		%read{75,100} %write{2147483647,-1}
-temp	float	$tmp44	%read{76,76} %write{75,75}
-temp	float	$tmp45	%read{80,80} %write{76,76}
-temp	float	$tmp46	%read{78,78} %write{77,77}
-temp	float	$tmp47	%read{79,79} %write{78,78}
-const	float	$const25	5		%read{79,79} %write{2147483647,-1}
-temp	float	$tmp48	%read{80,80} %write{79,79}
-temp	float	$tmp49	%read{83,83} %write{82,82}
-temp	int	$tmp50	%read{84,84} %write{83,83}
-temp	float	$tmp51	%read{87,87} %write{86,86}
-const	float	$const26	0.800000012		%read{86,86} %write{2147483647,-1}
-temp	float	$tmp52	%read{86,86} %write{85,85}
-temp	float	$tmp53	%read{90,90} %write{89,89}
-temp	int	$tmp54	%read{91,91} %write{90,90}
-temp	int	$tmp55	%read{92,97} %write{91,96}
-temp	float	$tmp56	%read{94,94} %write{93,93}
-temp	int	$tmp57	%read{95,95} %write{94,94}
-temp	int	$tmp58	%read{96,96} %write{95,95}
-temp	float	$tmp59	%read{102,102} %write{101,101}
-temp	float	$tmp60	%read{101,101} %write{100,100}
-temp	float	$tmp61	%read{103,103} %write{102,102}
-temp	float	$tmp62	%read{104,104} %write{103,103}
-temp	float	$tmp63	%read{107,107} %write{106,106}
-const	float	$const27	11		%read{105,105} %write{2147483647,-1}
-temp	float	$tmp64	%read{106,106} %write{105,105}
-temp	float	$tmp65	%read{108,108} %write{107,107}
-temp	float	$tmp66	%read{109,109} %write{108,108}
-temp	float	$tmp67	%read{114,114} %write{112,112}
-temp	float	$tmp68	%read{114,114} %write{113,113}
-temp	float	$tmp69	%read{115,115} %write{114,114}
-temp	float	$tmp70	%read{118,118} %write{117,117}
-temp	float	$tmp71	%read{117,117} %write{116,116}
-temp	float	$tmp72	%read{119,119} %write{118,118}
-temp	float	$tmp73	%read{120,120} %write{119,119}
+const	float	$const23	6.28318977		%read{58,58} %write{2147483647,-1}
+temp	float	$tmp30	%read{62,62} %write{61,61}
+temp	float	$tmp31	%read{65,65} %write{62,62}
+temp	float	$tmp32	%read{64,64} %write{63,63}
+temp	float	$tmp33	%read{65,65} %write{64,64}
+temp	float	$tmp34	%read{67,67} %write{66,66}
+temp	float	$tmp35	%read{70,70} %write{67,67}
+temp	float	$tmp36	%read{69,69} %write{68,68}
+temp	float	$tmp37	%read{70,70} %write{69,69}
+const	float	$const24	0.5		%read{71,124} %write{2147483647,-1}
+temp	float	$tmp38	%read{75,75} %write{73,73}
+temp	float	$tmp39	%read{75,75} %write{74,74}
+temp	float	$tmp40	%read{79,79} %write{75,75}
+temp	float	$tmp41	%read{78,78} %write{76,76}
+temp	float	$tmp42	%read{78,78} %write{77,77}
+temp	float	$tmp43	%read{79,79} %write{78,78}
+temp	float	$tmp44	%read{86,86} %write{85,85}
+const	float	$const25	10		%read{80,105} %write{2147483647,-1}
+temp	float	$tmp45	%read{81,81} %write{80,80}
+temp	float	$tmp46	%read{85,85} %write{81,81}
+temp	float	$tmp47	%read{83,83} %write{82,82}
+temp	float	$tmp48	%read{84,84} %write{83,83}
+const	float	$const26	5		%read{84,84} %write{2147483647,-1}
+temp	float	$tmp49	%read{85,85} %write{84,84}
+temp	float	$tmp50	%read{88,88} %write{87,87}
+temp	int	$tmp51	%read{89,89} %write{88,88}
+temp	float	$tmp52	%read{92,92} %write{91,91}
+const	float	$const27	0.800000012		%read{91,91} %write{2147483647,-1}
+temp	float	$tmp53	%read{91,91} %write{90,90}
+temp	float	$tmp54	%read{95,95} %write{94,94}
+temp	int	$tmp55	%read{96,96} %write{95,95}
+temp	int	$tmp56	%read{97,102} %write{96,101}
+temp	float	$tmp57	%read{99,99} %write{98,98}
+temp	int	$tmp58	%read{100,100} %write{99,99}
+temp	int	$tmp59	%read{101,101} %write{100,100}
+temp	float	$tmp60	%read{107,107} %write{106,106}
+temp	float	$tmp61	%read{106,106} %write{105,105}
+temp	float	$tmp62	%read{108,108} %write{107,107}
+temp	float	$tmp63	%read{109,109} %write{108,108}
+temp	float	$tmp64	%read{112,112} %write{111,111}
+const	float	$const28	11		%read{110,110} %write{2147483647,-1}
+temp	float	$tmp65	%read{111,111} %write{110,110}
+temp	float	$tmp66	%read{113,113} %write{112,112}
+temp	float	$tmp67	%read{114,114} %write{113,113}
+temp	float	$tmp68	%read{119,119} %write{117,117}
+temp	float	$tmp69	%read{119,119} %write{118,118}
+temp	float	$tmp70	%read{120,120} %write{119,119}
+temp	float	$tmp71	%read{123,123} %write{122,122}
+temp	float	$tmp72	%read{122,122} %write{121,121}
+temp	float	$tmp73	%read{124,124} %write{123,123}
+temp	float	$tmp74	%read{125,125} %write{124,124}
 code ___main___
-# Scripts/OSL/Random_Fingerprint_Mask.osl:30
-#     float HEIGHT_MIN = 0.2, HEIGHT_MAX = 0.5;
-	assign		WIDTH_MIN $const1 	%filename{"Scripts/OSL/Random_Fingerprint_Mask.osl"} %line{30} %argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:30
+#     float HEIGHT_MIN = 0.4, HEIGHT_MAX = 0.7;
+	assign		WIDTH_MIN $const1 	%filename{"C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl"} %line{30} %argrw{"wr"}
 	assign		WIDTH_MAX $const2 	%argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:31
-#     float BLUR_INTENSITY = 0.2;
-	assign		HEIGHT_MIN $const1 	%line{31} %argrw{"wr"}
-	assign		HEIGHT_MAX $const2 	%argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:32
-#     float WAVE_SCALE = 30.0;
-	assign		BLUR_INTENSITY $const1 	%line{32} %argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:33
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:31
+#     float BLUR_INTENSITY = 0.4;
+	assign		HEIGHT_MIN $const2 	%line{31} %argrw{"wr"}
+	assign		HEIGHT_MAX $const3 	%argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:32
+#     float WAVE_SCALE = 1000.0;
+	assign		BLUR_INTENSITY $const2 	%line{32} %argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:33
 #     float CENTER_X_MIN = 0.0, CENTER_X_MAX = 0.65;
-	assign		WAVE_SCALE $const3 	%line{33} %argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:34
+	assign		WAVE_SCALE $const4 	%line{33} %argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:34
 #     float CENTER_Y_MIN = 0.0, CENTER_Y_MAX = 1.0;
-	assign		CENTER_X_MIN $const4 	%line{34} %argrw{"wr"}
-	assign		CENTER_X_MAX $const5 	%argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:35
+	assign		CENTER_X_MIN $const5 	%line{34} %argrw{"wr"}
+	assign		CENTER_X_MAX $const6 	%argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:35
 # 
-	assign		CENTER_Y_MIN $const4 	%line{35} %argrw{"wr"}
-	assign		CENTER_Y_MAX $const6 	%argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:38
+	assign		CENTER_Y_MIN $const5 	%line{35} %argrw{"wr"}
+	assign		CENTER_Y_MAX $const7 	%argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:38
 #         mask = mask_rectangle = mask_fingerprint = 0.0;
-	eq		$tmp1 enable_mask $const7 	%line{38} %argrw{"wrr"}
+	eq		$tmp1 enable_mask $const8 	%line{38} %argrw{"wrr"}
 	if		$tmp1 16 16 	%argrw{"r"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:39
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:39
 #         return;
-	assign		mask_fingerprint $const4 	%line{39} %argrw{"wr"}
+	assign		mask_fingerprint $const5 	%line{39} %argrw{"wr"}
 	assign		mask_rectangle mask_fingerprint 	%argrw{"wr"}
 	assign		mask mask_rectangle 	%argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:40
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:40
 #     }
 	exit	%line{40}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:47
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:50
+#     float seed_offset_y = hash(seed * 29.0 + 7.7);
+	mul		$tmp2 seed $const9 	%line{50} %argrw{"wrr"}
+	add		$tmp3 $tmp2 $const10 	%argrw{"wrr"}
+	functioncall	$const11 24 	%argrw{"r"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:47
+# 
+	sin		$tmp4 $tmp3 	%line{47} %argrw{"wr"}
+	mul		$tmp5 $tmp4 $const12 	%argrw{"wrr"}
+	functioncall	$const13 24 	%argrw{"r"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:44
+# 
+	floor		$tmp6 $tmp5 	%line{44} %argrw{"wr"}
+	sub		seed_offset_x $tmp5 $tmp6 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:51
+# 
+	mul		$tmp7 seed $const14 	%line{51} %argrw{"wrr"}
+	add		$tmp8 $tmp7 $const15 	%argrw{"wrr"}
+	functioncall	$const11 32 	%argrw{"r"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:47
+# 
+	sin		$tmp9 $tmp8 	%line{47} %argrw{"wr"}
+	mul		$tmp10 $tmp9 $const12 	%argrw{"wrr"}
+	functioncall	$const13 32 	%argrw{"r"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:44
+# 
+	floor		$tmp11 $tmp10 	%line{44} %argrw{"wr"}
+	sub		seed_offset_y $tmp10 $tmp11 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:54
 #     float uv_y = clamp(Pos[1], 0.0, 1.0);
-	compref		$tmp2 Pos $const7 	%line{47} %argrw{"wrr"}
-	functioncall	$const8 20 	%argrw{"r"}
-# /Applications/Blender.app/Contents/Resources/4.2/scripts/addons_core/cycles/shader/stdosl.h:141
+	compref		$tmp12 Pos $const8 	%line{54} %argrw{"wrr"}
+	functioncall	$const16 36 	%argrw{"r"}
+# C:\\\\Program Files\\\\Blender Foundation\\\\Blender 4.5\\\\4.5\\\\scripts\\\\addons_core\\\\cycles\\\\shader/stdosl.h:141
 # float  clamp (float x, float minval, float maxval) { return max(min(x,maxval),minval); }
-	min		$tmp3 $tmp2 $const6 	%filename{"/Applications/Blender.app/Contents/Resources/4.2/scripts/addons_core/cycles/shader/stdosl.h"} %line{141} %argrw{"wrr"}
-	max		uv_x $tmp3 $const4 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:48
+	min		$tmp13 $tmp12 $const7 	%filename{"C:\\\\Program Files\\\\Blender Foundation\\\\Blender 4.5\\\\4.5\\\\scripts\\\\addons_core\\\\cycles\\\\shader/stdosl.h"} %line{141} %argrw{"wrr"}
+	max		uv_x $tmp13 $const5 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:55
 # 
-	compref		$tmp4 Pos $const9 	%filename{"Scripts/OSL/Random_Fingerprint_Mask.osl"} %line{48} %argrw{"wrr"}
-	functioncall	$const8 24 	%argrw{"r"}
-# /Applications/Blender.app/Contents/Resources/4.2/scripts/addons_core/cycles/shader/stdosl.h:141
+	compref		$tmp14 Pos $const17 	%filename{"C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl"} %line{55} %argrw{"wrr"}
+	functioncall	$const16 40 	%argrw{"r"}
+# C:\\\\Program Files\\\\Blender Foundation\\\\Blender 4.5\\\\4.5\\\\scripts\\\\addons_core\\\\cycles\\\\shader/stdosl.h:141
 # float  clamp (float x, float minval, float maxval) { return max(min(x,maxval),minval); }
-	min		$tmp5 $tmp4 $const6 	%filename{"/Applications/Blender.app/Contents/Resources/4.2/scripts/addons_core/cycles/shader/stdosl.h"} %line{141} %argrw{"wrr"}
-	max		uv_y $tmp5 $const4 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:51
+	min		$tmp15 $tmp14 $const7 	%filename{"C:\\\\Program Files\\\\Blender Foundation\\\\Blender 4.5\\\\4.5\\\\scripts\\\\addons_core\\\\cycles\\\\shader/stdosl.h"} %line{141} %argrw{"wrr"}
+	max		uv_y $tmp15 $const5 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:59
+#     float center_y = CENTER_Y_MIN + seed_offset_y * (CENTER_Y_MAX - CENTER_Y_MIN);
+	sub		$tmp16 CENTER_X_MAX CENTER_X_MIN 	%filename{"C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl"} %line{59} %argrw{"wrr"}
+	mul		$tmp17 seed_offset_x $tmp16 	%argrw{"wrr"}
+	add		center_x CENTER_X_MIN $tmp17 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:60
 # 
-	mul		$tmp7 seed $const10 	%filename{"Scripts/OSL/Random_Fingerprint_Mask.osl"} %line{51} %argrw{"wrr"}
-	add		$tmp8 $tmp7 $const11 	%argrw{"wrr"}
-	functioncall	$const12 29 	%argrw{"r"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:44
+	sub		$tmp18 CENTER_Y_MAX CENTER_Y_MIN 	%line{60} %argrw{"wrr"}
+	mul		$tmp19 seed_offset_y $tmp18 	%argrw{"wrr"}
+	add		center_y CENTER_Y_MIN $tmp19 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:63
+#     float height = HEIGHT_MIN + noise("simplex", CENTER_Y_MAX + 3.3) * (HEIGHT_MAX - HEIGHT_MIN);
+	add		$tmp21 CENTER_X_MAX $const19 	%line{63} %argrw{"wrr"}
+	noise		$tmp20 $const18 $tmp21 	%argrw{"wrr"}
+	sub		$tmp22 WIDTH_MAX WIDTH_MIN 	%argrw{"wrr"}
+	mul		$tmp23 $tmp20 $tmp22 	%argrw{"wrr"}
+	add		width WIDTH_MIN $tmp23 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:64
 # 
-	floor		$tmp9 $tmp8 	%line{44} %argrw{"wr"}
-	sub		$tmp6 $tmp8 $tmp9 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:51
-# 
-	mul		seed_offset $tmp6 $const13 	%line{51} %argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:54
-#     float center_y = CENTER_Y_MIN + noise("cell", seed_offset + 1.1) * (CENTER_Y_MAX - CENTER_Y_MIN);
-	add		$tmp11 seed_offset $const15 	%line{54} %argrw{"wrr"}
-	noise		$tmp10 $const14 $tmp11 	%argrw{"wrr"}
-	sub		$tmp12 CENTER_X_MAX CENTER_X_MIN 	%argrw{"wrr"}
-	mul		$tmp13 $tmp10 $tmp12 	%argrw{"wrr"}
-	add		center_x CENTER_X_MIN $tmp13 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:55
-# 
-	add		$tmp15 seed_offset $const16 	%line{55} %argrw{"wrr"}
-	noise		$tmp14 $const14 $tmp15 	%argrw{"wrr"}
-	sub		$tmp16 CENTER_Y_MAX CENTER_Y_MIN 	%argrw{"wrr"}
-	mul		$tmp17 $tmp14 $tmp16 	%argrw{"wrr"}
-	add		center_y CENTER_Y_MIN $tmp17 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:58
-#     float height = HEIGHT_MIN + noise("simplex", seed_offset + 3.3) * (HEIGHT_MAX - HEIGHT_MIN);
-	add		$tmp19 seed_offset $const18 	%line{58} %argrw{"wrr"}
-	noise		$tmp18 $const17 $tmp19 	%argrw{"wrr"}
-	sub		$tmp20 WIDTH_MAX WIDTH_MIN 	%argrw{"wrr"}
-	mul		$tmp21 $tmp18 $tmp20 	%argrw{"wrr"}
-	add		width WIDTH_MIN $tmp21 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:59
-# 
-	add		$tmp23 seed_offset $const19 	%line{59} %argrw{"wrr"}
-	noise		$tmp22 $const17 $tmp23 	%argrw{"wrr"}
-	sub		$tmp24 HEIGHT_MAX HEIGHT_MIN 	%argrw{"wrr"}
-	mul		$tmp25 $tmp22 $tmp24 	%argrw{"wrr"}
-	add		height HEIGHT_MIN $tmp25 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:62
+	add		$tmp25 CENTER_Y_MAX $const20 	%line{64} %argrw{"wrr"}
+	noise		$tmp24 $const18 $tmp25 	%argrw{"wrr"}
+	sub		$tmp26 HEIGHT_MAX HEIGHT_MIN 	%argrw{"wrr"}
+	mul		$tmp27 $tmp24 $tmp26 	%argrw{"wrr"}
+	add		height HEIGHT_MIN $tmp27 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:67
 #     float cos_a = cos(rotation_z), sin_a = sin(rotation_z);
-	add		$tmp27 seed_offset $const21 	%line{62} %argrw{"wrr"}
-	noise		$tmp26 $const20 $tmp27 	%argrw{"wrr"}
-	mul		$tmp28 $tmp26 $const22 	%argrw{"wrr"}
+	add		$tmp29 seed_offset_x $const22 	%line{67} %argrw{"wrr"}
+	noise		$tmp28 $const21 $tmp29 	%argrw{"wrr"}
 	mul		rotation_z $tmp28 $const23 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:63
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:68
 # 
-	cos		cos_a rotation_z 	%line{63} %argrw{"wr"}
+	cos		cos_a rotation_z 	%line{68} %argrw{"wr"}
 	sin		sin_a rotation_z 	%argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:66
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:71
 #     float y_rot = (uv_x - center_x) * sin_a + (uv_y - center_y) * cos_a;
-	sub		$tmp29 uv_x center_x 	%line{66} %argrw{"wrr"}
-	mul		$tmp30 $tmp29 cos_a 	%argrw{"wrr"}
-	sub		$tmp31 uv_y center_y 	%argrw{"wrr"}
-	mul		$tmp32 $tmp31 sin_a 	%argrw{"wrr"}
-	sub		x_rot $tmp30 $tmp32 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:67
+	sub		$tmp30 uv_x center_x 	%line{71} %argrw{"wrr"}
+	mul		$tmp31 $tmp30 cos_a 	%argrw{"wrr"}
+	sub		$tmp32 uv_y center_y 	%argrw{"wrr"}
+	mul		$tmp33 $tmp32 sin_a 	%argrw{"wrr"}
+	sub		x_rot $tmp31 $tmp33 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:72
 # 
-	sub		$tmp33 uv_x center_x 	%line{67} %argrw{"wrr"}
-	mul		$tmp34 $tmp33 sin_a 	%argrw{"wrr"}
-	sub		$tmp35 uv_y center_y 	%argrw{"wrr"}
-	mul		$tmp36 $tmp35 cos_a 	%argrw{"wrr"}
-	add		y_rot $tmp34 $tmp36 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:70
+	sub		$tmp34 uv_x center_x 	%line{72} %argrw{"wrr"}
+	mul		$tmp35 $tmp34 sin_a 	%argrw{"wrr"}
+	sub		$tmp36 uv_y center_y 	%argrw{"wrr"}
+	mul		$tmp37 $tmp36 cos_a 	%argrw{"wrr"}
+	add		y_rot $tmp35 $tmp37 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:75
 #     float ellipse_eq = (x_rot*x_rot)/(a*a) + (y_rot*y_rot)/(b*b);
-	mul		a width $const2 	%line{70} %argrw{"wrr"}
-	mul		b height $const2 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:71
+	mul		a width $const24 	%line{75} %argrw{"wrr"}
+	mul		b height $const24 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:76
 #     float edge_noise = noise("perlin", x_rot*10.0 + seed, y_rot*10.0 + seed + 5.0) * BLUR_INTENSITY;
-	mul		$tmp37 x_rot x_rot 	%line{71} %argrw{"wrr"}
-	mul		$tmp38 a a 	%argrw{"wrr"}
-	div		$tmp39 $tmp37 $tmp38 	%argrw{"wrr"}
-	mul		$tmp40 y_rot y_rot 	%argrw{"wrr"}
-	mul		$tmp41 b b 	%argrw{"wrr"}
-	div		$tmp42 $tmp40 $tmp41 	%argrw{"wrr"}
-	add		ellipse_eq $tmp39 $tmp42 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:72
+	mul		$tmp38 x_rot x_rot 	%line{76} %argrw{"wrr"}
+	mul		$tmp39 a a 	%argrw{"wrr"}
+	div		$tmp40 $tmp38 $tmp39 	%argrw{"wrr"}
+	mul		$tmp41 y_rot y_rot 	%argrw{"wrr"}
+	mul		$tmp42 b b 	%argrw{"wrr"}
+	div		$tmp43 $tmp41 $tmp42 	%argrw{"wrr"}
+	add		ellipse_eq $tmp40 $tmp43 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:77
 #     mask = (ellipse_eq <= 1.0 + edge_noise) ? 1.0 - smoothstep(0.8, 1.0 + edge_noise, ellipse_eq) : 0.0;
-	mul		$tmp44 x_rot $const24 	%line{72} %argrw{"wrr"}
-	add		$tmp45 $tmp44 seed 	%argrw{"wrr"}
-	mul		$tmp46 y_rot $const24 	%argrw{"wrr"}
-	add		$tmp47 $tmp46 seed 	%argrw{"wrr"}
-	add		$tmp48 $tmp47 $const25 	%argrw{"wrr"}
-	noise		$tmp43 $const20 $tmp45 $tmp48 	%argrw{"wrrr"}
-	mul		edge_noise $tmp43 BLUR_INTENSITY 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:73
+	mul		$tmp45 x_rot $const25 	%line{77} %argrw{"wrr"}
+	add		$tmp46 $tmp45 seed 	%argrw{"wrr"}
+	mul		$tmp47 y_rot $const25 	%argrw{"wrr"}
+	add		$tmp48 $tmp47 seed 	%argrw{"wrr"}
+	add		$tmp49 $tmp48 $const26 	%argrw{"wrr"}
+	noise		$tmp44 $const21 $tmp46 $tmp49 	%argrw{"wrrr"}
+	mul		edge_noise $tmp44 BLUR_INTENSITY 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:78
 # 
-	add		$tmp49 $const6 edge_noise 	%line{73} %argrw{"wrr"}
-	le		$tmp50 ellipse_eq $tmp49 	%argrw{"wrr"}
-	if		$tmp50 88 89 	%argrw{"r"}
-	add		$tmp52 $const6 edge_noise 	%argrw{"wrr"}
-	smoothstep	$tmp51 $const26 $tmp52 ellipse_eq 	%argrw{"wrrr"}
-	sub		mask $const6 $tmp51 	%argrw{"wrr"}
-	assign		mask $const4 	%argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:76
+	add		$tmp50 $const7 edge_noise 	%line{78} %argrw{"wrr"}
+	le		$tmp51 ellipse_eq $tmp50 	%argrw{"wrr"}
+	if		$tmp51 93 94 	%argrw{"r"}
+	add		$tmp53 $const7 edge_noise 	%argrw{"wrr"}
+	smoothstep	$tmp52 $const27 $tmp53 ellipse_eq 	%argrw{"wrrr"}
+	sub		mask $const7 $tmp52 	%argrw{"wrr"}
+	assign		mask $const5 	%argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:81
 # 
-	abs		$tmp53 x_rot 	%line{76} %argrw{"wr"}
-	le		$tmp54 $tmp53 a 	%argrw{"wrr"}
-	neq		$tmp55 $tmp54 $const7 	%argrw{"wrr"}
-	if		$tmp55 97 97 	%argrw{"r"}
-	abs		$tmp56 y_rot 	%argrw{"wr"}
-	le		$tmp57 $tmp56 b 	%argrw{"wrr"}
-	neq		$tmp58 $tmp57 $const7 	%argrw{"wrr"}
-	assign		$tmp55 $tmp58 	%argrw{"wr"}
-	if		$tmp55 99 100 	%argrw{"r"}
-	assign		mask_rectangle $const6 	%argrw{"wr"}
-	assign		mask_rectangle $const4 	%argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:79
+	abs		$tmp54 x_rot 	%line{81} %argrw{"wr"}
+	le		$tmp55 $tmp54 a 	%argrw{"wrr"}
+	neq		$tmp56 $tmp55 $const8 	%argrw{"wrr"}
+	if		$tmp56 102 102 	%argrw{"r"}
+	abs		$tmp57 y_rot 	%argrw{"wr"}
+	le		$tmp58 $tmp57 b 	%argrw{"wrr"}
+	neq		$tmp59 $tmp58 $const8 	%argrw{"wrr"}
+	assign		$tmp56 $tmp59 	%argrw{"wr"}
+	if		$tmp56 104 105 	%argrw{"r"}
+	assign		mask_rectangle $const7 	%argrw{"wr"}
+	assign		mask_rectangle $const5 	%argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:84
 #     float fp_center_y = center_y + (noise("perlin", seed + 11.0) - 0.5) * height;
-	add		$tmp60 seed $const24 	%line{79} %argrw{"wrr"}
-	noise		$tmp59 $const20 $tmp60 	%argrw{"wrr"}
-	sub		$tmp61 $tmp59 $const2 	%argrw{"wrr"}
-	mul		$tmp62 $tmp61 width 	%argrw{"wrr"}
-	add		fp_center_x center_x $tmp62 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:80
+	add		$tmp61 seed $const25 	%line{84} %argrw{"wrr"}
+	noise		$tmp60 $const21 $tmp61 	%argrw{"wrr"}
+	sub		$tmp62 $tmp60 $const24 	%argrw{"wrr"}
+	mul		$tmp63 $tmp62 width 	%argrw{"wrr"}
+	add		fp_center_x center_x $tmp63 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:85
 #     float dx = uv_x - fp_center_x, dy = uv_y - fp_center_y;
-	add		$tmp64 seed $const27 	%line{80} %argrw{"wrr"}
-	noise		$tmp63 $const20 $tmp64 	%argrw{"wrr"}
-	sub		$tmp65 $tmp63 $const2 	%argrw{"wrr"}
-	mul		$tmp66 $tmp65 height 	%argrw{"wrr"}
-	add		fp_center_y center_y $tmp66 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:81
+	add		$tmp65 seed $const28 	%line{85} %argrw{"wrr"}
+	noise		$tmp64 $const21 $tmp65 	%argrw{"wrr"}
+	sub		$tmp66 $tmp64 $const24 	%argrw{"wrr"}
+	mul		$tmp67 $tmp66 height 	%argrw{"wrr"}
+	add		fp_center_y center_y $tmp67 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:86
 #     float dist = sqrt(dx*dx + dy*dy);
-	sub		dx uv_x fp_center_x 	%line{81} %argrw{"wrr"}
+	sub		dx uv_x fp_center_x 	%line{86} %argrw{"wrr"}
 	sub		dy uv_y fp_center_y 	%argrw{"wrr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:82
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:87
 #     mask_fingerprint = (0.5 + 0.5 * sin(dist * WAVE_SCALE)) * mask_rectangle;
-	mul		$tmp67 dx dx 	%line{82} %argrw{"wrr"}
-	mul		$tmp68 dy dy 	%argrw{"wrr"}
-	add		$tmp69 $tmp67 $tmp68 	%argrw{"wrr"}
-	sqrt		dist $tmp69 	%argrw{"wr"}
-# Scripts/OSL/Random_Fingerprint_Mask.osl:83
+	mul		$tmp68 dx dx 	%line{87} %argrw{"wrr"}
+	mul		$tmp69 dy dy 	%argrw{"wrr"}
+	add		$tmp70 $tmp68 $tmp69 	%argrw{"wrr"}
+	sqrt		dist $tmp70 	%argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Random_Fingerprint_Mask.osl:88
 # }
-	mul		$tmp71 dist WAVE_SCALE 	%line{83} %argrw{"wrr"}
-	sin		$tmp70 $tmp71 	%argrw{"wr"}
-	mul		$tmp72 $const2 $tmp70 	%argrw{"wrr"}
-	add		$tmp73 $const2 $tmp72 	%argrw{"wrr"}
-	mul		mask_fingerprint $tmp73 mask_rectangle 	%argrw{"wrr"}
+	mul		$tmp72 dist WAVE_SCALE 	%line{88} %argrw{"wrr"}
+	sin		$tmp71 $tmp72 	%argrw{"wr"}
+	mul		$tmp73 $const24 $tmp71 	%argrw{"wrr"}
+	add		$tmp74 $const24 $tmp73 	%argrw{"wrr"}
+	mul		mask_fingerprint $tmp74 mask_rectangle 	%argrw{"wrr"}
 	end
