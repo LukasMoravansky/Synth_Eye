@@ -1,138 +1,134 @@
 OpenShadingLanguage 1.00
 # Compiled by oslc 1.14.4.0dev
-# options: -o C:\Users\MORAVA~1\AppData\Local\Temp\tmpnjwt8gvs.oso -IC:\Program Files\Blender Foundation\Blender 4.5\4.5\scripts\addons_core\cycles\shader
+# options: -o C:\Users\MORAVA~1\AppData\Local\Temp\tmpmrmcekim.oso -IC:\Program Files\Blender Foundation\Blender 4.5\4.5\scripts\addons_core\cycles\shader
 shader Circle_Gradient_Pattern
-param	vector	uv	0.5 0.5 0		%read{9,10} %write{2147483647,-1}
-param	float	seed	43758.5469		%read{18,18} %write{2147483647,-1}
-oparam	color	result	0 0 0		%read{2147483647,-1} %write{8,37}
-local	float	RADIUS	%read{13,37} %write{0,0}
-local	float	SPACING	%read{13,37} %write{1,1}
-local	float	MIN_THICKNESS	%read{13,37} %write{2,2}
-local	float	MAX_THICKNESS	%read{13,37} %write{3,3}
-local	color	CENTER_COLOR	%read{13,37} %write{4,4}
-local	color	EDGE_COLOR	%read{13,37} %write{5,5}
-local	color	BACKGROUND_COLOR	%read{8,8} %write{6,6}
-local	int	CIRCLES_COUNT	%read{13,37} %write{7,7}
-local	float	x	%read{13,37} %write{9,9}
-local	float	y	%read{13,37} %write{10,10}
-local	int	___369_i	%read{13,37} %write{12,37}
-local	float	___370_center_x	%read{13,37} %write{13,37}
-local	float	___370_thickness	%read{13,37} %write{13,37}
-local	float	___370_dx	%read{13,37} %write{13,37}
-local	float	___370_dy	%read{13,37} %write{13,37}
-local	float	___370_dist	%read{13,37} %write{13,37}
-local	float	___371_factor	%read{13,37} %write{13,37}
-const	float	$const1	0.349999994		%read{0,0} %write{2147483647,-1}
-const	float	$const2	0.100000001		%read{1,1} %write{2147483647,-1}
-const	float	$const3	0.00499999989		%read{2,2} %write{2147483647,-1}
-const	float	$const4	0.00999999978		%read{3,3} %write{2147483647,-1}
-const	color	$const5	0.800000012 0.800000012 0.800000012		%read{4,4} %write{2147483647,-1}
-const	color	$const6	0 0 0		%read{5,6} %write{2147483647,-1}
-const	int	$const7	200		%read{7,7} %write{2147483647,-1}
-const	int	$const8	0		%read{9,14} %write{2147483647,-1}
-const	int	$const9	1		%read{10,37} %write{2147483647,-1}
-temp	int	$tmp1	%read{13,37} %write{13,37}
-temp	int	$tmp2	%read{11,37} %write{12,37}
-temp	float	$tmp3	%read{13,37} %write{13,37}
-temp	float	$tmp4	%read{13,37} %write{13,37}
-temp	float	$tmp5	%read{13,37} %write{13,37}
-temp	float	$tmp6	%read{13,37} %write{13,37}
-const	string	$const10	"random"		%read{19,19} %write{2147483647,-1}
-temp	float	$tmp7	%read{13,37} %write{13,37}
-const	float	$const11	43758.5469		%read{21,21} %write{2147483647,-1}
-temp	float	$tmp8	%read{13,37} %write{13,37}
-const	float	$const12	1		%read{22,22} %write{2147483647,-1}
-temp	float	$tmp9	%read{13,37} %write{13,37}
-temp	float	$tmp10	%read{13,37} %write{13,37}
-temp	float	$tmp11	%read{13,37} %write{13,37}
-temp	int	$tmp12	%read{13,37} %write{13,37}
-temp	float	$tmp13	%read{13,37} %write{13,37}
-temp	int	$tmp14	%read{2147483647,-1} %write{13,37}
+param	vector	uv	0.5 0.5 0		%read{7,8} %write{2147483647,-1}
+param	float	seed	43758.5469		%read{16,16} %write{2147483647,-1}
+param	float	spacing	0.0109999999		%read{14,14} %write{2147483647,-1}
+oparam	color	result	0 0 0		%read{2147483647,-1} %write{6,39}
+local	float	RADIUS	%read{11,39} %write{0,0}
+local	float	MIN_THICKNESS	%read{11,39} %write{1,1}
+local	float	MAX_THICKNESS	%read{11,39} %write{2,2}
+local	color	CIRCLE_COLOR	%read{11,39} %write{3,3}
+local	color	BACKGROUND_COLOR	%read{6,6} %write{4,4}
+local	int	CIRCLES_COUNT	%read{11,39} %write{5,5}
+local	float	x	%read{11,39} %write{7,7}
+local	float	y	%read{11,39} %write{8,8}
+local	int	___369_i	%read{11,39} %write{10,39}
+local	float	___370_center_x	%read{11,39} %write{11,39}
+local	float	___370_thickness	%read{11,39} %write{11,39}
+local	float	___370_dx	%read{11,39} %write{11,39}
+local	float	___370_dy	%read{11,39} %write{11,39}
+local	float	___370_dist	%read{11,39} %write{11,39}
+const	float	$const1	0.600000024		%read{0,0} %write{2147483647,-1}
+const	float	$const2	0.00100000005		%read{1,1} %write{2147483647,-1}
+const	float	$const3	0.00200000009		%read{2,2} %write{2147483647,-1}
+const	color	$const4	0 0 0		%read{3,3} %write{2147483647,-1}
+const	color	$const5	1 1 1		%read{4,4} %write{2147483647,-1}
+const	int	$const6	200		%read{5,5} %write{2147483647,-1}
+const	int	$const7	0		%read{7,33} %write{2147483647,-1}
+const	int	$const8	1		%read{8,39} %write{2147483647,-1}
+temp	int	$tmp1	%read{11,39} %write{11,39}
+temp	int	$tmp2	%read{9,39} %write{10,39}
+temp	float	$tmp3	%read{11,39} %write{11,39}
+temp	float	$tmp4	%read{11,39} %write{11,39}
+temp	float	$tmp5	%read{11,39} %write{11,39}
+temp	float	$tmp6	%read{11,39} %write{11,39}
+const	string	$const9	"random"		%read{17,17} %write{2147483647,-1}
+temp	float	$tmp7	%read{11,39} %write{11,39}
+const	float	$const10	43758.5469		%read{19,19} %write{2147483647,-1}
+temp	float	$tmp8	%read{11,39} %write{11,39}
+const	float	$const11	1		%read{20,20} %write{2147483647,-1}
+temp	float	$tmp9	%read{11,39} %write{11,39}
+temp	float	$tmp10	%read{11,39} %write{11,39}
+temp	float	$tmp11	%read{11,39} %write{11,39}
+temp	int	$tmp12	%read{11,39} %write{11,39}
+temp	int	$tmp13	%read{11,39} %write{11,39}
+temp	float	$tmp14	%read{11,39} %write{11,39}
+temp	int	$tmp15	%read{11,39} %write{11,39}
+temp	int	$tmp16	%read{11,39} %write{11,39}
+temp	int	$tmp17	%read{2147483647,-1} %write{11,39}
 code ___main___
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:24
-#     float SPACING = 0.1;
-	assign		RADIUS $const1 	%filename{"C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl"} %line{24} %argrw{"wr"}
 # C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:25
-#     float MIN_THICKNESS = 0.005;
-	assign		SPACING $const2 	%line{25} %argrw{"wr"}
+#     float MIN_THICKNESS = 0.001;
+	assign		RADIUS $const1 	%filename{"C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl"} %line{25} %argrw{"wr"}
 # C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:26
-#     float MAX_THICKNESS = 0.01;
-	assign		MIN_THICKNESS $const3 	%line{26} %argrw{"wr"}
+#     float MAX_THICKNESS = 0.002;
+	assign		MIN_THICKNESS $const2 	%line{26} %argrw{"wr"}
 # C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:27
-#     color CENTER_COLOR = color(0.8, 0.8, 0.8);
-	assign		MAX_THICKNESS $const4 	%line{27} %argrw{"wr"}
+#     color CIRCLE_COLOR = color(0, 0, 0);
+	assign		MAX_THICKNESS $const3 	%line{27} %argrw{"wr"}
 # C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:28
-#     color EDGE_COLOR = color(0.0, 0.0, 0.0);
-	assign		CENTER_COLOR $const5 	%line{28} %argrw{"wr"}
+#     color BACKGROUND_COLOR = color(1, 1, 1);
+	assign		CIRCLE_COLOR $const4 	%line{28} %argrw{"wr"}
 # C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:29
-#     color BACKGROUND_COLOR = color(0.0, 0.0, 0.0);
-	assign		EDGE_COLOR $const6 	%line{29} %argrw{"wr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:30
 #     int CIRCLES_COUNT = 200;
-	assign		BACKGROUND_COLOR $const6 	%line{30} %argrw{"wr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:31
+	assign		BACKGROUND_COLOR $const5 	%line{29} %argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:30
 # 
-	assign		CIRCLES_COUNT $const7 	%line{31} %argrw{"wr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:34
+	assign		CIRCLES_COUNT $const6 	%line{30} %argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:33
 # 
-	assign		result BACKGROUND_COLOR 	%line{34} %argrw{"wr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:40
+	assign		result BACKGROUND_COLOR 	%line{33} %argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:39
 #     float y = uv[1];
-	compref		x uv $const8 	%line{40} %argrw{"wrr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:41
+	compref		x uv $const7 	%line{39} %argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:40
 # 
-	compref		y uv $const9 	%line{41} %argrw{"wrr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:44
+	compref		y uv $const8 	%line{40} %argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:43
 #     {
-	for		$tmp2 13 15 36 38 	%line{44} %argrw{"r"}
-	assign		___369_i $const8 	%argrw{"wr"}
+	for		$tmp2 11 13 38 40 	%line{43} %argrw{"r"}
+	assign		___369_i $const7 	%argrw{"wr"}
 	lt		$tmp1 ___369_i CIRCLES_COUNT 	%argrw{"wrr"}
-	neq		$tmp2 $tmp1 $const8 	%argrw{"wrr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:46
+	neq		$tmp2 $tmp1 $const7 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:45
 # 
-	assign		$tmp3 ___369_i 	%line{46} %argrw{"wr"}
-	mul		___370_center_x $tmp3 SPACING 	%argrw{"wrr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:49
+	assign		$tmp3 ___369_i 	%line{45} %argrw{"wr"}
+	mul		___370_center_x $tmp3 spacing 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:48
 # 
-	assign		$tmp6 ___369_i 	%line{49} %argrw{"wr"}
+	assign		$tmp6 ___369_i 	%line{48} %argrw{"wr"}
 	add		$tmp5 $tmp6 seed 	%argrw{"wrr"}
-	functioncall	$const10 23 	%argrw{"r"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:37
+	functioncall	$const9 21 	%argrw{"r"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:36
 # 
-	sin		$tmp7 $tmp5 	%line{37} %argrw{"wr"}
-	mul		$tmp8 $tmp7 $const11 	%argrw{"wrr"}
-	fmod		$tmp4 $tmp8 $const12 	%argrw{"wrr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:49
+	sin		$tmp7 $tmp5 	%line{36} %argrw{"wr"}
+	mul		$tmp8 $tmp7 $const10 	%argrw{"wrr"}
+	fmod		$tmp4 $tmp8 $const11 	%argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:48
 # 
-	mix		___370_thickness MIN_THICKNESS MAX_THICKNESS $tmp4 	%line{49} %argrw{"wrrr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:52
+	mix		___370_thickness MIN_THICKNESS MAX_THICKNESS $tmp4 	%line{48} %argrw{"wrrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:51
 #         float dy = y;
-	sub		___370_dx x ___370_center_x 	%line{52} %argrw{"wrr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:53
+	sub		___370_dx x ___370_center_x 	%line{51} %argrw{"wrr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:52
 #         float dist = sqrt(dx*dx + dy*dy);
-	assign		___370_dy y 	%line{53} %argrw{"wr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:54
+	assign		___370_dy y 	%line{52} %argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:53
 # 
-	mul		$tmp9 ___370_dx ___370_dx 	%line{54} %argrw{"wrr"}
+	mul		$tmp9 ___370_dx ___370_dx 	%line{53} %argrw{"wrr"}
 	mul		$tmp10 ___370_dy ___370_dy 	%argrw{"wrr"}
 	add		$tmp11 $tmp9 $tmp10 	%argrw{"wrr"}
 	sqrt		___370_dist $tmp11 	%argrw{"wr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:57
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:56
 #         {
-	le		$tmp12 ___370_dist RADIUS 	%line{57} %argrw{"wrr"}
-	if		$tmp12 36 36 	%argrw{"r"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:60
-# 
-	sub		$tmp13 RADIUS ___370_thickness 	%line{60} %argrw{"wrr"}
-	smoothstep	___371_factor RADIUS $tmp13 ___370_dist 	%argrw{"wrrr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:63
+	le		$tmp12 ___370_dist RADIUS 	%line{56} %argrw{"wrr"}
+	neq		$tmp13 $tmp12 $const7 	%argrw{"wrr"}
+	if		$tmp13 35 35 	%argrw{"r"}
+	sub		$tmp14 RADIUS ___370_thickness 	%argrw{"wrr"}
+	ge		$tmp15 ___370_dist $tmp14 	%argrw{"wrr"}
+	neq		$tmp16 $tmp15 $const7 	%argrw{"wrr"}
+	assign		$tmp13 $tmp16 	%argrw{"wr"}
+	if		$tmp13 38 38 	%argrw{"r"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:58
 #             break;
-	mix		result CENTER_COLOR EDGE_COLOR ___371_factor 	%line{63} %argrw{"wrrr"}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:64
+	assign		result CIRCLE_COLOR 	%line{58} %argrw{"wr"}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:59
 #         }
-	break	%line{64}
-# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:44
+	break	%line{59}
+# C:\\Users\\moravansky\\Projects\\Synth_Eye\\Blender\\Scripts\\OSL\\Circle_Gradient_Pattern.osl:43
 #     {
-	assign		$tmp14 ___369_i 	%line{44} %argrw{"wr"}
-	add		___369_i ___369_i $const9 	%argrw{"wrr"}
+	assign		$tmp17 ___369_i 	%line{43} %argrw{"wr"}
+	add		___369_i ___369_i $const8 	%argrw{"wrr"}
 	end

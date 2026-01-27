@@ -20,19 +20,19 @@ shader Circle_Gradient_Hole_Pattern(
 )
 {
     // Constants for parent radius, mini-circle radius, colors, thickness, and circle count.
-    float RADIUS = 0.3;
-    float CIRCLE_RADIUS = 0.05;
-    float MIN_THICKNESS = 0.001;
-    float MAX_THICKNESS = 0.002;
-    color CIRCLE_COLOR = color(1.0, 1.0, 1.0);
+    float RADIUS = 0.290; // Radius of hole circle 
+    float CIRCLE_RADIUS = 0.245; // Radius of circles on RADIUS
+    float MIN_THICKNESS = 0.002; // Min thickness of circles
+    float MAX_THICKNESS = 0.004; // Max thickness of circles
+    color CIRCLE_COLOR = color(1.0, 1.0, 1.0); 
     color BACKGROUND_COLOR = color(0.0, 0.0, 0.0);
-    int CIRCLES_COUNT = 20;
+    int CIRCLES_COUNT = 320;    
 
     // Initialize output to background color.
     result = BACKGROUND_COLOR;
 
     // Pseudo-random generator producing values in [0,1].
-    float random(float s) { return fmod(sin(s) * seed, 1.0); }
+    float random(float s) {return fmod(sin(s) * 43758.5453123, 1.0); }
 
     // Extract UV coordinates.
     float x = uv[0];
@@ -42,14 +42,14 @@ shader Circle_Gradient_Hole_Pattern(
     for (int i = 0; i < CIRCLES_COUNT; i++)
     {
         // Angular position of the current circle on the parent radius.
-        float angle = (2.0 * M_PI * i) / CIRCLES_COUNT;
+        float angle = (2.0 * M_PI * i) / CIRCLES_COUNT; //  Angle for placement on the circle
 
         // Cartesian coordinates of the mini-circle center.
         float center_x = RADIUS * cos(angle);
         float center_y = RADIUS * sin(angle);
 
         // Randomized visible band thickness.
-        float thickness = mix(MIN_THICKNESS, MAX_THICKNESS, random(i + seed));
+        float thickness = mix(MIN_THICKNESS, MAX_THICKNESS, random(i));
 
         // Distance from shading point to mini-circle center.
         float dx = x - center_x;

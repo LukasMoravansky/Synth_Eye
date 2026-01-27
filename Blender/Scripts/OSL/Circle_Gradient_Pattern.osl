@@ -16,17 +16,16 @@ Returns:
 shader Circle_Gradient_Pattern(
     vector uv = vector(0.5, 0.5, 0.0),
     float seed = 43758.5453123,
-    float spacing = 0.011
-    output color result = 0
+    float spacing = 0.011,
+    output color result = color(0, 0, 0)
 )
 {
     // Constants for circle array, colors, and edge thickness.
     float RADIUS = 0.60;
-    float MIN_THICKNESS = 0.005;
-    float MAX_THICKNESS = 0.01;
-    color CENTER_COLOR = color(0.8, 0.8, 0.8);
-    color EDGE_COLOR = color(0.0, 0.0, 0.0);
-    color BACKGROUND_COLOR = color(0.0, 0.0, 0.0);
+    float MIN_THICKNESS = 0.001;
+    float MAX_THICKNESS = 0.002;
+    color CIRCLE_COLOR = color(0, 0, 0);
+    color BACKGROUND_COLOR = color(1, 1, 1);
     int CIRCLES_COUNT = 200;
 
     // Initialize output to background color.
@@ -42,7 +41,7 @@ shader Circle_Gradient_Pattern(
     // Iterate through circle array to find first containing circle.
     for (int i = 0; i < CIRCLES_COUNT; i++)
     {
-        float center_x = i * SPACING;
+        float center_x = i * spacing;
 
         // Randomized edge thickness per circle instance.
         float thickness = mix(MIN_THICKNESS, MAX_THICKNESS, random(i + seed));
@@ -53,13 +52,9 @@ shader Circle_Gradient_Pattern(
         float dist = sqrt(dx*dx + dy*dy);
 
         // Check if point lies inside the circle radius.
-        if (dist <= RADIUS)
+        if (dist <= RADIUS && dist >= (RADIUS - thickness))
         {
-            // Blend factor for radial gradient from center to edge.
-            float factor = smoothstep(RADIUS, RADIUS - thickness, dist);
-
-            // Compute final color and exit loop.
-            result = mix(CENTER_COLOR, EDGE_COLOR, factor);
+            result = CIRCLE_COLOR;
             break;
         }
     }
