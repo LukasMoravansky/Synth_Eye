@@ -242,7 +242,6 @@ The system is now ready for synthetic data generation, experimentation, and mode
 - Remove the `time.sleep(10)` delay from `gen_synthetic_data.py`.
 - Ensure proper handling of label `.txt` files:
   - If a label file already exists for a given index, delete or overwrite it instead of appending new bounding boxes to the existing file.
-- Clean and refactor the Blender shading and texture generation pipeline to improve readability, maintainability, and consistency.
 
 ## Contributors
 
