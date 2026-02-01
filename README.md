@@ -238,7 +238,6 @@ The system is now ready for synthetic data generation, experimentation, and mode
 ## TODO
 
 - Improve the light configuration to better support rectangular objects.
-- Add a standardized dataset template structure to the root of the repository.
 - Remove the `time.sleep(10)` delay from `gen_synthetic_data.py`.
 - Ensure proper handling of label `.txt` files:
   - If a label file already exists for a given index, delete or overwrite it instead of appending new bounding boxes to the existing file.
