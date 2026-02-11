@@ -74,6 +74,11 @@ class Camera_Parameters_Str:
     # Orthographic camera zoom level (higher = zoomed out).
     Orthographic_Scale: float = 0.0
 
+    # Custom camera configuration.
+    #   Note:
+    #       Optional structure for vendor/API specific settings (e.g., exposure, gain, white balance, pixel format).
+    Custom_Cfg: tp.Dict[str, tp.Any] = field(default_factory=dict)
+
     def __post_init__(self):
         # Ensure valid default values for depth of field and focus distance.
         if self.Use_DoF == True and self.Focus_Distance == 0.0:
@@ -163,6 +168,14 @@ Basler_Cam_Str.Balance_Ratios = (0.95, 0.9, 0.85)
 Basler_Cam_Str.Aperture_F_Stop = 2.8  
 Basler_Cam_Str.Focus_Distance = Basler_Cam_Str.T.p.z
 Basler_Cam_Str.Use_DoF = True
+
+# Custom camera configuration (vendor/API specific).
+Basler_Cam_Str.Custom_Cfg = {
+    'Exposure_Time': 10000,
+    'Gain': 10,
+    'Balance_Ratios': {'Red': 0.95, 'Green': 0.9, 'Blue': 1.2},
+    'Pixel_Format': 'BayerRG8'
+}
 
 """
 Description:

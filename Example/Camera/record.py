@@ -14,6 +14,8 @@ from Basler.Camera import Basler_Cls
 from Calibration.Parameters import Basler_Calib_Param_Str
 #   ../Utilities/Image_Processing
 import Utilities.Image_Processing
+#   ../Parameters/Scene
+import Parameters.Scene
 
 def main():
     """
@@ -26,16 +28,8 @@ def main():
             Lighting: EFFI-FD-200-200-000 High-Power Flat Light
     """
         
-    # Custom camera configuration.
-    custom_cfg = {
-        'exposure_time': 10000,
-        'gain': 10,
-        'balance_ratios': {'Red': 0.95, 'Green': 0.9, 'Blue': 1.2},
-        'pixel_format': 'BayerRG8'
-    }
-
     # Initialize and configure the Basler camera.
-    Basler_Cam_Id_1 = Basler_Cls(config=custom_cfg)
+    Basler_Cam_Id_1 = Basler_Cls(config=Parameters.Scene.Basler_Cam_Str.Custom_Cfg)
 
     # Full screen window.
     window_name = 'Captured Image'

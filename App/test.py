@@ -27,6 +27,8 @@ import Utilities.General
 from Basler.Camera import Basler_Cls
 #   ../Calibration/Parameters
 from Calibration.Parameters import Basler_Calib_Param_Str
+#   ../Parameters/Scene
+import Parameters.Scene
 
 """
 Description:
@@ -71,16 +73,8 @@ def main():
     model_object = YOLO(f"{project_folder}/YOLO/Model/Dataset_v2/{CONST_CONFIG_MODEL_OBJ['Model']}.pt")
     model_defect = YOLO(f"{project_folder}/YOLO/Model/Dataset_v3/{CONST_CONFIG_MODEL_DEFECT['Model']}.pt")
 
-    # Custom camera configuration.
-    custom_cfg = {
-        'exposure_time': 10000,
-        'gain': 10,
-        'balance_ratios': {'Red': 0.95, 'Green': 0.9, 'Blue': 1.2},
-        'pixel_format': 'BayerRG8'
-    }
-
     # Initialize and configure the Basler camera.
-    Basler_Cam_Id_1 = Basler_Cls(config=custom_cfg)
+    Basler_Cam_Id_1 = Basler_Cls(config=Parameters.Scene.Basler_Cam_Str.Custom_Cfg)
 
     # Initialize the timer and counters.
     start_time = time.time()

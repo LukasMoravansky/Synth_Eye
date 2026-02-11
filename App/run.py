@@ -33,6 +33,8 @@ import Utilities.General
 from Basler.Camera import Basler_Cls
 #   ../Calibration/Parameters
 from Calibration.Parameters import Basler_Calib_Param_Str
+#   ../Parameters/Scene
+import Parameters.Scene
 
 # ============================================================================
 # Color Constants
@@ -92,14 +94,6 @@ with open(os.path.join(project_folder, 'Training', 'Args_Model_1.yaml'), 'r') as
 # Load a pre-trained custom YOLO model.
 model_object = YOLO(f"{project_folder}/YOLO/Model/Dataset_v2/{CONST_CONFIG_MODEL_OBJ['Model']}.pt")
 model_defect = YOLO(f"{project_folder}/YOLO/Model/Dataset_v3/{CONST_CONFIG_MODEL_DEFECT['Model']}.pt")
-
-# Custom camera configuration.
-custom_cfg = {
-    'exposure_time': 10000,
-    'gain': 10,
-    'balance_ratios': {'Red': 0.95, 'Green': 0.9, 'Blue': 1.2},
-    'pixel_format': 'BayerRG8'
-}
 
 # ============================================================================
 # Mock Camera Interface (for disabled camera option)
@@ -595,7 +589,7 @@ class SynthEyeApp(QMainWindow):
                 self.log(f'Scanning for available camera devices...')
 
                 # Initialize and configure the Basler camera.
-                self.Basler_Cam_Id_1 = Basler_Cls(config=custom_cfg)
+                self.Basler_Cam_Id_1 = Basler_Cls(config=Parameters.Scene.Basler_Cam_Str.Custom_Cfg)
 
                 if self.Basler_Cam_Id_1.camera == None:
                     self.log('Failed to connect to camera. No device detected or connection attempt unsuccessful.')

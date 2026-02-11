@@ -39,16 +39,8 @@ def main():
     # Locate the path to the project folder.
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
-    # Custom camera configuration.
-    custom_cfg = {
-        'exposure_time': 10000,
-        'gain': 10,
-        'balance_ratios': {'Red': 0.95, 'Green': 0.9, 'Blue': 1.2},
-        'pixel_format': 'BayerRG8'
-    }
-
     # Initialize and configure the Basler camera.
-    Basler_Cam_Id_1 = Basler_Cls(config=custom_cfg)
+    Basler_Cam_Id_1 = Basler_Cls(config=Parameters.Scene.Basler_Cam_Str.Custom_Cfg)
 
     # Capture a single image.
     img = Basler_Cam_Id_1.Capture()
