@@ -24,7 +24,7 @@ import time
 import yaml
 from ultralytics import YOLO
 import torch
-# Custom Library:
+# Custom Lib.:
 #   ../Utilities/Image_Processing
 import Utilities.Image_Processing
 #   ../Utilities/General

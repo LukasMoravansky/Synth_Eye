@@ -7,9 +7,9 @@ if '../../' + 'src' not in sys.path:
 import cv2
 # Numpy (Array computing)
 import numpy as np
-# Custom Library:
+# Custom Lib.:
 #   ../Basler/Camera
-from Basler.Camera import Basler_Cls
+from Basler.Core import Camera_Cls
 #   ../Calibration/Parameters
 from Calibration.Parameters import Basler_Calib_Param_Str
 #   ../Utilities/Image_Processing
@@ -29,7 +29,7 @@ def main():
     """
         
     # Initialize and configure the Basler camera.
-    Basler_Cam_Id_1 = Basler_Cls(config=Parameters.Scene.Basler_Cam_Str.Custom_Cfg)
+    Basler_Cam_Id_1 = Camera_Cls(config=Parameters.Scene.Basler_Cam_Str.Custom_Cfg)
 
     # Full screen window.
     window_name = 'Captured Image'

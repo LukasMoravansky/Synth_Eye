@@ -28,7 +28,7 @@ from pypylon import pylon
 # Time (Time access and conversions)
 import time
 
-class Basler_Cls:
+class Camera_Cls:
     """
     Description:
         Initialize and configure the Basler camera with a given configuration dictionary.

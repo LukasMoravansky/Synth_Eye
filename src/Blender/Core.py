@@ -33,8 +33,7 @@ import numpy as np
 # Typing (Support for type hints)
 import typing as tp
 # Custom Lib.:
-#   ../Blender/Core & Utilities
-import Blender.Core
+#   ../Blender/Utilities
 import Blender.Utilities
 #   ../Parameters/Camera & Object
 import Parameters.Scene

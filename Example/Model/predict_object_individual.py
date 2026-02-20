@@ -16,7 +16,7 @@ import yaml
 from ultralytics import YOLO
 # PyTorch (tensors and dynamic neural networks)
 import torch
-# Custom Library:
+# Custom Lib.:
 #   ../Utilities/Image_Processing
 import Utilities.Image_Processing
 #   ../Utilities/General

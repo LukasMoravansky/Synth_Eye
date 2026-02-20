@@ -7,7 +7,7 @@ if '../../' + 'src' not in sys.path:
 import os
 # OpenCV (Computer Vision) [pip3 install opencv-python]
 import cv2
-# Custom Library:
+# Custom Lib.:
 #   ../Utilities/Image_Processing
 import Utilities.Image_Processing
 #   ../Parameters/Scene

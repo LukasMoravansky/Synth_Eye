@@ -11,7 +11,7 @@ import cv2
 import numpy as np
 # Time (Time access and conversions)
 import time
-# Custom Library:
+# Custom Lib.:
 #   ../Utilities/File_IO
 import Utilities.File_IO as File_IO
 #   ../Utilities/Image_Processing

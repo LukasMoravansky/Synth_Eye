@@ -7,11 +7,11 @@ if '../../' + 'src' not in sys.path:
 import os
 # OpenCV (Computer Vision) [pip3 install opencv-python]
 import cv2
-# Custom Library:
+# Custom Lib.:
 #   ../Utilities/Image_Processing
 import Utilities.Image_Processing
 #   ../Basler/Camera
-from Basler.Camera import Basler_Cls
+from Basler.Core import Camera_Cls
 #   ../Parameters/Scene
 import Parameters.Scene
 #   ../Calibration/Core
@@ -43,7 +43,7 @@ def main():
     project_folder = os.getcwd().split('Synth_Eye')[0] + 'Synth_Eye'
 
     # Initialize and configure the Basler camera.
-    Basler_Cam_Id_1 = Basler_Cls(config=Parameters.Scene.Basler_Cam_Str.Custom_Cfg)
+    Basler_Cam_Id_1 = Camera_Cls(config=Parameters.Scene.Basler_Cam_Str.Custom_Cfg)
 
     # Capture a single image.
     img_raw = Basler_Cam_Id_1.Capture()
